@@ -97,6 +97,7 @@ data PartialDate = PartialDate
 {-| A MusicBrainz MBID, which is a 'UUID' but scoped to a specific entity
 type. -}
 newtype MBID a = MBID UUID
+  deriving (Eq, Show)
 
 parseMbid :: String -> Maybe (MBID a)
 parseMbid = fmap MBID . fromString
