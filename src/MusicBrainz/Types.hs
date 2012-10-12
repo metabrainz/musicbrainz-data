@@ -1,3 +1,6 @@
+{-# LANGUAGE DeriveDataTypeable #-}
+{-# LANGUAGE EmptyDataDecls #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TypeFamilies #-}
@@ -12,13 +15,19 @@ module MusicBrainz.Types
     , MBID(..)
     , parseMbid
     , PartialDate(..)
+    , emptyDate
+
+      -- * Versioning
+    , CoreEntity(..)
+    , Revision
 
       -- * Entity/reference handling
-    , Entity
+    , Entity(..)
     , Ref(..)
     ) where
 
 import Data.Text (Text)
+import Data.Typeable (Typeable)
 import Data.UUID
 
 {-| A reference to a specific entity. In the database, this a foreign key
@@ -47,7 +56,7 @@ data Artist = Artist
     , artistType :: Maybe (Ref ArtistType)
     , artistCountry :: Maybe (Ref Country)
     }
-  deriving (Eq, Show)
+  deriving (Eq, Show, Typeable)
 
 --------------------------------------------------------------------------------
 {-| The definition of a type of an artist (e.g., \"person\" or \"group\") . -}
@@ -89,15 +98,42 @@ data PartialDate = PartialDate
     { dateYear :: Maybe Int
     , dateMonth :: Maybe Int
     , dateDay :: Maybe Int
-     }
+    }
   deriving (Eq, Show)
+
+
+emptyDate :: PartialDate
+emptyDate = PartialDate Nothing Nothing Nothing
 
 
 --------------------------------------------------------------------------------
 {-| A MusicBrainz MBID, which is a 'UUID' but scoped to a specific entity
 type. -}
 newtype MBID a = MBID UUID
-  deriving (Eq, Show)
+  deriving (Eq, Show, Typeable)
 
 parseMbid :: String -> Maybe (MBID a)
 parseMbid = fmap MBID . fromString
+
+
+--------------------------------------------------------------------------------
+{-| Represents a view of a versioned MusicBrainz \'core\' entity at a specific
+point in time (a specific 'Revision'). -}
+data CoreEntity a = CoreEntity
+    { coreMbid :: MBID a
+    , coreRevision :: Ref (Revision a)
+    , coreData :: a
+    }
+
+deriving instance (Eq a, Show a) => Eq (CoreEntity a)
+deriving instance (Eq a, Show a) => Show (CoreEntity a)
+
+--------------------------------------------------------------------------------
+{-| A revision is a version of an entity at a specific point in time. The type
+@a@ indicates what type of entity this is a revision of (e.g., @Revision Artist@
+means a specific revision of an 'Artist'). -}
+data Revision a
+
+data instance Ref (Revision a) = RevisionRef Int
+deriving instance Eq (Ref (Revision a))
+deriving instance Show (Ref (Revision a))
