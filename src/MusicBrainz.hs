@@ -7,7 +7,6 @@ module MusicBrainz
       -- * Convenience database functions
     , query
 
-    , module MusicBrainz.Schema
     , module MusicBrainz.Types
     ) where
 
@@ -18,7 +17,7 @@ import Control.Monad.Reader.Class (MonadReader, ask)
 import Database.PostgreSQL.Simple (Connection, ConnectInfo, Query, connect)
 import Database.PostgreSQL.Simple.FromRow (FromRow)
 import Database.PostgreSQL.Simple.ToRow (ToRow)
-import MusicBrainz.Schema
+import MusicBrainz.Schema ()
 import MusicBrainz.Types
 
 import qualified Database.PostgreSQL.Simple as PG
@@ -38,7 +37,7 @@ newtype MusicBrainz a = MusicBrainz (ReaderT Context IO a)
 runMB :: ConnectInfo -> MusicBrainz a -> IO a
 runMB connArgs (MusicBrainz actions) = do
   conn <- connect connArgs
-  runReaderT actions (Context conn)
+  runReaderT actions Context { mbDb = conn }
 
 
 --------------------------------------------------------------------------------
