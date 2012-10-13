@@ -22,6 +22,10 @@ To install just the dependencies needed to run `musicbrainz-data`, run:
 
 `cabal install --only-dependencies`.
 
+If you plan to run tests, you will need to run:
+
+`cabal install --enable-tests --only-dependencies`.
+
 ## Building
 
 To build, simply run `cabal build`.
