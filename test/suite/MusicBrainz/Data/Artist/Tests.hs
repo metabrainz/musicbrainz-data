@@ -13,11 +13,11 @@ tests :: [Test]
 tests = [ testFindLatestByMbid ]
 
 testFindLatestByMbid :: Test
-testFindLatestByMbid = testCase "findLatestByMbid when artist exists" $ do
+testFindLatestByMbid = testCase "findLatestByMbid when artist exists" $
   mbTest (findLatestByMbid knownArtistId) >>= (@?= expected)
   where
     knownArtistId = fromJust $ parseMbid "206094f7-eea0-4f37-a4c2-97c506f5f560"
-    expected = Just $
+    expected = Just
       CoreEntity { coreMbid = knownArtistId
                  , coreRevision = RevisionRef 1
                  , coreData =

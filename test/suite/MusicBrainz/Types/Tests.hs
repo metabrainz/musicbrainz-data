@@ -2,7 +2,6 @@ module MusicBrainz.Types.Tests
     ( tests ) where
 
 import Control.Applicative
-import Data.Maybe (isJust)
 import Test.Framework
 import Test.Framework.Providers.QuickCheck2
 import Test.QuickCheck
@@ -21,5 +20,5 @@ tests = [ testParseMbid ]
 {-| Converting a UUID into a string and parsing it produces an MBID, whos
 inner UUID is the same as the input. -}
 testParseMbid :: Test
-testParseMbid = testProperty "Can parse UUIDs as MBIDs" $ do
+testParseMbid = testProperty "Can parse UUIDs as MBIDs" $
   \uuid -> parseMbid (UUID.toString uuid) == Just (MBID uuid)

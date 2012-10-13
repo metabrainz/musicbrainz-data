@@ -17,7 +17,7 @@ module MusicBrainz.Types
     , MBID(..)
     , parseMbid
     , PartialDate(..)
-    , emptyDate
+    , emptyDate, isEmpty
 
       -- * Versioning
     , CoreEntity(..)
