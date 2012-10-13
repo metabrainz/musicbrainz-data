@@ -13,7 +13,7 @@ module MusicBrainz
 
       -- * Convenience database functions
     , defaultConnectInfo, connectDatabase, connectUser
-    , query
+    , query, query_
 
       -- * Re-exported modules
     , module MusicBrainz.Types
@@ -59,6 +59,12 @@ runMb connArgs (MusicBrainz actions) = do
 {-| Run a query, using the active database connection. -}
 query :: (FromRow a, ToRow p) => Query -> p -> MusicBrainz [a]
 query sql params = withMBConn $ \conn -> PG.query conn sql params
+
+{-| Run a query that takes no parameters, using the active database
+connection. -}
+query_ :: FromRow a => Query -> MusicBrainz [a]
+query_ sql = withMBConn $ \conn -> PG.query_ conn sql
+
 
 withMBConn :: (Connection -> IO a) -> MusicBrainz a
 withMBConn action = do

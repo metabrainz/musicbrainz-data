@@ -2,9 +2,7 @@
 module MusicBrainz.Data.Artist.Tests ( tests ) where
 
 import Data.Maybe (fromJust)
-import Test.Framework
-import Test.Framework.Providers.HUnit
-import Test.HUnit hiding (Test)
+import Test.MusicBrainz
 
 import MusicBrainz
 import MusicBrainz.Data.Artist
@@ -21,20 +19,16 @@ testFindLatestByMbid = testCase "findLatestByMbid when artist exists" $
       CoreEntity { coreMbid = knownArtistId
                  , coreRevision = RevisionRef 1
                  , coreData =
-                     Artist { artistName = "Massive Attack"
-                            , artistSortName = "Massive Attack"
-                            , artistComment = ""
-                            , artistBeginDate = emptyDate
-                            , artistEndDate = emptyDate
-                            , artistEnded = False
-                            , artistGender = Nothing
-                            , artistCountry = Nothing
-                            , artistType = Nothing
+                     Artist { artistName = "Freddie Mercury"
+                            , artistSortName = "Mercury, Freddie"
+                            , artistComment = "Of queen"
+                            , artistBeginDate =
+                                PartialDate (Just 1946) (Just 9) (Just 5)
+                            , artistEndDate =
+                                PartialDate (Just 1991) (Just 11) (Just 24)
+                            , artistEnded = True
+                            , artistGender = Just $ GenderRef 1
+                            , artistCountry = Just $ CountryRef 1
+                            , artistType = Just $ ArtistTypeRef 1
                             }
                  }
-
-mbTest :: MusicBrainz a -> IO a
-mbTest = runMb databaseSettings
-  where databaseSettings = defaultConnectInfo { connectDatabase = "musicbrainz_nes"
-                                              , connectUser = "musicbrainz"
-                                              }

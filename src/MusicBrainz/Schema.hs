@@ -1,16 +1,17 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-| Contains instances of 'FromField', 'FromRow', 'ToField' and 'ToRow' to
 serialize to the MusicBrainz PostgreSQL database, and retrieve data from
 it. This module doesn't really export much, but importing it will bring in
 many type classes instances. 'MusicBrainz' itself re-exports this module,
-so you should usually import that.-}
+so you should usually import that. -}
 module MusicBrainz.Schema () where
 
 import Blaze.ByteString.Builder.Char8 (fromString)
 import Control.Applicative
 import Data.Typeable (Typeable)
-import Database.PostgreSQL.Simple.FromField (FromField(..), ResultError(..), returnError)
+import Database.PostgreSQL.Simple.FromField (FromField(..), ResultError(..), returnError, typename)
 import Database.PostgreSQL.Simple.FromRow (FromRow(..), field)
 import Database.PostgreSQL.Simple.ToField (ToField(..), Action(..), inQuotes)
 import MusicBrainz.Types
@@ -54,9 +55,13 @@ instance FromField (Ref Gender) where
 
 instance Typeable a => FromField (MBID a) where
   fromField f Nothing = returnError UnexpectedNull f "MBID cannot be null"
-  fromField f (Just v) = case UUID.fromString (LBS.unpack v) of
-    Just uuid -> return $ MBID uuid
-    Nothing -> returnError ConversionFailed f "Not a valid MBID"
+  fromField f (Just v) | typename f /= "uuid" = incompatible
+                       | otherwise            = tryParse
+    where
+      incompatible = returnError Incompatible f "MBIDs must be PG type 'uuid'"
+      tryParse = case UUID.fromString (LBS.unpack v) of
+        Just uuid -> return $ MBID uuid
+        Nothing -> returnError ConversionFailed f "Not a valid MBID"
 
 instance FromField (Ref (Revision a)) where
   fromField f v = RevisionRef <$> fromField f v
