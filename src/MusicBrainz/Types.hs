@@ -4,6 +4,8 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TypeFamilies #-}
+
+{-| Definitions of all types used within MusicBrainz. -}
 module MusicBrainz.Types
     ( -- * MusicBrainz entities
       Artist(..)
@@ -70,8 +72,11 @@ deriving instance Show (Ref ArtistType)
 
 
 --------------------------------------------------------------------------------
+{-| A country where artists resides, labels are founded, releases are released
+in, etc. -}
 data Country = Country
     { countryIsoCode :: Text
+      -- ^ The ISO-3166 code for this country
     , countryName :: Text
     }
   deriving (Eq, Show)
@@ -102,9 +107,13 @@ data PartialDate = PartialDate
   deriving (Eq, Show)
 
 
+{-| A 'PartialDate' with no year, month or day. -}
 emptyDate :: PartialDate
 emptyDate = PartialDate Nothing Nothing Nothing
 
+
+isEmpty :: PartialDate -> Bool
+isEmpty = (== emptyDate)
 
 --------------------------------------------------------------------------------
 {-| A MusicBrainz MBID, which is a 'UUID' but scoped to a specific entity
@@ -112,6 +121,9 @@ type. -}
 newtype MBID a = MBID UUID
   deriving (Eq, Show, Typeable)
 
+
+{-| Attempt to parse an 'MBID' from a 'String'. If parsing fails, 'Nothing'
+is returned. -}
 parseMbid :: String -> Maybe (MBID a)
 parseMbid = fmap MBID . fromString
 

@@ -1,5 +1,10 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-| Contains instances of 'FromField', 'FromRow', 'ToField' and 'ToRow' to
+serialize to the MusicBrainz PostgreSQL database, and retrieve data from
+it. This module doesn't really export much, but importing it will bring in
+many type classes instances. 'MusicBrainz' itself re-exports this module,
+so you should usually import that.-}
 module MusicBrainz.Schema () where
 
 import Blaze.ByteString.Builder.Char8 (fromString)

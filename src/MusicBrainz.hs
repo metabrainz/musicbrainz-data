@@ -1,13 +1,21 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-| This module provides the 'MusicBrainz' monad for interacting with various
+MusicBrainz services, along with convenience re-exports of 'MusicBrainz.Types'
+and other very commonly used types, functions and values. -}
 module MusicBrainz
     ( -- * The MusicBrainz monad
       MusicBrainz
-    , runMB
+    , runMb
+      -- ** Context available in the MusicBrainz monad
+    , Context
+    , mbDb
+
 
       -- * Convenience database functions
     , defaultConnectInfo, connectDatabase, connectUser
     , query
 
+      -- * Re-exported modules
     , module MusicBrainz.Types
     ) where
 
@@ -25,7 +33,10 @@ import qualified Database.PostgreSQL.Simple as PG
 
 --------------------------------------------------------------------------------
 {-| Context available when executing 'MusicBrainz' actions. -}
-data Context = Context { mbDb :: Connection }
+data Context = Context
+    { mbDb :: Connection
+      -- ^ The underlying PostgreSQL 'Connection'.
+    }
 
 
 {-| The MusicBrainz monad allows you to run queries against the MusicBrainz
@@ -34,9 +45,12 @@ newtype MusicBrainz a = MusicBrainz (ReaderT Context IO a)
   deriving (Monad, Functor, Applicative, MonadReader Context, MonadIO)
 
 
-{-| Execute MusicBrainz actions in the IO monad. -}
-runMB :: ConnectInfo -> MusicBrainz a -> IO a
-runMB connArgs (MusicBrainz actions) = do
+{-| Execute MusicBrainz actions in the IO monad. This will open a connection
+to the MusicBrainz database, and can be quite expensive if the target doesn't
+have pgBouncer running. If this is the case, you should try and call this as
+/late/ as possible. -}
+runMb :: ConnectInfo -> MusicBrainz a -> IO a
+runMb connArgs (MusicBrainz actions) = do
   conn <- connect connArgs
   runReaderT actions Context { mbDb = conn }
 

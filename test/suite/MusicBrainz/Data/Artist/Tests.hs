@@ -1,7 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 module MusicBrainz.Data.Artist.Tests ( tests ) where
 
-import Control.Applicative
 import Data.Maybe (fromJust)
 import Test.Framework
 import Test.Framework.Providers.HUnit
@@ -35,7 +34,7 @@ testFindLatestByMbid = testCase "findLatestByMbid when artist exists" $ do
                  }
 
 mbTest :: MusicBrainz a -> IO a
-mbTest = runMB databaseSettings
+mbTest = runMb databaseSettings
   where databaseSettings = defaultConnectInfo { connectDatabase = "musicbrainz_nes"
                                               , connectUser = "musicbrainz"
                                               }
