@@ -1,3 +1,5 @@
+{-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE OverloadedStrings #-}
@@ -14,31 +16,11 @@ import Data.Typeable (Typeable)
 import Database.PostgreSQL.Simple.FromField (FromField(..), ResultError(..), returnError, typename)
 import Database.PostgreSQL.Simple.FromRow (FromRow(..), field)
 import Database.PostgreSQL.Simple.ToField (ToField(..), Action(..), inQuotes)
+import Database.PostgreSQL.Simple.ToRow (ToRow(..))
 import MusicBrainz.Types
 
 import qualified Data.ByteString.Char8 as LBS
 import qualified Data.UUID as UUID
-
---------------------------------------------------------------------------------
-instance (FromRow a, Typeable a) => FromRow (CoreEntity a) where
-  fromRow = CoreEntity     -- Core entity's MBID
-                       <$> field
-                           -- The revision reference
-                       <*> field
-                           -- Delegetate to the actual entity to parse its data.
-                       <*> fromRow
-
-
-
-instance FromRow Artist where
-  fromRow = Artist <$> field <*> field <*> field <*> fromRow
-                   <*> fromRow <*> field <*> field <*> field
-                   <*> field
-
-
-instance FromRow PartialDate where
-  fromRow = PartialDate <$> field <*> field <*> field
-
 
 --------------------------------------------------------------------------------
 instance FromField (Ref ArtistType) where
@@ -47,6 +29,10 @@ instance FromField (Ref ArtistType) where
 
 instance FromField (Ref Country) where
   fromField f v = CountryRef <$> fromField f v
+
+
+instance FromField (Ref Editor) where
+  fromField f v = EditorRef <$> fromField f v
 
 
 instance FromField (Ref Gender) where
@@ -63,13 +49,83 @@ instance Typeable a => FromField (MBID a) where
         Just uuid -> return $ MBID uuid
         Nothing -> returnError ConversionFailed f "Not a valid MBID"
 
+
 instance FromField (Ref (Revision a)) where
   fromField f v = RevisionRef <$> fromField f v
+
+
+--------------------------------------------------------------------------------
+instance (FromRow a, Typeable a) => FromRow (CoreEntity a) where
+  fromRow = CoreEntity     -- Core entity's MBID
+                       <$> field
+                           -- The revision reference
+                       <*> field
+                           -- Delegetate to the actual entity to parse its data.
+                       <*> fromRow
+
+
+instance FromRow Artist where
+  fromRow = Artist <$> field <*> field <*> field <*> fromRow
+                   <*> fromRow <*> field <*> field <*> field
+                   <*> field
+
+
+instance FromRow Editor where
+  fromRow = Editor <$> field
+
+
+instance (FromField (Ref a), FromRow a) => FromRow (Entity a) where
+  fromRow = Entity     -- Entity reference
+                   <$> field
+                       -- Delegetate to the actual entity to parse its data.
+                   <*> fromRow
+
+
+instance FromRow PartialDate where
+  fromRow = PartialDate <$> field <*> field <*> field
+
 
 --------------------------------------------------------------------------------
 instance ToField (MBID a) where
   toField (MBID mbid) = Plain $ inQuotes (fromString $ UUID.toString mbid)
 
 
+instance ToField (Ref ArtistType) where
+  toField (ArtistTypeRef id') = toField id'
+
+
+instance ToField (Ref Country) where
+  toField (CountryRef id') = toField id'
+
+
+instance ToField (Ref Editor) where
+  toField (EditorRef id') = toField id'
+
+
+instance ToField (Ref Gender) where
+  toField (GenderRef id') = toField id'
+
+
 instance ToField (Ref (Revision a)) where
   toField (RevisionRef id') = toField id'
+
+
+--------------------------------------------------------------------------------
+instance ToRow Artist where
+  toRow Artist{..} = [ toField artistName
+                     , toField artistSortName
+                     , toField artistComment
+                     ]
+                     ++ toRow artistBeginDate
+                     ++ toRow artistEndDate
+                     ++
+                     [
+                       toField artistEnded
+                     , toField artistGender
+                     , toField artistType
+                     , toField artistCountry
+                     ]
+
+
+instance ToRow PartialDate where
+  toRow (PartialDate y m d) = map toField [y, m, d]

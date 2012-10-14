@@ -11,6 +11,7 @@ module MusicBrainz.Types
       Artist(..)
     , ArtistType(..)
     , Country(..)
+    , Editor(..)
     , Gender(..)
 
       -- * Various types of data used in entity attributes
@@ -35,14 +36,6 @@ import Data.UUID
 {-| A reference to a specific entity. In the database, this a foreign key
 relationship to an entity of type @a@. -}
 data family Ref a
-
-
-{-| An 'Entity' is something that has been loaded from the database. It cotains
-both data about itself (in @entityData@), and also a reference to itself (in
-@entityRef@) so that other data/entities can refer to it. -}
-data Entity a = Entity { entityData :: a
-                       , entityRef :: Ref a
-                       }
 
 
 --------------------------------------------------------------------------------
@@ -84,6 +77,22 @@ data Country = Country
 data instance Ref Country = CountryRef Int
 deriving instance Eq (Ref Country)
 deriving instance Show (Ref Country)
+
+
+--------------------------------------------------------------------------------
+{-| A MusicBrainz editor who makes changes to the database. -}
+data Editor = Editor { editorName :: Text }
+
+data instance Ref Editor = EditorRef Int
+
+
+--------------------------------------------------------------------------------
+{-| An 'Entity' is something that has been loaded from the database. It cotains
+both data about itself (in @entityData@), and also a reference to itself (in
+@entityRef@) so that other data/entities can refer to it. -}
+data Entity a = Entity { entityRef :: Ref a
+                       , entityData :: a
+                       }
 
 
 --------------------------------------------------------------------------------
