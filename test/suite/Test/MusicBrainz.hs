@@ -17,7 +17,7 @@ import Control.Exception
 import Test.Framework
 import Test.Framework.Providers.HUnit
 import Test.Framework.Providers.QuickCheck2
-import Test.HUnit hiding (Test, Testable)
+import Test.HUnit hiding (Label, Test, Testable)
 import Test.QuickCheck hiding (Testable)
 
 import MusicBrainz

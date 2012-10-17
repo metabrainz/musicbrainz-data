@@ -13,6 +13,8 @@ module MusicBrainz.Types
     , Country(..)
     , Editor(..)
     , Gender(..)
+    , Label(..)
+    , LabelType(..)
 
       -- * Various types of data used in entity attributes
     , MBID(..)
@@ -104,6 +106,31 @@ data Gender = Gender
 data instance Ref Gender = GenderRef Int
 deriving instance Eq (Ref Gender)
 deriving instance Show (Ref Gender)
+
+
+--------------------------------------------------------------------------------
+{-| A label who is repsonsible for releasing/distributing music. -}
+data Label = Label { labelName :: Text
+                   , labelSortName :: Text
+                   , labelComment :: Text
+                   , labelBeginDate :: PartialDate
+                   , labelEndDate :: PartialDate
+                   , labelEnded :: Bool
+                   , labelType :: Maybe (Ref LabelType)
+                   , labelCode :: Maybe Integer
+                   }
+  deriving (Eq, Show, Typeable)
+
+
+--------------------------------------------------------------------------------
+{-| The definition of a type of an label (e.g., \"person\" or \"group\") . -}
+data LabelType = LabelType
+    { labelTypeName :: Text }
+  deriving (Eq, Show)
+
+data instance Ref LabelType = LabelTypeRef Int
+deriving instance Eq (Ref LabelType)
+deriving instance Show (Ref LabelType)
 
 
 --------------------------------------------------------------------------------

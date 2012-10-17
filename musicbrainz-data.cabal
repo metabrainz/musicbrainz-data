@@ -23,6 +23,7 @@ Library
   exposed-modules:
     MusicBrainz
     MusicBrainz.Data.Artist
+    MusicBrainz.Data.Label
     MusicBrainz.Data.Editor
     MusicBrainz.Data.FindLatest
     MusicBrainz.Schema

@@ -39,6 +39,10 @@ instance FromField (Ref Gender) where
   fromField f v = GenderRef <$> fromField f v
 
 
+instance FromField (Ref LabelType) where
+  fromField f v = LabelTypeRef <$> fromField f v
+
+
 instance Typeable a => FromField (MBID a) where
   fromField f Nothing = returnError UnexpectedNull f "MBID cannot be null"
   fromField f (Just v) | typename f /= "uuid" = incompatible
@@ -79,6 +83,11 @@ instance (FromField (Ref a), FromRow a) => FromRow (Entity a) where
                    <$> field
                        -- Delegetate to the actual entity to parse its data.
                    <*> fromRow
+
+
+instance FromRow Label where
+  fromRow = Label <$> field <*> field <*> field <*> fromRow <*> fromRow
+                  <*> field <*> field <*> field
 
 
 instance FromRow PartialDate where
