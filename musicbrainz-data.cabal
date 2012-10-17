@@ -24,6 +24,7 @@ Library
     MusicBrainz
     MusicBrainz.Data.Artist
     MusicBrainz.Data.Editor
+    MusicBrainz.Data.FindLatest
     MusicBrainz.Schema
     MusicBrainz.Types
   ghc-options: -Wall -fwarn-tabs -funbox-strict-fields -O2

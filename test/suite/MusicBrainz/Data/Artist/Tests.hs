@@ -6,16 +6,17 @@ import Test.MusicBrainz
 
 import MusicBrainz
 import MusicBrainz.Data.Artist
+import MusicBrainz.Data.FindLatest
 import MusicBrainz.Data.Editor (findEditorByName)
 
 tests :: [Test]
-tests = [ testFindLatestByMbid
+tests = [ testFindLatest
         , testCreate
         ]
 
-testFindLatestByMbid :: Test
-testFindLatestByMbid = testCase "findLatestByMbid when artist exists" $
-  mbTest (findLatestByMbid knownArtistId) >>= (@?= expected)
+testFindLatest :: Test
+testFindLatest = testCase "findLatest when artist exists" $
+  mbTest (findLatest knownArtistId) >>= (@?= expected)
   where
     knownArtistId = fromJust $ parseMbid "206094f7-eea0-4f37-a4c2-97c506f5f560"
     expected = Just
@@ -42,10 +43,9 @@ testCreate = testCase "create a new artist" $ do
   Just created <- mbTest $ do
     Just editor <- findEditorByName "acid2"
     created <-create (entityRef editor) expected
-    findLatestByMbid (coreMbid created)
+    findLatest (coreMbid created)
   coreData created @?= expected
   where
-    knownArtistId = fromJust $ parseMbid "206094f7-eea0-4f37-a4c2-97c506f5f560"
     expected = Artist { artistName = "Darrel Fitton"
                       , artistSortName = "Fitton, Darrel"
                       , artistComment = "Performs as Bola"
