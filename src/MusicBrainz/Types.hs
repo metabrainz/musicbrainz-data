@@ -16,7 +16,7 @@ module MusicBrainz.Types
 
       -- * Various types of data used in entity attributes
     , MBID(..)
-    , parseMbid
+    , parseMbid, mbidToString
     , PartialDate(..)
     , emptyDate, isEmpty
 
@@ -136,6 +136,10 @@ is returned. -}
 parseMbid :: String -> Maybe (MBID a)
 parseMbid = fmap MBID . fromString
 
+
+{-| Convert an 'MBID' to a 'String'. -}
+mbidToString :: MBID a -> String
+mbidToString (MBID m) = toString m
 
 --------------------------------------------------------------------------------
 {-| Represents a view of a versioned MusicBrainz \'core\' entity at a specific

@@ -12,10 +12,14 @@ import MusicBrainz.Types
 instance Arbitrary UUID.UUID where
   arbitrary = UUID.fromWords <$> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary
 
+instance Arbitrary (MBID a) where
+  arbitrary = MBID <$> arbitrary
+
 tests :: [Test]
 tests = [ testGroup "MBID"
             [ testParseMbid
             , testParseInvalidMbid
+            , testMbidParseDisplay
             ]
         , testGroup "PartialDate"
             [ testEmptyPartialDates
@@ -32,6 +36,11 @@ testParseMbid = testProperty "Can parse UUIDs as MBIDs" $
 testParseInvalidMbid :: Test
 testParseInvalidMbid = testProperty "Non UUID strings do not parse" $
   \s -> isNothing (UUID.fromString s) ==> parseMbid s == Nothing
+
+
+testMbidParseDisplay :: Test
+testMbidParseDisplay = testProperty "parseMbid (mbidToString m) = Just m" $
+  \mbid -> parseMbid (mbidToString mbid) == Just mbid
 
 --------------------------------------------------------------------------------
 testNonEmptyPartialDates :: Test
