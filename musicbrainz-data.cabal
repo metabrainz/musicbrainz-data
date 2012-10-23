@@ -23,9 +23,10 @@ Library
   exposed-modules:
     MusicBrainz
     MusicBrainz.Data.Artist
-    MusicBrainz.Data.Label
     MusicBrainz.Data.Editor
     MusicBrainz.Data.FindLatest
+    MusicBrainz.Data.Label
+    MusicBrainz.Data.Recording
     MusicBrainz.Schema
     MusicBrainz.Types
   ghc-options: -Wall -fwarn-tabs -funbox-strict-fields -O2

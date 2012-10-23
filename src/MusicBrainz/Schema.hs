@@ -23,6 +23,10 @@ import qualified Data.ByteString.Char8 as LBS
 import qualified Data.UUID as UUID
 
 --------------------------------------------------------------------------------
+instance FromField (Ref ArtistCredit) where
+  fromField f v = ArtistCreditRef <$> fromField f v
+
+
 instance FromField (Ref ArtistType) where
   fromField f v = ArtistTypeRef <$> fromField f v
 
@@ -93,6 +97,9 @@ instance FromRow Label where
 instance FromRow PartialDate where
   fromRow = PartialDate <$> field <*> field <*> field
 
+
+instance FromRow Recording where
+  fromRow = Recording <$> field <*> field <*> field <*> field
 
 --------------------------------------------------------------------------------
 instance ToField (MBID a) where

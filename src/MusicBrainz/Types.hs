@@ -9,12 +9,14 @@
 module MusicBrainz.Types
     ( -- * MusicBrainz entities
       Artist(..)
+    , ArtistCredit(..)
     , ArtistType(..)
     , Country(..)
     , Editor(..)
     , Gender(..)
     , Label(..)
     , LabelType(..)
+    , Recording(..)
 
       -- * Various types of data used in entity attributes
     , MBID(..)
@@ -54,6 +56,17 @@ data Artist = Artist
     , artistCountry :: Maybe (Ref Country)
     }
   deriving (Eq, Show, Typeable)
+
+
+--------------------------------------------------------------------------------
+{-| An artist credit is an ordered lists of artists, intercalated with free text
+strings and with each artist having a a credited name (possibly different from
+the actual artists name. -}
+data ArtistCredit
+
+data instance Ref ArtistCredit = ArtistCreditRef Int
+deriving instance Eq (Ref ArtistCredit)
+deriving instance Show (Ref ArtistCredit)
 
 --------------------------------------------------------------------------------
 {-| The definition of a type of an artist (e.g., \"person\" or \"group\") . -}
@@ -134,7 +147,23 @@ deriving instance Show (Ref LabelType)
 
 
 --------------------------------------------------------------------------------
-{-| A partial date consisting of an optional year, month and day. -}
+{-| A recording in MusicBrainz (which is realised on 'Tracklist' as a
+'Track'. -}
+data Recording = Recording
+    { recordingName :: Text
+    , recordingComment :: Text
+    , recordingArtistCredit :: Ref (ArtistCredit)
+    , recordingDuration :: Int
+    }
+  deriving (Eq, Show, Typeable)
+
+data instance Ref Recording = RecordingRef Int
+deriving instance Eq (Ref Recording)
+deriving instance Show (Ref Recording)
+
+
+--------------------------------------------------------------------------------
+{-| A partial date consisting of an optional year, month and day.-}
 data PartialDate = PartialDate
     { dateYear :: Maybe Int
     , dateMonth :: Maybe Int
