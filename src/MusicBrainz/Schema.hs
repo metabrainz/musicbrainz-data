@@ -47,6 +47,26 @@ instance FromField (Ref LabelType) where
   fromField f v = LabelTypeRef <$> fromField f v
 
 
+instance FromField (Ref Language) where
+  fromField f v = LanguageRef <$> fromField f v
+
+
+instance FromField (Ref ReleaseGroup) where
+  fromField f v = ReleaseGroupRef <$> fromField f v
+
+
+instance FromField (Ref ReleasePackaging) where
+  fromField f v = ReleasePackagingRef <$> fromField f v
+
+
+instance FromField (Ref ReleaseStatus) where
+  fromField f v = ReleaseStatusRef <$> fromField f v
+
+
+instance FromField (Ref Script) where
+  fromField f v = ScriptRef <$> fromField f v
+
+
 instance Typeable a => FromField (MBID a) where
   fromField f Nothing = returnError UnexpectedNull f "MBID cannot be null"
   fromField f (Just v) | typename f /= "uuid" = incompatible
@@ -100,6 +120,12 @@ instance FromRow PartialDate where
 
 instance FromRow Recording where
   fromRow = Recording <$> field <*> field <*> field <*> field
+
+
+instance FromRow Release where
+  fromRow = Release <$> field <*> field <*> field <*> field <*> fromRow
+                    <*> field <*> field <*> field <*> field <*> field
+
 
 --------------------------------------------------------------------------------
 instance ToField (MBID a) where

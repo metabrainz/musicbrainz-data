@@ -9,14 +9,20 @@
 module MusicBrainz.Types
     ( -- * MusicBrainz entities
       Artist(..)
-    , ArtistCredit(..)
+    , ArtistCredit
     , ArtistType(..)
     , Country(..)
     , Editor(..)
     , Gender(..)
     , Label(..)
     , LabelType(..)
+    , Language
     , Recording(..)
+    , Release(..)
+    , ReleaseGroup
+    , ReleasePackaging
+    , ReleaseStatus
+    , Script
 
       -- * Various types of data used in entity attributes
     , MBID(..)
@@ -147,6 +153,14 @@ deriving instance Show (Ref LabelType)
 
 
 --------------------------------------------------------------------------------
+{-| A language that is written or spoken. -}
+data Language
+
+data instance Ref Language = LanguageRef Int
+deriving instance Eq (Ref Language)
+deriving instance Show (Ref Language)
+
+--------------------------------------------------------------------------------
 {-| A recording in MusicBrainz (which is realised on 'Tracklist' as a
 'Track'. -}
 data Recording = Recording
@@ -160,6 +174,70 @@ data Recording = Recording
 data instance Ref Recording = RecordingRef Int
 deriving instance Eq (Ref Recording)
 deriving instance Show (Ref Recording)
+
+
+--------------------------------------------------------------------------------
+{-| A release in MusicBrainz is a physical product that people can purchase,
+and belongs to a 'ReleaseGroup' and consists of some information along with
+multiple 'Medium's. -}
+data Release = Release
+    { releaseName :: Text
+    , releaseComment :: Text
+    , releaseArtistCredit :: Ref (ArtistCredit)
+    , releaseReleaseGroup :: Ref (ReleaseGroup)
+    , releaseDate :: PartialDate
+    , releaseCountry :: Maybe (Ref Country)
+    , releaseScript :: Maybe (Ref Script)
+    , releaseLanguage :: Maybe (Ref Language)
+    , releasePackaging :: Maybe (Ref ReleasePackaging)
+    , releaseStatus :: Maybe (Ref ReleaseStatus)
+    }
+  deriving (Eq, Show, Typeable)
+
+data instance Ref Release = ReleaseRef Int
+deriving instance Eq (Ref Release)
+deriving instance Show (Ref Release)
+
+
+--------------------------------------------------------------------------------
+{-| A release group is an abstract MusicBrainz concept which groups multiple
+'Release's logically together. For example, a release group might contain the
+various different formats of albums, such as the vinyl release and the CD
+release. -}
+data ReleaseGroup = ReleaseGroup
+  deriving (Eq, Show, Typeable)
+
+data instance Ref ReleaseGroup = ReleaseGroupRef (MBID ReleaseGroup)
+deriving instance Eq (Ref ReleaseGroup)
+deriving instance Show (Ref ReleaseGroup)
+
+
+--------------------------------------------------------------------------------
+{-| The type of packaging a release came in. -}
+data ReleasePackaging
+
+data instance Ref ReleasePackaging = ReleasePackagingRef Int
+deriving instance Eq (Ref ReleasePackaging)
+deriving instance Show (Ref ReleasePackaging)
+
+
+--------------------------------------------------------------------------------
+{-| A release status indicates whether a 'Release' was released official,
+promotionally, as a bootleg, etc. -}
+data ReleaseStatus
+
+data instance Ref ReleaseStatus = ReleaseStatusRef Int
+deriving instance Eq (Ref ReleaseStatus)
+deriving instance Show (Ref ReleaseStatus)
+
+
+--------------------------------------------------------------------------------
+{-| The script that text is written. -}
+data Script
+
+data instance Ref Script = ScriptRef Int
+deriving instance Eq (Ref Script)
+deriving instance Show (Ref Script)
 
 
 --------------------------------------------------------------------------------
