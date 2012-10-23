@@ -1,4 +1,3 @@
-{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE EmptyDataDecls #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,7 +20,6 @@ module MusicBrainz.Types
     , Recording(..)
     , Release(..)
     , ReleaseGroup(..)
-    , ReleaseGroupTypeClass(..)
     , ReleaseGroupType(..)
     , ReleasePackaging
     , ReleaseStatus
@@ -221,9 +219,7 @@ deriving instance Show (Ref ReleaseGroup)
 
 
 --------------------------------------------------------------------------------
-{-| The 'class' of a release group type indicates whether it is primary or
-secondary. -}
-data ReleaseGroupTypeClass = Primary | Secondary
+data Primary
 
 {-| A release group type indicates the various types a release group can be.
 For example, one release group type combination might be 'Album + Remix' to
@@ -231,7 +227,7 @@ indicate a remix album.
 
 The parameter to 'ReleaseGroupType' indicates whether the release group
 type is primary or secondary (it is kinded as 'ReleaseGroupTypeClass'. -}
-data ReleaseGroupType (a :: ReleaseGroupTypeClass) = ReleaseGroupType
+data ReleaseGroupType a = ReleaseGroupType
     { releaseGroupTypeName :: Text }
   deriving (Eq, Show)
 
