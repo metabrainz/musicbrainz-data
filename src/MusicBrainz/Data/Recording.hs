@@ -1,5 +1,6 @@
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-| Functions for interacting with 'Recording's in the MusicBrainz database. -}
 module MusicBrainz.Data.Recording
     ( ) where
 

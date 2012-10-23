@@ -283,6 +283,7 @@ emptyDate :: PartialDate
 emptyDate = PartialDate Nothing Nothing Nothing
 
 
+{-| Determinate if a 'PartialDate' is the empty date (with no fields set). -}
 isEmpty :: PartialDate -> Bool
 isEmpty = (== emptyDate)
 

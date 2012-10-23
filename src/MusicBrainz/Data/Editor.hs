@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
+{-| Functions for interacting with 'Editor's in the MusicBrainz database. -}
 module MusicBrainz.Data.Editor
     ( -- * Finding editors
       findEditorByName
@@ -12,6 +13,7 @@ import Database.PostgreSQL.Simple hiding (query)
 import Database.PostgreSQL.Simple.SqlQQ
 import MusicBrainz
 
+{-| Look up an editor by their name. -}
 findEditorByName :: Text -> MusicBrainz (Maybe (Entity Editor))
 findEditorByName name =
   listToMaybe <$> query [sql| SELECT editor_id, name FROM editor WHERE name = ? |]

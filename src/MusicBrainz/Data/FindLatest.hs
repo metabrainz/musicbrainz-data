@@ -1,3 +1,4 @@
+{-| Provides the 'FindLatest' type class. -}
 module MusicBrainz.Data.FindLatest
     ( FindLatest(..)
     ) where
