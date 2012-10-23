@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE EmptyDataDecls #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,7 +20,9 @@ module MusicBrainz.Types
     , Language
     , Recording(..)
     , Release(..)
-    , ReleaseGroup
+    , ReleaseGroup(..)
+    , ReleaseGroupTypeClass(..)
+    , ReleaseGroupType(..)
     , ReleasePackaging
     , ReleaseStatus
     , Script
@@ -205,11 +208,36 @@ deriving instance Show (Ref Release)
 various different formats of albums, such as the vinyl release and the CD
 release. -}
 data ReleaseGroup = ReleaseGroup
+    { releaseGroupName :: Text
+    , releaseGroupComment :: Text
+    , releaseGroupArtistCredit :: Ref ArtistCredit
+    , releaseGroupPrimaryType :: Maybe (Ref (ReleaseGroupType Primary))
+    }
   deriving (Eq, Show, Typeable)
 
 data instance Ref ReleaseGroup = ReleaseGroupRef (MBID ReleaseGroup)
 deriving instance Eq (Ref ReleaseGroup)
 deriving instance Show (Ref ReleaseGroup)
+
+
+--------------------------------------------------------------------------------
+{-| The 'class' of a release group type indicates whether it is primary or
+secondary. -}
+data ReleaseGroupTypeClass = Primary | Secondary
+
+{-| A release group type indicates the various types a release group can be.
+For example, one release group type combination might be 'Album + Remix' to
+indicate a remix album.
+
+The parameter to 'ReleaseGroupType' indicates whether the release group
+type is primary or secondary (it is kinded as 'ReleaseGroupTypeClass'. -}
+data ReleaseGroupType (a :: ReleaseGroupTypeClass) = ReleaseGroupType
+    { releaseGroupTypeName :: Text }
+  deriving (Eq, Show)
+
+data instance Ref (ReleaseGroupType a) = ReleaseGroupTypeRef Int
+deriving instance Eq (Ref (ReleaseGroupType a))
+deriving instance Show (Ref (ReleaseGroupType a))
 
 
 --------------------------------------------------------------------------------

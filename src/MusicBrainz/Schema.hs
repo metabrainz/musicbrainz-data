@@ -55,6 +55,10 @@ instance FromField (Ref ReleaseGroup) where
   fromField f v = ReleaseGroupRef <$> fromField f v
 
 
+instance FromField (Ref (ReleaseGroupType a)) where
+  fromField f v = ReleaseGroupTypeRef <$> fromField f v
+
+
 instance FromField (Ref ReleasePackaging) where
   fromField f v = ReleasePackagingRef <$> fromField f v
 
@@ -126,6 +130,9 @@ instance FromRow Release where
   fromRow = Release <$> field <*> field <*> field <*> field <*> fromRow
                     <*> field <*> field <*> field <*> field <*> field
 
+
+instance FromRow ReleaseGroup where
+  fromRow = ReleaseGroup <$> field <*> field <*> field <*> field
 
 --------------------------------------------------------------------------------
 instance ToField (MBID a) where

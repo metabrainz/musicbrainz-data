@@ -28,6 +28,7 @@ Library
     MusicBrainz.Data.Label
     MusicBrainz.Data.Recording
     MusicBrainz.Data.Release
+    MusicBrainz.Data.ReleaseGroup
     MusicBrainz.Schema
     MusicBrainz.Types
   ghc-options: -Wall -fwarn-tabs -funbox-strict-fields -O2

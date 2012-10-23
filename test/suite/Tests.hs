@@ -6,6 +6,7 @@ import qualified MusicBrainz.Data.Artist.Tests
 import qualified MusicBrainz.Data.Label.Tests
 import qualified MusicBrainz.Data.Recording.Tests
 import qualified MusicBrainz.Data.Release.Tests
+import qualified MusicBrainz.Data.ReleaseGroup.Tests
 import qualified MusicBrainz.Schema.Tests
 import qualified MusicBrainz.Types.Tests
 
@@ -20,6 +21,8 @@ main = defaultMain tests
                 MusicBrainz.Data.Recording.Tests.tests
             , testGroup "MusicBrainz.Data.Release"
                 MusicBrainz.Data.Release.Tests.tests
+            , testGroup "MusicBrainz.Data.ReleaseGroup"
+                MusicBrainz.Data.ReleaseGroup.Tests.tests
             , testGroup "MusicBrainz.Schema.Tests"
                 MusicBrainz.Schema.Tests.tests
             , testGroup "MusicBrainz.Types"
