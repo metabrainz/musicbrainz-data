@@ -80,7 +80,7 @@ transaction. -}
 withTransaction :: MusicBrainz a -> MusicBrainz a
 withTransaction action = do
   withMBConn (PG.beginMode PG.defaultTransactionMode)
-  r <- action `onException` (withMBConn PG.rollback)
+  r <- action `onException` withMBConn PG.rollback
   withMBConn PG.commit
   return r
 

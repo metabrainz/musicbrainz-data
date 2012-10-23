@@ -43,10 +43,10 @@ create editor artist = withTransaction $ do
   artistId <- reserveArtist
   revisionId <- newRevision >>= newArtistRevision artistId artistTreeId
   linkRevision artistId revisionId
-  return $ CoreEntity { coreMbid = artistId
-                      , coreRevision = revisionId
-                      , coreData = artist
-                      }
+  return CoreEntity { coreMbid = artistId
+                    , coreRevision = revisionId
+                    , coreData = artist
+                    }
   where
     selectId = fmap (fromOnly . head)
 
