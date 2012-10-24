@@ -208,10 +208,10 @@ CREATE TYPE relationship_endpoint AS ENUM (
 ALTER TYPE musicbrainz.relationship_endpoint OWNER TO musicbrainz;
 
 --
--- Name: find_or_insert_artist_data(text, text, text, smallint, smallint, smallint, smallint, smallint, smallint, boolean, integer, integer, integer); Type: FUNCTION; Schema: musicbrainz; Owner: musicbrainz
+-- Name: find_or_insert_artist_data(text, text, text, integer, integer, integer, integer, integer, integer, boolean, integer, integer, integer); Type: FUNCTION; Schema: musicbrainz; Owner: musicbrainz
 --
 
-CREATE FUNCTION find_or_insert_artist_data(in_name text, in_sort_name text, in_comment text, in_b_year smallint, in_b_month smallint, in_b_day smallint, in_e_year smallint, in_e_month smallint, in_e_day smallint, in_ended boolean, in_gender_id integer, in_type_id integer, in_country_id integer) RETURNS integer
+CREATE FUNCTION find_or_insert_artist_data(in_name text, in_sort_name text, in_comment text, in_b_year integer, in_b_month integer, in_b_day integer, in_e_year integer, in_e_month integer, in_e_day integer, in_ended boolean, in_gender_id integer, in_type_id integer, in_country_id integer) RETURNS integer
     LANGUAGE plpgsql
     AS $$
   DECLARE
@@ -255,7 +255,7 @@ CREATE FUNCTION find_or_insert_artist_data(in_name text, in_sort_name text, in_c
 $$;
 
 
-ALTER FUNCTION musicbrainz.find_or_insert_artist_data(in_name text, in_sort_name text, in_comment text, in_b_year smallint, in_b_month smallint, in_b_day smallint, in_e_year smallint, in_e_month smallint, in_e_day smallint, in_ended boolean, in_gender_id integer, in_type_id integer, in_country_id integer) OWNER TO musicbrainz;
+ALTER FUNCTION musicbrainz.find_or_insert_artist_data(in_name text, in_sort_name text, in_comment text, in_b_year integer, in_b_month integer, in_b_day integer, in_e_year integer, in_e_month integer, in_e_day integer, in_ended boolean, in_gender_id integer, in_type_id integer, in_country_id integer) OWNER TO musicbrainz;
 
 --
 -- Name: find_or_insert_artist_name(text); Type: FUNCTION; Schema: musicbrainz; Owner: musicbrainz
