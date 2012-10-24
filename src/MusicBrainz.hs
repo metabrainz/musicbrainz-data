@@ -7,6 +7,7 @@ module MusicBrainz
       MusicBrainz
     , runMb
     , runMbContext
+    , openContext
 
       -- ** Context available in the MusicBrainz monad
     , Context
@@ -14,7 +15,7 @@ module MusicBrainz
 
 
       -- * Convenience database functions
-    , defaultConnectInfo, connectDatabase, connectUser
+    , defaultConnectInfo, connectDatabase, connectUser, connectPassword
     , query, query_, execute, returning, executeMany
     , withTransaction
 
@@ -22,13 +23,13 @@ module MusicBrainz
     , module MusicBrainz.Types
     ) where
 
-import Control.Applicative (Applicative)
+import Control.Applicative
 import Control.Monad.CatchIO
 import Control.Monad.IO.Class (MonadIO, liftIO)
 import Control.Monad.Reader (ReaderT, runReaderT)
 import Control.Monad.Reader.Class (MonadReader, ask)
 import Data.Int (Int64)
-import Database.PostgreSQL.Simple (Connection, ConnectInfo, Query, connect, defaultConnectInfo, connectDatabase, connectUser)
+import Database.PostgreSQL.Simple (Connection, ConnectInfo, Query, connect, defaultConnectInfo, connectDatabase, connectUser, connectPassword)
 import Database.PostgreSQL.Simple.FromRow (FromRow)
 import Database.PostgreSQL.Simple.ToRow (ToRow)
 import MusicBrainz.Schema ()
@@ -56,13 +57,18 @@ have pgBouncer running. If this is the case, you should try and call this as
 /late/ as possible. -}
 runMb :: ConnectInfo -> MusicBrainz a -> IO a
 runMb connArgs actions = do
-  conn <- connect connArgs
-  runMbContext Context { mbDb = conn } actions
+  context <- openContext connArgs
+  runMbContext context actions
 
 
 {-| Run a MusicBrainz action inside a pre-existing context. -}
 runMbContext :: Context -> MusicBrainz a -> IO a
 runMbContext context  (MusicBrainz actions) = runReaderT actions context
+
+
+{-| Open a fresh set of connections to interact with MusicBrainz. -}
+openContext :: ConnectInfo -> IO Context
+openContext connArgs = Context <$> connect connArgs
 
 
 --------------------------------------------------------------------------------
