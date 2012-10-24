@@ -6,6 +6,8 @@ module MusicBrainz
     ( -- * The MusicBrainz monad
       MusicBrainz
     , runMb
+    , runMbContext
+
       -- ** Context available in the MusicBrainz monad
     , Context
     , mbDb
@@ -53,9 +55,14 @@ to the MusicBrainz database, and can be quite expensive if the target doesn't
 have pgBouncer running. If this is the case, you should try and call this as
 /late/ as possible. -}
 runMb :: ConnectInfo -> MusicBrainz a -> IO a
-runMb connArgs (MusicBrainz actions) = do
+runMb connArgs actions = do
   conn <- connect connArgs
-  runReaderT actions Context { mbDb = conn }
+  runMbContext Context { mbDb = conn } actions
+
+
+{-| Run a MusicBrainz action inside a pre-existing context. -}
+runMbContext :: Context -> MusicBrainz a -> IO a
+runMbContext context  (MusicBrainz actions) = runReaderT actions context
 
 
 --------------------------------------------------------------------------------
