@@ -10,6 +10,7 @@ module MusicBrainz.Types
     ( -- * MusicBrainz entities
       Artist(..)
     , ArtistCredit
+    , ArtistCreditName(..)
     , ArtistType(..)
     , Country(..)
     , Editor(..)
@@ -64,16 +65,32 @@ data Artist = Artist
     }
   deriving (Eq, Show, Typeable)
 
+data instance Ref Artist = ArtistRef (MBID Artist)
+deriving instance Eq (Ref Artist)
+deriving instance Show (Ref Artist)
+
 
 --------------------------------------------------------------------------------
 {-| An artist credit is an ordered lists of artists, intercalated with free text
 strings and with each artist having a a credited name (possibly different from
-the actual artists name. -}
+the actual artists name.
+
+This type is completely uninhabited, and you should work with artist credits
+through lists of 'ArtistCreditName'. -}
 data ArtistCredit
 
 data instance Ref ArtistCredit = ArtistCreditRef Int
 deriving instance Eq (Ref ArtistCredit)
 deriving instance Show (Ref ArtistCredit)
+
+
+--------------------------------------------------------------------------------
+data ArtistCreditName = ArtistCreditName
+    { acnArtist :: Ref Artist
+    , acnName :: Text
+    , acnJoinPhrase :: Text
+    }
+  deriving (Eq, Show)
 
 --------------------------------------------------------------------------------
 {-| The definition of a type of an artist (e.g., \"person\" or \"group\") . -}

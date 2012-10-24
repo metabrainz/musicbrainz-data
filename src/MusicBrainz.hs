@@ -13,7 +13,7 @@ module MusicBrainz
 
       -- * Convenience database functions
     , defaultConnectInfo, connectDatabase, connectUser
-    , query, query_, execute
+    , query, query_, execute, returning, executeMany
     , withTransaction
 
       -- * Re-exported modules
@@ -73,6 +73,18 @@ query_ sql = withMBConn $ \conn -> PG.query_ conn sql
 {-| Run a query that returns no data, using the active database connection. -}
 execute :: ToRow p => Query -> p -> MusicBrainz Int64
 execute sql params = withMBConn $ \conn -> PG.execute conn sql params
+
+
+{-| Run a query over multiple rows, returning results, using the active
+database connection. -}
+returning :: (ToRow p, FromRow r) => Query -> [p] -> MusicBrainz [r]
+returning sql params = withMBConn $ \conn -> PG.returning conn sql params
+
+
+{-| Run a query over multiple rows, returning a row count, using the active
+database connection. -}
+executeMany :: ToRow p => Query -> [p] -> MusicBrainz Int64
+executeMany sql params = withMBConn $ \conn -> PG.executeMany conn sql params
 
 
 {-| Run a series of MusicBrainz actions within a single PostgreSQL

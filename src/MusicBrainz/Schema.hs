@@ -139,6 +139,14 @@ instance ToField (MBID a) where
   toField (MBID mbid) = Plain $ inQuotes (fromString $ UUID.toString mbid)
 
 
+instance ToField (Ref Artist) where
+  toField (ArtistRef id') = toField id'
+
+
+instance ToField (Ref ArtistCredit) where
+  toField (ArtistCreditRef id') = toField id'
+
+
 instance ToField (Ref ArtistType) where
   toField (ArtistTypeRef id') = toField id'
 
@@ -153,6 +161,10 @@ instance ToField (Ref Editor) where
 
 instance ToField (Ref Gender) where
   toField (GenderRef id') = toField id'
+
+
+instance ToField (Ref (ReleaseGroupType a)) where
+  toField (ReleaseGroupTypeRef id') = toField id'
 
 
 instance ToField (Ref (Revision a)) where
@@ -174,6 +186,13 @@ instance ToRow Artist where
                      , toField artistType
                      , toField artistCountry
                      ]
+
+instance ToRow ReleaseGroup where
+  toRow ReleaseGroup{..} = [ toField releaseGroupName
+                           , toField releaseGroupComment
+                           , toField releaseGroupArtistCredit
+                           , toField releaseGroupPrimaryType
+                           ]
 
 
 instance ToRow PartialDate where
