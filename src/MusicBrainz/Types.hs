@@ -104,8 +104,11 @@ deriving instance Show (Ref Country)
 --------------------------------------------------------------------------------
 {-| A MusicBrainz editor who makes changes to the database. -}
 data Editor = Editor { editorName :: Text }
+  deriving (Eq, Show)
 
 data instance Ref Editor = EditorRef Int
+deriving instance Eq (Ref Editor)
+deriving instance Show (Ref Editor)
 
 
 --------------------------------------------------------------------------------
