@@ -17,6 +17,7 @@ module MusicBrainz
       -- * Convenience database functions
     , defaultConnectInfo, connectDatabase, connectUser, connectPassword
     , query, query_, execute, returning, executeMany
+    , selectValue
     , withTransaction
 
       -- * Re-exported modules
@@ -29,7 +30,7 @@ import Control.Monad.IO.Class (MonadIO, liftIO)
 import Control.Monad.Reader (ReaderT, runReaderT)
 import Control.Monad.Reader.Class (MonadReader, ask)
 import Data.Int (Int64)
-import Database.PostgreSQL.Simple (Connection, ConnectInfo, Query, connect, defaultConnectInfo, connectDatabase, connectUser, connectPassword)
+import Database.PostgreSQL.Simple (Connection, ConnectInfo, Only(..), Query, connect, defaultConnectInfo, connectDatabase, connectUser, connectPassword)
 import Database.PostgreSQL.Simple.FromRow (FromRow)
 import Database.PostgreSQL.Simple.ToRow (ToRow)
 import MusicBrainz.Schema ()
@@ -98,6 +99,11 @@ returning sql params = withMBConn $ \conn -> PG.returning conn sql params
 database connection. -}
 executeMany :: ToRow p => Query -> [p] -> MusicBrainz Int64
 executeMany sql params = withMBConn $ \conn -> PG.executeMany conn sql params
+
+
+{-| Transform query results that only a single row with a single column. -}
+selectValue :: Functor m => m [Only a] -> m a
+selectValue = fmap (fromOnly . head)
 
 
 {-| Run a series of MusicBrainz actions within a single PostgreSQL

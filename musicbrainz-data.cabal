@@ -33,6 +33,8 @@ Library
     MusicBrainz.Data.ReleaseGroup
     MusicBrainz.Schema
     MusicBrainz.Types
+  other-modules:
+    MusicBrainz.Data.Revision
   ghc-options: -Wall -fwarn-tabs -funbox-strict-fields -O2
                -fno-warn-orphans -fno-warn-unused-do-bind
 
