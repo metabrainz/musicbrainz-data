@@ -37,7 +37,7 @@ instance FindLatest Label where
 {-| Create an entirely new 'Label', returning the final 'CoreEntity' as it is
 in the database. -}
 create :: Ref Editor -> Label -> MusicBrainz (CoreEntity Label)
-create editor label = withTransaction $ do
+create editor label = do
   labelTreeId <- labelTree label
   labelId <- reserveLabel
   revisionId <- newRevision editor >>= newLabelRevision labelId labelTreeId

@@ -67,7 +67,7 @@ revisionParents artistRev = map fromOnly <$> query q (Only artistRev)
 {-| Create an entirely new artist, returning the final 'CoreEntity' as it is
 in the database. -}
 create :: Ref Editor -> Artist -> MusicBrainz (CoreEntity Artist)
-create editor artist = withTransaction $ do
+create editor artist = do
   artistTreeId <- artistTree artist
   artistId <- reserveArtist
   revisionId <- newRevision editor >>= newArtistRevision artistId artistTreeId

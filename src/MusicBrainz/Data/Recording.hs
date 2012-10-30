@@ -32,7 +32,7 @@ instance FindLatest Recording where
 {-| Create an entirely new recording, returning the final 'CoreEntity' as it is
 in the database. -}
 create :: Ref Editor -> Recording -> MusicBrainz (CoreEntity Recording)
-create editor recording = withTransaction $ do
+create editor recording = do
   recordingTreeId <- recordingTree recording
   recordingId <- reserveRecording
   revisionId <- newRevision editor >>= newRecordingRevision recordingId recordingTreeId

@@ -19,6 +19,7 @@ module MusicBrainz
     , query, query_, execute, returning, executeMany
     , selectValue
     , withTransaction
+    , begin, commit, rollback
 
       -- * Re-exported modules
     , module MusicBrainz.Types
@@ -109,12 +110,22 @@ selectValue = fmap (fromOnly . head)
 {-| Run a series of MusicBrainz actions within a single PostgreSQL
 transaction. -}
 withTransaction :: MusicBrainz a -> MusicBrainz a
-withTransaction action = do
-  withMBConn (PG.beginMode PG.defaultTransactionMode)
-  r <- action `onException` withMBConn PG.rollback
-  withMBConn PG.commit
-  return r
+withTransaction action = begin *> action `onException` rollback <* commit
 
+{-| Begin a transaction. This is a low-level operation, and generally *not*
+what you are really looking for, which is 'withTransaction'. -}
+begin :: MusicBrainz ()
+begin = withMBConn (PG.beginMode PG.defaultTransactionMode)
+
+{-| Commit a transaction. This is a low-level operation, and generally *not*
+what you are really looking for, which is 'withTransaction'. -}
+commit :: MusicBrainz ()
+commit = withMBConn PG.commit
+
+{-| Rollback a transaction. This is a low-level operation, and generally *not*
+what you are really looking for, which is 'withTransaction'. -}
+rollback :: MusicBrainz ()
+rollback = withMBConn PG.rollback
 
 withMBConn :: (Connection -> IO a) -> MusicBrainz a
 withMBConn action = do

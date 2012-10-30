@@ -17,14 +17,14 @@ module MusicBrainz.Types
     , Gender(..)
     , Label(..)
     , LabelType(..)
-    , Language
+    , Language(..)
     , Recording(..)
     , Release(..)
     , ReleaseGroup(..)
     , ReleaseGroupType(..)
-    , ReleasePackaging
-    , ReleaseStatus
-    , Script
+    , ReleasePackaging(..)
+    , ReleaseStatus(..)
+    , Script(..)
 
       -- * Various types of data used in entity attributes
     , MBID(..)
@@ -175,7 +175,12 @@ deriving instance Show (Ref LabelType)
 
 --------------------------------------------------------------------------------
 {-| A language that is written or spoken. -}
-data Language
+data Language = Language { languageName :: Text
+                         , languageIsoCode2t :: Text
+                         , languageIsoCode2b :: Text
+                         , languageIsoCode1 :: Text
+                         , languageIsoCode3  :: Text
+                         }
 
 data instance Ref Language = LanguageRef Int
 deriving instance Eq (Ref Language)
@@ -258,7 +263,7 @@ deriving instance Show (Ref (ReleaseGroupType a))
 
 --------------------------------------------------------------------------------
 {-| The type of packaging a release came in. -}
-data ReleasePackaging
+data ReleasePackaging = ReleasePackaging { releasePackagingName :: Text }
 
 data instance Ref ReleasePackaging = ReleasePackagingRef Int
 deriving instance Eq (Ref ReleasePackaging)
@@ -268,7 +273,7 @@ deriving instance Show (Ref ReleasePackaging)
 --------------------------------------------------------------------------------
 {-| A release status indicates whether a 'Release' was released official,
 promotionally, as a bootleg, etc. -}
-data ReleaseStatus
+data ReleaseStatus = ReleaseStatus { releaseStatusName :: Text }
 
 data instance Ref ReleaseStatus = ReleaseStatusRef Int
 deriving instance Eq (Ref ReleaseStatus)
@@ -277,7 +282,10 @@ deriving instance Show (Ref ReleaseStatus)
 
 --------------------------------------------------------------------------------
 {-| The script that text is written. -}
-data Script
+data Script = Script { scriptIsoCode :: Text
+                     , scriptIsoNumber :: Text
+                     , scriptName :: Text
+                     }
 
 data instance Ref Script = ScriptRef Int
 deriving instance Eq (Ref Script)

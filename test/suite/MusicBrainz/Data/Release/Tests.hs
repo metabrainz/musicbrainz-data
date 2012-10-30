@@ -2,38 +2,70 @@
 module MusicBrainz.Data.Release.Tests
     ( tests ) where
 
-import Data.Maybe (fromJust)
+import Control.Applicative
 import Test.MusicBrainz
+import Test.MusicBrainz.Data (singleArtistAc)
+import Test.MusicBrainz.Repository (portishead, dummy, uk)
 
 import MusicBrainz
-import MusicBrainz.Data.Release ()
+import MusicBrainz.Data.Editor (findEditorByName)
 import MusicBrainz.Data.FindLatest
+import MusicBrainz.Data.Release ()
+
+import qualified MusicBrainz.Data.Country as Country
+import qualified MusicBrainz.Data.Language as Language
+import qualified MusicBrainz.Data.Release as Release
+import qualified MusicBrainz.Data.ReleaseGroup as ReleaseGroup
+import qualified MusicBrainz.Data.ReleasePackaging as ReleasePackaging
+import qualified MusicBrainz.Data.ReleaseStatus as ReleaseStatus
+import qualified MusicBrainz.Data.Script as Script
 
 tests :: [Test]
-tests = [ testFindLatest
+tests = [ testCreateFindLatest
         ]
 
-testFindLatest :: Test
-testFindLatest = testCase "findLatest when release exists" $
-  mbTest (findLatest knownReleaseId) >>= (@?= expected)
+testCreateFindLatest :: Test
+testCreateFindLatest = testCase "findLatest when release exists" $ do
+  (created, Just found) <- mbTest $ do
+    Just editor <- fmap entityRef <$> findEditorByName "acid2"
+    portisheadAc <- singleArtistAc editor portishead
+    portisheadRg <- ReleaseGroup.create editor (dummy portisheadAc)
+    country <- Country.addCountry uk
+    script <- Script.addScript Script { scriptName = "United Kingdom"
+                                      , scriptIsoCode = "gb"
+                                      , scriptIsoNumber = "360"
+                                      }
+    language <- Language.addLanguage Language
+      { languageName = "United Kingdom"
+      , languageIsoCode2t = "gb"
+      , languageIsoCode2b = ""
+      , languageIsoCode1 = ""
+      , languageIsoCode3 = ""
+      }
+    packaging <- ReleasePackaging.addReleasePackaging ReleasePackaging
+      { releasePackagingName = "Jewel Case" }
+    status <- ReleaseStatus.addReleaseStatus ReleaseStatus
+      { releaseStatusName = "Official" }
+
+    created <- Release.create editor $
+      expected (ReleaseGroupRef $ coreMbid portisheadRg) portisheadAc
+        (entityRef country) (entityRef script) (entityRef language)
+        (entityRef packaging) (entityRef status)
+
+    found <- findLatest (coreMbid created)
+
+    return (created, found)
+  found @?= created
   where
-    knownMbid = fromJust . parseMbid
-    knownReleaseId = knownMbid "df907840-9e5a-41cd-a44d-f039cdecdca4"
-    expected = Just
-      CoreEntity { coreMbid = knownReleaseId
-                 , coreRevision = RevisionRef 10762
-                 , coreData =
-                     Release { releaseName = "Portishead"
-                             , releaseComment = ""
-                             , releaseArtistCredit = ArtistCreditRef 1
-                             , releaseReleaseGroup =ReleaseGroupRef $ knownMbid
-                                 "d7ec6175-0891-448d-b9e4-14d007d53d29"
-                             , releaseDate = PartialDate
-                                 (Just 1997) (Just 9) (Just 29)
-                             , releaseCountry = Just (CountryRef 1)
-                             , releaseScript = Just (ScriptRef 3)
-                             , releaseLanguage = Just (LanguageRef 1)
-                             , releasePackaging = Just (ReleasePackagingRef 1)
-                             , releaseStatus = Just (ReleaseStatusRef 1)
-                             }
-                 }
+    expected rg ac country script language packaging status =
+      Release { releaseName = "Dummy"
+              , releaseComment = ""
+              , releaseArtistCredit = ac
+              , releaseReleaseGroup = rg
+              , releaseDate = PartialDate (Just 1997) (Just 9) (Just 29)
+              , releaseCountry = Just country
+              , releaseScript = Just script
+              , releaseLanguage = Just language
+              , releasePackaging = Just packaging
+              , releaseStatus = Just status
+              }

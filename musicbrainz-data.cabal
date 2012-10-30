@@ -25,12 +25,17 @@ Library
     MusicBrainz
     MusicBrainz.Data.Artist
     MusicBrainz.Data.ArtistCredit
+    MusicBrainz.Data.Country
     MusicBrainz.Data.Editor
     MusicBrainz.Data.FindLatest
     MusicBrainz.Data.Label
+    MusicBrainz.Data.Language
     MusicBrainz.Data.Recording
     MusicBrainz.Data.Release
     MusicBrainz.Data.ReleaseGroup
+    MusicBrainz.Data.ReleasePackaging
+    MusicBrainz.Data.ReleaseStatus
+    MusicBrainz.Data.Script
     MusicBrainz.Schema
     MusicBrainz.Types
   other-modules:
@@ -46,6 +51,7 @@ Test-Suite integration-tests
   build-depends:
     base >= 4.5 && < 4.7,
     HUnit >= 1.2.4.2 && < 1.3,
+    MonadCatchIO-mtl >= 0.3.0.0 && <0.4,
     musicbrainz-data,
     postgresql-simple >= 0.2.4.1 && < 0.3,
     QuickCheck >= 2.4.2 && < 2.6,

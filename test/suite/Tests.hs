@@ -35,6 +35,9 @@ main = cleanState >> defaultMain tests
                 MusicBrainz.Types.Tests.tests
             ]
     cleanState = mbTest $ forM_
-      [ "TRUNCATE revision CASCADE"
+      [ "SET client_min_messages TO warning"
+      , "TRUNCATE country CASCADE"
+      , "TRUNCATE revision CASCADE"
       , "ALTER SEQUENCE revision_revision_id_seq RESTART 1"
+      , "COMMIT"
       ] $ \q -> execute q ()

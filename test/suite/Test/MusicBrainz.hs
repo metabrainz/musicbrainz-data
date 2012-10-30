@@ -12,8 +12,9 @@ module Test.MusicBrainz
     , assertException
     ) where
 
-
-import Control.Exception
+import Control.Applicative
+import Control.Exception (handleJust)
+import Control.Monad.CatchIO
 import Test.Framework
 import Test.Framework.Providers.HUnit
 import Test.Framework.Providers.QuickCheck2
@@ -23,7 +24,8 @@ import Test.QuickCheck hiding (Testable)
 import MusicBrainz
 
 mbTest :: MusicBrainz a -> IO a
-mbTest = runMb databaseSettings
+mbTest a = runMb databaseSettings $
+  begin *> a `onException` rollback <* rollback
   where databaseSettings = defaultConnectInfo { connectDatabase = "musicbrainz_nes"
                                               , connectUser = "musicbrainz"
                                               }

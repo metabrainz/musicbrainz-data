@@ -30,7 +30,7 @@ instance FindLatest ReleaseGroup where
 {-| Create an entirely new release group, returning the final 'CoreEntity' as it
 is in the database. -}
 create :: Ref Editor -> ReleaseGroup -> MusicBrainz (CoreEntity ReleaseGroup)
-create editor rg = withTransaction $ do
+create editor rg = do
   rgTreeId <- findOrInsertRgData >>= findOrInsertRgTree
   rgId <- reserveRg
   revisionId <- newRevision >>= newRgRevision rgId rgTreeId

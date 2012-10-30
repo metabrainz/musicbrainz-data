@@ -102,6 +102,10 @@ instance FromRow Artist where
                    <*> field
 
 
+instance FromRow Country where
+  fromRow = Country <$> field <*> field
+
+
 instance FromRow Editor where
   fromRow = Editor <$> field
 
@@ -116,6 +120,10 @@ instance (FromField (Ref a), FromRow a) => FromRow (Entity a) where
 instance FromRow Label where
   fromRow = Label <$> field <*> field <*> field <*> fromRow <*> fromRow
                   <*> field <*> field <*> field
+
+
+instance FromRow Language where
+  fromRow = Language <$> field <*> field <*> field <*> field <*> field
 
 
 instance FromRow PartialDate where
@@ -133,6 +141,19 @@ instance FromRow Release where
 
 instance FromRow ReleaseGroup where
   fromRow = ReleaseGroup <$> field <*> field <*> field <*> field
+
+
+instance FromRow ReleasePackaging where
+  fromRow = ReleasePackaging <$> field
+
+
+instance FromRow ReleaseStatus where
+  fromRow = ReleaseStatus <$> field
+
+
+instance FromRow Script where
+  fromRow = Script <$> field <*> field <*> field
+
 
 --------------------------------------------------------------------------------
 instance ToField (MBID a) where
@@ -167,12 +188,32 @@ instance ToField (Ref LabelType) where
   toField (LabelTypeRef id') = toField id'
 
 
+instance ToField (Ref Language) where
+  toField (LanguageRef id') = toField id'
+
+
+instance ToField (Ref ReleaseGroup) where
+  toField (ReleaseGroupRef id') = toField id'
+
+
 instance ToField (Ref (ReleaseGroupType a)) where
   toField (ReleaseGroupTypeRef id') = toField id'
 
 
+instance ToField (Ref ReleasePackaging) where
+  toField (ReleasePackagingRef id') = toField id'
+
+
+instance ToField (Ref ReleaseStatus) where
+  toField (ReleaseStatusRef id') = toField id'
+
+
 instance ToField (Ref (Revision a)) where
   toField (RevisionRef id') = toField id'
+
+
+instance ToField (Ref Script) where
+  toField (ScriptRef id') = toField id'
 
 
 --------------------------------------------------------------------------------
@@ -192,6 +233,12 @@ instance ToRow Artist where
                      ]
 
 
+instance ToRow Country where
+  toRow Country{..} = [ toField countryIsoCode
+                      , toField countryName
+                      ]
+
+
 instance ToRow Label where
   toRow Label{..} = [ toField labelName
                     , toField labelSortName
@@ -205,6 +252,30 @@ instance ToRow Label where
                     , toField labelType
                     , toField labelCode
                     ]
+
+
+instance ToRow Language where
+  toRow Language{..} = [ toField languageName
+                       , toField languageIsoCode2t
+                       , toField languageIsoCode2b
+                       , toField languageIsoCode1
+                       , toField languageIsoCode3
+                       ]
+
+
+instance ToRow Release where
+  toRow Release{..} = [ toField releaseName
+                      , toField releaseComment
+                      , toField releaseArtistCredit
+                      ]
+                      ++ toRow releaseDate
+                      ++
+                      [ toField releaseCountry
+                      , toField releaseScript
+                      , toField releaseLanguage
+                      , toField releasePackaging
+                      , toField releaseStatus
+                      ]
 
 
 instance ToRow Recording where
@@ -221,6 +292,23 @@ instance ToRow ReleaseGroup where
                            , toField releaseGroupArtistCredit
                            , toField releaseGroupPrimaryType
                            ]
+
+
+instance ToRow ReleasePackaging where
+  toRow ReleasePackaging{..} = [ toField releasePackagingName
+                               ]
+
+
+instance ToRow ReleaseStatus where
+  toRow ReleaseStatus{..} = [ toField releaseStatusName
+                            ]
+
+
+instance ToRow Script where
+  toRow Script{..} = [ toField scriptIsoCode
+                     , toField scriptIsoNumber
+                     , toField scriptName
+                     ]
 
 
 instance ToRow PartialDate where

@@ -14,3 +14,15 @@ portishead = Artist { artistName = "Portishead"
                     , artistCountry = Nothing
                     , artistType = Nothing
                     }
+
+dummy :: Ref ArtistCredit -> ReleaseGroup
+dummy ac = ReleaseGroup { releaseGroupName = "Dummy"
+                            , releaseGroupArtistCredit = ac
+                            , releaseGroupComment = ""
+                            , releaseGroupPrimaryType = Nothing
+                            }
+
+uk :: Country
+uk = Country { countryName = "United Kingdom"
+             , countryIsoCode = "gb"
+             }
