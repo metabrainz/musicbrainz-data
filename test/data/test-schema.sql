@@ -312,6 +312,98 @@ $$;
 
 ALTER FUNCTION musicbrainz.find_or_insert_artist_tree(in_data_id integer) OWNER TO musicbrainz;
 
+--
+-- Name: find_or_insert_release_group_data(text, text, integer, integer); Type: FUNCTION; Schema: musicbrainz; Owner: musicbrainz
+--
+
+CREATE FUNCTION find_or_insert_release_group_data(in_name text, in_comment text, in_artist_credit_id integer, in_p_type_id integer) RETURNS integer
+    LANGUAGE plpgsql
+    AS $$
+  DECLARE
+    found_id INT;
+    name_id INT;
+    sort_name_id INT;
+  BEGIN
+    SELECT find_or_insert_release_name(in_name) INTO name_id;
+
+    SELECT release_group_data_id INTO found_id
+    FROM release_group_data
+    WHERE name = name_id AND
+      comment = in_comment AND
+      artist_credit_id = in_artist_credit_id AND
+      release_group_primary_type_id IS NOT DISTINCT FROM in_p_type_id;
+
+    IF FOUND
+    THEN
+      RETURN found_id;
+    ELSE
+      INSERT INTO release_group_data (name, comment, artist_credit_id,
+        release_group_primary_type_id)
+      VALUES (name_id, in_comment, in_artist_credit_id, in_p_type_id)
+      RETURNING release_group_data_id INTO found_id;
+      RETURN found_id;
+    END IF;
+  END;
+$$;
+
+
+ALTER FUNCTION musicbrainz.find_or_insert_release_group_data(in_name text, in_comment text, in_artist_credit_id integer, in_p_type_id integer) OWNER TO musicbrainz;
+
+--
+-- Name: find_or_insert_release_group_tree(integer); Type: FUNCTION; Schema: musicbrainz; Owner: musicbrainz
+--
+
+CREATE FUNCTION find_or_insert_release_group_tree(in_data_id integer) RETURNS integer
+    LANGUAGE plpgsql
+    AS $$
+  DECLARE
+    found_id INT;
+  BEGIN
+    SELECT release_group_tree_id INTO found_id
+    FROM release_group_tree WHERE release_group_data_id = in_data_id;
+
+    IF FOUND
+    THEN
+      RETURN found_id;
+    ELSE
+      INSERT INTO release_group_tree (release_group_data_id)
+      VALUES (in_data_id)
+      RETURNING release_group_tree_id INTO found_id;
+      RETURN found_id;
+    END IF;
+  END;
+$$;
+
+
+ALTER FUNCTION musicbrainz.find_or_insert_release_group_tree(in_data_id integer) OWNER TO musicbrainz;
+
+--
+-- Name: find_or_insert_release_name(text); Type: FUNCTION; Schema: musicbrainz; Owner: musicbrainz
+--
+
+CREATE FUNCTION find_or_insert_release_name(in_name text) RETURNS integer
+    LANGUAGE plpgsql
+    AS $$
+  DECLARE
+    found_id INT;
+  BEGIN
+    SELECT id INTO found_id
+    FROM release_name WHERE name = in_name;
+
+    IF FOUND
+    THEN
+      RETURN found_id;
+    ELSE
+      INSERT INTO release_name (name)
+      VALUES (in_name) RETURNING id INTO found_id;
+      RETURN found_id;
+    END IF;
+  END;
+$$;
+
+
+ALTER FUNCTION musicbrainz.find_or_insert_release_name(in_name text) OWNER TO musicbrainz;
+
 SET default_tablespace = '';
 
 SET default_with_oids = false;
@@ -2196,6 +2288,19 @@ CREATE TABLE revision (
 ALTER TABLE musicbrainz.revision OWNER TO musicbrainz;
 
 --
+-- Name: revision_parent; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE revision_parent (
+    revision_id integer NOT NULL,
+    parent_revision_id integer NOT NULL,
+    CONSTRAINT revision_parent_check CHECK ((parent_revision_id <> revision_id))
+);
+
+
+ALTER TABLE musicbrainz.revision_parent OWNER TO musicbrainz;
+
+--
 -- Name: revision_revision_id_seq; Type: SEQUENCE; Schema: musicbrainz; Owner: musicbrainz
 --
 
@@ -4002,6 +4107,14 @@ ALTER TABLE ONLY release_tree
 
 
 --
+-- Name: revision_parent_pkey; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+ALTER TABLE ONLY revision_parent
+    ADD CONSTRAINT revision_parent_pkey PRIMARY KEY (revision_id, parent_revision_id);
+
+
+--
 -- Name: revision_pkey; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
 --
 
@@ -5114,6 +5227,22 @@ ALTER TABLE ONLY release_tree
 
 ALTER TABLE ONLY revision
     ADD CONSTRAINT revision_editor_id_fkey FOREIGN KEY (editor_id) REFERENCES editor(editor_id);
+
+
+--
+-- Name: revision_parent_parent_revision_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY revision_parent
+    ADD CONSTRAINT revision_parent_parent_revision_id_fkey FOREIGN KEY (parent_revision_id) REFERENCES revision(revision_id);
+
+
+--
+-- Name: revision_parent_revision_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY revision_parent
+    ADD CONSTRAINT revision_parent_revision_id_fkey FOREIGN KEY (revision_id) REFERENCES revision(revision_id);
 
 
 --
