@@ -163,6 +163,10 @@ instance ToField (Ref Gender) where
   toField (GenderRef id') = toField id'
 
 
+instance ToField (Ref LabelType) where
+  toField (LabelTypeRef id') = toField id'
+
+
 instance ToField (Ref (ReleaseGroupType a)) where
   toField (ReleaseGroupTypeRef id') = toField id'
 
@@ -186,6 +190,22 @@ instance ToRow Artist where
                      , toField artistType
                      , toField artistCountry
                      ]
+
+
+instance ToRow Label where
+  toRow Label{..} = [ toField labelName
+                    , toField labelSortName
+                    , toField labelComment
+                    ]
+                    ++ toRow labelBeginDate
+                    ++ toRow labelEndDate
+                    ++
+                    [
+                      toField labelEnded
+                    , toField labelType
+                    , toField labelCode
+                    ]
+
 
 instance ToRow ReleaseGroup where
   toRow ReleaseGroup{..} = [ toField releaseGroupName
