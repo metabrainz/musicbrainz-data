@@ -2,29 +2,44 @@
 module MusicBrainz.Data.Recording.Tests
     ( tests ) where
 
-import Data.Maybe (fromJust)
 import Test.MusicBrainz
+import Test.MusicBrainz.Repository (portishead)
 
 import MusicBrainz
-import MusicBrainz.Data.Recording ()
+import MusicBrainz.Data.Editor (findEditorByName)
 import MusicBrainz.Data.FindLatest
 
+import qualified MusicBrainz.Data.Artist as Artist
+import qualified MusicBrainz.Data.ArtistCredit as ArtistCredit
+import qualified MusicBrainz.Data.Recording as Recording
+
 tests :: [Test]
-tests = [ testFindLatest
+tests = [ testCreateFindLatest
         ]
 
-testFindLatest :: Test
-testFindLatest = testCase "findLatest when recording exists" $
-  mbTest (findLatest knownRecordingId) >>= (@?= expected)
-  where
-    knownRecordingId = fromJust $ parseMbid "c3c2ed6e-7944-4ed5-b597-3d15dc1718dd"
-    expected = Just
-      CoreEntity { coreMbid = knownRecordingId
-                 , coreRevision = RevisionRef 10751
-                 , coreData =
-                     Recording { recordingName = "I Love Acid"
-                               , recordingComment = ""
-                               , recordingArtistCredit = ArtistCreditRef 1
-                               , recordingDuration = 64936
+testCreateFindLatest :: Test
+testCreateFindLatest = testCase "findLatest when recording exists" $ do
+  (created, Just found) <- mbTest $ do
+    Just editor <- findEditorByName "acid2"
+
+    artist <- Artist.create (entityRef editor) portishead
+
+    ac <- ArtistCredit.getRef
+            [ ArtistCreditName { acnArtist = ArtistRef $ coreMbid artist
+                               , acnName = artistName (coreData artist)
+                               , acnJoinPhrase = ""
                                }
-                 }
+            ]
+
+    created <- Recording.create (entityRef editor) (expected ac)
+    found <- findLatest (coreMbid created)
+
+    return (created, found)
+
+  found @?= created
+  where
+    expected ac = Recording { recordingName = "Mysterons"
+                            , recordingComment = ""
+                            , recordingArtistCredit = ac
+                            , recordingDuration = 64936
+                            }

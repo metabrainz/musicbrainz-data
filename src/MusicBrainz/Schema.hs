@@ -207,6 +207,14 @@ instance ToRow Label where
                     ]
 
 
+instance ToRow Recording where
+  toRow Recording{..} = [ toField recordingName
+                        , toField recordingComment
+                        , toField recordingArtistCredit
+                        , toField recordingDuration
+                        ]
+
+
 instance ToRow ReleaseGroup where
   toRow ReleaseGroup{..} = [ toField releaseGroupName
                            , toField releaseGroupComment

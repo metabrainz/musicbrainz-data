@@ -3,6 +3,7 @@ module MusicBrainz.Data.ReleaseGroup.Tests
     ( tests ) where
 
 import Test.MusicBrainz
+import Test.MusicBrainz.Repository (portishead)
 
 import MusicBrainz
 import MusicBrainz.Data.Editor
@@ -35,16 +36,6 @@ testFindLatest = testCase "findLatest when release group exists" $ do
 
   found @?= created
   where
-    portishead = Artist { artistName = "Portishead"
-                        , artistSortName = "Portishead"
-                        , artistComment = ""
-                        , artistBeginDate = emptyDate
-                        , artistEndDate = emptyDate
-                        , artistEnded = False
-                        , artistGender = Nothing
-                        , artistCountry = Nothing
-                        , artistType = Nothing
-                        }
     dummy ac = ReleaseGroup { releaseGroupName = "Dummy"
                             , releaseGroupArtistCredit = ac
                             , releaseGroupComment = ""
