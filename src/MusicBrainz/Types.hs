@@ -21,7 +21,7 @@ module MusicBrainz.Types
     , Recording(..)
     , Release(..)
     , ReleaseGroup(..)
-    , ReleaseGroupType(..)
+    , ReleaseGroupType(..), Primary
     , ReleasePackaging(..)
     , ReleaseStatus(..)
     , Script(..)
@@ -86,6 +86,8 @@ deriving instance Show (Ref ArtistCredit)
 
 
 --------------------------------------------------------------------------------
+{-| An individual artist credit in an 'ArtistCredit'. This can also be thought
+of as a single 'Artist' appearing in an 'ArtistCredit'. -}
 data ArtistCreditName = ArtistCreditName
     { acnArtist :: Ref Artist
     , acnName :: Text
@@ -245,6 +247,8 @@ deriving instance Show (Ref ReleaseGroup)
 
 
 --------------------------------------------------------------------------------
+{-| A type index for 'ReleaseGroupType' indicating that this 'ReleaseGroupType'
+is primary and can only occur once. -}
 data Primary
 
 {-| A release group type indicates the various types a release group can be.
@@ -252,7 +256,7 @@ For example, one release group type combination might be 'Album + Remix' to
 indicate a remix album.
 
 The parameter to 'ReleaseGroupType' indicates whether the release group
-type is primary or secondary (it is kinded as 'ReleaseGroupTypeClass'. -}
+type is primary or secondary. -}
 data ReleaseGroupType a = ReleaseGroupType
     { releaseGroupTypeName :: Text }
   deriving (Eq, Show)
@@ -357,6 +361,9 @@ deriving instance Show (Ref (Revision a))
 
 
 --------------------------------------------------------------------------------
+{-| Trees for entities are a somewhat internal concept of the way MusicBrainz
+versioning works. A tree consists of all the data that is versioned for a
+specific entity (of type @a@). -}
 data Tree a
 
 data instance Ref (Tree a) = TreeRef Int

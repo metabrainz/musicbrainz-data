@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
+{-| Functions to manipulate 'ArtistCredit's. -}
 module MusicBrainz.Data.ArtistCredit
     ( getRef ) where
 
@@ -15,6 +16,7 @@ import Database.PostgreSQL.Simple.ToRow
 
 import MusicBrainz
 
+--------------------------------------------------------------------------------
 data AcParam = AcParam (Ref Artist) Int Int Text
 newtype AcParams = AcParams { getAcParams :: [AcParam] }
 
@@ -28,6 +30,9 @@ instance ToRow AcParam where
 instance ToRow AcParams where
   toRow (AcParams ps) = concatMap toRow ps
 
+{-| Attempt to find a specific 'ArtistCredit' that consists of a given list of
+'ArtistCreditName's. If this 'ArtistCredit' does not already exist, create it
+and then return a reference to it. -}
 getRef :: [ArtistCreditName] -> MusicBrainz (Ref ArtistCredit)
 getRef acs = do
   nameMap <- Map.fromList <$> returning "SELECT name, find_or_insert_artist_name(name) FROM (VALUES (?)) names (name)" (nub $ map (Only . acnName) acs)

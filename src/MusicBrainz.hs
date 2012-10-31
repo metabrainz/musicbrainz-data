@@ -15,7 +15,7 @@ module MusicBrainz
 
 
       -- * Convenience database functions
-    , defaultConnectInfo, connectDatabase, connectUser, connectPassword
+    , defaultConnectInfo, ConnectInfo(..)
     , query, query_, execute, returning, executeMany
     , selectValue
     , withTransaction
@@ -31,7 +31,7 @@ import Control.Monad.IO.Class (MonadIO, liftIO)
 import Control.Monad.Reader (ReaderT, runReaderT)
 import Control.Monad.Reader.Class (MonadReader, ask)
 import Data.Int (Int64)
-import Database.PostgreSQL.Simple (Connection, ConnectInfo, Only(..), Query, connect, defaultConnectInfo, connectDatabase, connectUser, connectPassword)
+import Database.PostgreSQL.Simple (Connection, ConnectInfo(..), Only(..), Query, connect, defaultConnectInfo)
 import Database.PostgreSQL.Simple.FromRow (FromRow)
 import Database.PostgreSQL.Simple.ToRow (ToRow)
 import MusicBrainz.Schema ()

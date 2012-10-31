@@ -43,6 +43,7 @@ instance FindLatest Artist where
 
 
 --------------------------------------------------------------------------------
+{-| View an artist at an exact 'Revision'. -}
 viewRevision :: Ref (Revision Artist) -> MusicBrainz (CoreEntity Artist)
 viewRevision revision = head <$> query q (Only revision)
     where q = [sql|
@@ -60,6 +61,7 @@ viewRevision revision = head <$> query q (Only revision)
       WHERE revision_id = ? |]
 
 --------------------------------------------------------------------------------
+{-| Find references to the parent revisions of a given revision. -}
 revisionParents :: Ref (Revision Artist) -> MusicBrainz [Ref (Revision Artist)]
 revisionParents artistRev = map fromOnly <$> query q (Only artistRev)
   where q = [sql| SELECT parent_revision_id FROM revision_parent
