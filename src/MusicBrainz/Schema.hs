@@ -86,6 +86,10 @@ instance FromField (Ref (Revision a)) where
   fromField f v = RevisionRef <$> fromField f v
 
 
+instance FromField (Ref (Tree a)) where
+  fromField f v = TreeRef <$> fromField f v
+
+
 --------------------------------------------------------------------------------
 instance (FromRow a, Typeable a) => FromRow (CoreEntity a) where
   fromRow = CoreEntity     -- Core entity's MBID
@@ -214,6 +218,10 @@ instance ToField (Ref (Revision a)) where
 
 instance ToField (Ref Script) where
   toField (ScriptRef id') = toField id'
+
+
+instance ToField (Ref (Tree a)) where
+  toField (TreeRef id') = toField id'
 
 
 --------------------------------------------------------------------------------

@@ -13,7 +13,8 @@ import Database.PostgreSQL.Simple.SqlQQ
 
 import MusicBrainz
 import MusicBrainz.Data.FindLatest
-import MusicBrainz.Data.Revision
+
+import qualified MusicBrainz.Data.Generic.Create as GenericCreate
 
 instance FindLatest Label where
   findLatest mbid = listToMaybe <$> query q (Only mbid)
@@ -37,32 +38,22 @@ instance FindLatest Label where
 {-| Create an entirely new 'Label', returning the final 'CoreEntity' as it is
 in the database. -}
 create :: Ref Editor -> Label -> MusicBrainz (CoreEntity Label)
-create editor label = do
-  labelTreeId <- labelTree label
-  labelId <- reserveLabel
-  revisionId <- newRevision editor >>= newLabelRevision labelId labelTreeId
-  linkRevision labelId revisionId
-  return CoreEntity { coreMbid = labelId
-                    , coreRevision = revisionId
-                    , coreData = label
-                    }
+create = GenericCreate.create GenericCreate.Specification
+    { GenericCreate.getTree = labelTree
+    , GenericCreate.reserveEntity = GenericCreate.reserveEntityTable "label"
+    , GenericCreate.newEntityRevision = newLabelRevision
+    , GenericCreate.linkRevision = linkRevision
+    }
   where
-    reserveLabel :: MusicBrainz (MBID Label)
-    reserveLabel = selectValue $
-      query_ [sql| INSERT INTO label (master_revision_id) VALUES (-1) RETURNING label_id |]
-
-    newLabelRevision :: MBID Label -> Int -> Ref (Revision Label) -> MusicBrainz (Ref (Revision Label))
     newLabelRevision labelId labelTreeId revisionId = selectValue $
       query [sql| INSERT INTO label_revision (label_id, revision_id, label_tree_id)
                   VALUES (?, ?, ?) RETURNING revision_id |]
         (labelId, revisionId, labelTreeId)
 
-
-    linkRevision :: MBID Label -> Ref (Revision Label) -> MusicBrainz ()
     linkRevision labelId revisionId = void $
       execute [sql| UPDATE label SET master_revision_id = ? WHERE label_id = ? |] (revisionId, labelId)
 
-labelTree :: Label -> MusicBrainz Int
+labelTree :: Label -> MusicBrainz (Ref (Tree Label))
 labelTree label = findOrInsertLabelData >>= findOrInsertLabelTree
   where
     findOrInsertLabelData :: MusicBrainz Int

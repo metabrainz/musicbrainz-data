@@ -35,6 +35,7 @@ module MusicBrainz.Types
       -- * Versioning
     , CoreEntity(..)
     , Revision
+    , Tree
 
       -- * Entity/reference handling
     , Entity(..)
@@ -349,3 +350,9 @@ data Revision a
 data instance Ref (Revision a) = RevisionRef Int
 deriving instance Eq (Ref (Revision a))
 deriving instance Show (Ref (Revision a))
+
+
+--------------------------------------------------------------------------------
+data Tree a
+
+data instance Ref (Tree a) = TreeRef Int

@@ -21,6 +21,8 @@ import MusicBrainz
 import MusicBrainz.Data.FindLatest
 import MusicBrainz.Data.Revision
 
+import qualified MusicBrainz.Data.Generic.Create as GenericCreate
+
 --------------------------------------------------------------------------------
 instance FindLatest Artist where
   findLatest mbid = listToMaybe <$> query q (Only mbid)
@@ -67,28 +69,18 @@ revisionParents artistRev = map fromOnly <$> query q (Only artistRev)
 {-| Create an entirely new artist, returning the final 'CoreEntity' as it is
 in the database. -}
 create :: Ref Editor -> Artist -> MusicBrainz (CoreEntity Artist)
-create editor artist = do
-  artistTreeId <- artistTree artist
-  artistId <- reserveArtist
-  revisionId <- newRevision editor >>= newArtistRevision artistId artistTreeId
-  linkRevision artistId revisionId
-  return CoreEntity { coreMbid = artistId
-                    , coreRevision = revisionId
-                    , coreData = artist
-                    }
+create = GenericCreate.create GenericCreate.Specification
+    { GenericCreate.getTree = artistTree
+    , GenericCreate.reserveEntity = GenericCreate.reserveEntityTable "artist"
+    , GenericCreate.newEntityRevision = newArtistRevision
+    , GenericCreate.linkRevision = linkRevision
+    }
   where
-    reserveArtist :: MusicBrainz (MBID Artist)
-    reserveArtist = selectValue $
-      query_ [sql| INSERT INTO artist (master_revision_id) VALUES (-1) RETURNING artist_id |]
-
-    newArtistRevision :: MBID Artist -> Int -> Ref (Revision Artist) -> MusicBrainz (Ref (Revision Artist))
     newArtistRevision artistId artistTreeId revisionId = selectValue $
       query [sql| INSERT INTO artist_revision (artist_id, revision_id, artist_tree_id)
                   VALUES (?, ?, ?) RETURNING revision_id |]
         (artistId, revisionId, artistTreeId)
 
-
-    linkRevision :: MBID Artist -> Ref (Revision Artist) -> MusicBrainz ()
     linkRevision artistId revisionId = void $
       execute [sql| UPDATE artist SET master_revision_id = ? WHERE artist_id = ? |] (revisionId, artistId)
 
@@ -104,7 +96,7 @@ update editor baseRev artist = do
   return revisionId
 
   where
-    newArtistRevision :: Ref (Revision Artist) -> Int -> Ref (Revision Artist)
+    newArtistRevision :: Ref (Revision Artist) -> Ref (Tree Artist) -> Ref (Revision Artist)
                       -> MusicBrainz (Ref (Revision Artist))
     newArtistRevision parentRevision artistTreeId revisionId = selectValue $
       query [sql| INSERT INTO artist_revision (artist_id, revision_id, artist_tree_id)
@@ -117,7 +109,7 @@ update editor baseRev artist = do
                     VALUES (?, ?) |] (childRevision, parentRevision)
 
 --------------------------------------------------------------------------------
-artistTree :: Artist -> MusicBrainz Int
+artistTree :: Artist -> MusicBrainz (Ref (Tree Artist))
 artistTree artist = findOrInsertArtistData >>= findOrInsertArtistTree
   where
     findOrInsertArtistData :: MusicBrainz Int

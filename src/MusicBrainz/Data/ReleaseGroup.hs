@@ -13,6 +13,8 @@ import Database.PostgreSQL.Simple.SqlQQ (sql)
 import MusicBrainz
 import MusicBrainz.Data.FindLatest
 
+import qualified MusicBrainz.Data.Generic.Create as GenericCreate
+
 instance FindLatest ReleaseGroup where
   findLatest mbid = listToMaybe <$> query q (Only mbid)
     where q = [sql|
@@ -30,41 +32,27 @@ instance FindLatest ReleaseGroup where
 {-| Create an entirely new release group, returning the final 'CoreEntity' as it
 is in the database. -}
 create :: Ref Editor -> ReleaseGroup -> MusicBrainz (CoreEntity ReleaseGroup)
-create editor rg = do
-  rgTreeId <- findOrInsertRgData >>= findOrInsertRgTree
-  rgId <- reserveRg
-  revisionId <- newRevision >>= newRgRevision rgId rgTreeId
-  linkRevision rgId revisionId
-  return CoreEntity { coreMbid = rgId
-                    , coreRevision = revisionId
-                    , coreData = rg
-                    }
+create = GenericCreate.create GenericCreate.Specification
+    { GenericCreate.getTree = findOrInsertRgTree
+    , GenericCreate.reserveEntity = GenericCreate.reserveEntityTable "release_group"
+    , GenericCreate.newEntityRevision = newRgRevision
+    , GenericCreate.linkRevision = linkRevision
+    }
   where
-    selectId = fmap (fromOnly . head)
-
-    findOrInsertRgData :: MusicBrainz Int
-    findOrInsertRgData = selectId $
+    findOrInsertRgData :: ReleaseGroup -> MusicBrainz Int
+    findOrInsertRgData rg = selectValue $
       query [sql| SELECT find_or_insert_release_group_data(?, ?, ?, ?) |]
         rg
 
-    findOrInsertRgTree dataId = selectId $
-      query [sql| SELECT find_or_insert_release_group_tree(?) |]
-        (Only dataId)
+    findOrInsertRgTree rg = do
+      dataId <- findOrInsertRgData rg
+      selectValue $
+        query [sql| SELECT find_or_insert_release_group_tree(?) |]
+          (Only dataId)
 
-    newRevision :: MusicBrainz (Ref (Revision ReleaseGroup))
-    newRevision = selectId $
-      query [sql| INSERT INTO revision (editor_id) VALUES (?) RETURNING revision_id |]
-        (Only editor)
-
-    reserveRg :: MusicBrainz (MBID ReleaseGroup)
-    reserveRg = selectId $
-      query_ [sql| INSERT INTO release_group (master_revision_id) VALUES (-1) RETURNING release_group_id |]
-
-    newRgRevision :: MBID ReleaseGroup -> Int -> Ref (Revision ReleaseGroup) -> MusicBrainz (Ref (Revision ReleaseGroup))
-    newRgRevision rgId rgTreeId revisionId = selectId $
+    newRgRevision rgId rgTreeId revisionId = selectValue $
       query [sql| INSERT INTO release_group_revision (release_group_id, revision_id, release_group_tree_id) VALUES (?, ?, ?) RETURNING revision_id |]
         (rgId, revisionId, rgTreeId)
 
-    linkRevision :: MBID ReleaseGroup -> Ref (Revision ReleaseGroup) -> MusicBrainz ()
     linkRevision rgId revisionId = void $
       execute [sql| UPDATE release_group SET master_revision_id = ? WHERE release_group_id = ? |] (revisionId, rgId)

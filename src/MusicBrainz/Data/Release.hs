@@ -12,7 +12,8 @@ import Database.PostgreSQL.Simple.SqlQQ (sql)
 
 import MusicBrainz
 import MusicBrainz.Data.FindLatest
-import MusicBrainz.Data.Revision
+
+import qualified MusicBrainz.Data.Generic.Create as GenericCreate
 
 instance FindLatest Release where
   findLatest mbid = listToMaybe <$> query q (Only mbid)
@@ -33,34 +34,24 @@ instance FindLatest Release where
 {-| Create an entirely new release, returning the final 'CoreEntity' as it is
 in the database. -}
 create :: Ref Editor -> Release -> MusicBrainz (CoreEntity Release)
-create editor release = do
-  releaseTreeId <- releaseTree release
-  releaseId <- reserveRelease
-  revisionId <- newRevision editor >>= newReleaseRevision releaseId releaseTreeId
-  linkRevision releaseId revisionId
-  return CoreEntity { coreMbid = releaseId
-                    , coreRevision = revisionId
-                    , coreData = release
-                    }
+create = GenericCreate.create GenericCreate.Specification
+    { GenericCreate.getTree = releaseTree
+    , GenericCreate.reserveEntity = GenericCreate.reserveEntityTable "release"
+    , GenericCreate.newEntityRevision = newReleaseRevision
+    , GenericCreate.linkRevision = linkRevision
+    }
   where
-    reserveRelease :: MusicBrainz (MBID Release)
-    reserveRelease = selectValue $
-      query_ [sql| INSERT INTO release (master_revision_id) VALUES (-1) RETURNING release_id |]
-
-    newReleaseRevision :: MBID Release -> Int -> Ref (Revision Release) -> MusicBrainz (Ref (Revision Release))
     newReleaseRevision releaseId releaseTreeId revisionId = selectValue $
       query [sql| INSERT INTO release_revision (release_id, revision_id, release_tree_id)
                   VALUES (?, ?, ?) RETURNING revision_id |]
         (releaseId, revisionId, releaseTreeId)
 
-
-    linkRevision :: MBID Release -> Ref (Revision Release) -> MusicBrainz ()
     linkRevision releaseId revisionId = void $
       execute [sql| UPDATE release SET master_revision_id = ? WHERE release_id = ? |] (revisionId, releaseId)
 
 
 --------------------------------------------------------------------------------
-releaseTree :: Release -> MusicBrainz Int
+releaseTree :: Release -> MusicBrainz (Ref (Tree Release))
 releaseTree release = findOrInsertReleaseData >>= findOrInsertReleaseTree
   where
     findOrInsertReleaseData :: MusicBrainz Int
