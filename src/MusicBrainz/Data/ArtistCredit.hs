@@ -69,11 +69,11 @@ getRef acs = do
       where
         pred1 (i, _) =
           let alias col = acnAlias i ++ "." ++ col ++ " = ?"
-          in intercalate " AND " $ [ alias "artist_id"
-                                   , alias "position"
-                                   , alias "name"
-                                   , alias "join_phrase"
-                                   ]
+          in intercalate " AND " [ alias "artist_id"
+                                 , alias "position"
+                                 , alias "name"
+                                 , alias "join_phrase"
+                                 ]
 
     positionedAcs = zip [1..] acs
 

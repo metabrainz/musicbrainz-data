@@ -195,7 +195,7 @@ deriving instance Show (Ref Language)
 data Recording = Recording
     { recordingName :: Text
     , recordingComment :: Text
-    , recordingArtistCredit :: Ref (ArtistCredit)
+    , recordingArtistCredit :: Ref ArtistCredit
     , recordingDuration :: Int
     }
   deriving (Eq, Show, Typeable)
@@ -212,8 +212,8 @@ multiple 'Medium's. -}
 data Release = Release
     { releaseName :: Text
     , releaseComment :: Text
-    , releaseArtistCredit :: Ref (ArtistCredit)
-    , releaseReleaseGroup :: Ref (ReleaseGroup)
+    , releaseArtistCredit :: Ref ArtistCredit
+    , releaseReleaseGroup :: Ref ReleaseGroup
     , releaseDate :: PartialDate
     , releaseCountry :: Maybe (Ref Country)
     , releaseScript :: Maybe (Ref Script)
