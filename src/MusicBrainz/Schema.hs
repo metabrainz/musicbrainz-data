@@ -12,6 +12,7 @@ module MusicBrainz.Schema () where
 
 import Blaze.ByteString.Builder.Char8 (fromString)
 import Control.Applicative
+import Control.Lens
 import Data.Typeable (Typeable)
 import Database.PostgreSQL.Simple.FromField (FromField(..), ResultError(..), returnError, typename)
 import Database.PostgreSQL.Simple.FromRow (FromRow(..), field)
@@ -161,7 +162,7 @@ instance FromRow Script where
 
 --------------------------------------------------------------------------------
 instance ToField (MBID a) where
-  toField (MBID mbid) = Plain $ inQuotes (fromString $ UUID.toString mbid)
+  toField id' = Plain $ inQuotes . fromString $ (id' ^. by mbid)
 
 
 instance ToField (Ref Artist) where

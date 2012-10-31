@@ -25,7 +25,7 @@ import qualified MusicBrainz.Data.Generic.Create as GenericCreate
 
 --------------------------------------------------------------------------------
 instance FindLatest Artist where
-  findLatest mbid = listToMaybe <$> query q (Only mbid)
+  findLatest artistId = listToMaybe <$> query q (Only artistId)
     where q = [sql|
        SELECT artist_id, revision_id,
         name.name, sort_name.name, comment,

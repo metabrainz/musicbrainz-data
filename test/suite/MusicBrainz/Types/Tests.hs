@@ -2,6 +2,7 @@ module MusicBrainz.Types.Tests
     ( tests ) where
 
 import Control.Applicative
+import Control.Lens
 import Data.Maybe (isNothing)
 import Test.MusicBrainz
 
@@ -30,17 +31,17 @@ tests = [ testGroup "MBID"
 --------------------------------------------------------------------------------
 testParseMbid :: Test
 testParseMbid = testProperty "Can parse UUIDs as MBIDs" $
-  \uuid -> parseMbid (UUID.toString uuid) == Just (MBID uuid)
+  \uuid -> (UUID.toString uuid) ^? mbid == Just (MBID uuid)
 
 
 testParseInvalidMbid :: Test
 testParseInvalidMbid = testProperty "Non UUID strings do not parse" $
-  \s -> isNothing (UUID.fromString s) ==> parseMbid s == Nothing
+  \s -> isNothing (UUID.fromString s) ==> s ^? mbid == Nothing
 
 
 testMbidParseDisplay :: Test
 testMbidParseDisplay = testProperty "parseMbid (mbidToString m) = Just m" $
-  \mbid -> parseMbid (mbidToString mbid) == Just mbid
+  \validMbid -> validMbid ^. by mbid ^? mbid == Just validMbid
 
 --------------------------------------------------------------------------------
 testNonEmptyPartialDates :: Test

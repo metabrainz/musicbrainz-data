@@ -27,8 +27,7 @@ module MusicBrainz.Types
     , Script(..)
 
       -- * Various types of data used in entity attributes
-    , MBID(..)
-    , parseMbid, mbidToString
+    , MBID(..), mbid
     , PartialDate(..)
     , emptyDate, isEmpty
 
@@ -42,6 +41,7 @@ module MusicBrainz.Types
     , Ref(..)
     ) where
 
+import Control.Lens
 import Data.Text (Text)
 import Data.Typeable (Typeable)
 import Data.UUID
@@ -319,15 +319,19 @@ newtype MBID a = MBID UUID
   deriving (Eq, Show, Typeable)
 
 
-{-| Attempt to parse an 'MBID' from a 'String'. If parsing fails, 'Nothing'
-is returned. -}
-parseMbid :: String -> Maybe (MBID a)
-parseMbid = fmap MBID . fromString
+{-| Inject a 'String' into an 'MBID', or extract a 'String' from an 'MBID'. To
+work with this projection, you should use '^?' (to inject with a chance of
+failure) and '^.'/'by' (to extract):
 
+> "10adbe5e-a2c0-4bf3-8249-2b4cbf6e6ca8" ^? mbid :: Maybe (MBID a)
 
-{-| Convert an 'MBID' to a 'String'. -}
-mbidToString :: MBID a -> String
-mbidToString (MBID m) = toString m
+> aValidMbidValue ^. by mbid :: String
+-}
+mbid :: SimpleProjection String (MBID a)
+mbid = projection mbidToString parseMbid
+  where
+    parseMbid = fmap MBID . fromString
+    mbidToString (MBID m) = toString m
 
 --------------------------------------------------------------------------------
 {-| Represents a view of a versioned MusicBrainz \'core\' entity at a specific
