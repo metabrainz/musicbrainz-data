@@ -8,6 +8,7 @@ import Test.MusicBrainz.Repository (uk)
 
 import MusicBrainz
 import MusicBrainz.Data.Artist
+import MusicBrainz.Data.Edit
 import MusicBrainz.Data.FindLatest
 import MusicBrainz.Data.Editor (findEditorByName)
 
@@ -53,7 +54,10 @@ testUpdate = testCase "update does change artist" $ do
     let artistId = coreMbid created
 
     newRev <- update editor (coreRevision created) expected
-    mergeRevision editor newRev artistId
+
+    editId <- openEdit
+    includeRevision editId newRev
+    apply editId
 
     found <- findLatest artistId
     parents <- revisionParents newRev

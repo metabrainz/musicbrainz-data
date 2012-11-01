@@ -5,7 +5,6 @@ module MusicBrainz.Data.Artist
     ( -- * Working with revisions
       viewRevision
     , revisionParents
-    , mergeRevision
 
       -- * Editing artists
     , create
@@ -22,9 +21,41 @@ import Database.PostgreSQL.Simple.SqlQQ
 import MusicBrainz
 import MusicBrainz.Data.FindLatest
 import MusicBrainz.Data.Revision
+import MusicBrainz.Edit
 import MusicBrainz.Merge
 
 import qualified MusicBrainz.Data.Generic.Create as GenericCreate
+
+--------------------------------------------------------------------------------
+instance Editable Artist where
+  includeRevision editId revisionId = void $ execute
+    [sql| INSERT INTO edit_artist (edit_id, revision_id) VALUES (?, ?) |]
+      (editId, revisionId)
+
+  mergeRevisionUpstream new = do
+    newVer <- viewRevision new
+    let artistId = coreMbid newVer
+
+    current' <- findLatest artistId
+    case current' of
+      Nothing -> error "Unable to merge: nothing to merge into"
+      Just current -> do
+        ancestor' <- mergeBase new (coreRevision current) >>= traverse viewRevision
+        case ancestor' of
+          Nothing -> error "Unable to merge: no common ancestor"
+          Just ancestor -> do
+            case runMerge (coreData newVer) (coreData current) (coreData ancestor) merge of
+              Nothing -> error "Unable to merge: conflict"
+              Just merged -> do
+                let editorId = EditorRef 1
+
+                treeId <- artistTree merged
+                revisionId <- newRevision editorId >>=
+                              newArtistRevision (coreRevision current) treeId
+                addChild revisionId new
+                addChild revisionId (coreRevision current)
+                linkRevision artistId revisionId
+
 
 --------------------------------------------------------------------------------
 instance FindLatest Artist where
@@ -163,26 +194,3 @@ mergeBase a b = selectValue $ query
         JOIN revision_path b USING (parent_revision_id)
         ORDER BY a.distance, b.distance
         LIMIT 1 |] (Only $ In [a, b])
-
-
---------------------------------------------------------------------------------
-mergeRevision :: Ref Editor -> Ref (Revision Artist) -> MBID Artist -> MusicBrainz ()
-mergeRevision editor new artistId = do
-  current' <- findLatest artistId
-  case current' of
-    Nothing -> error "Unable to merge: nothing to merge into"
-    Just current -> do
-      ancestor' <- mergeBase new (coreRevision current) >>= traverse viewRevision
-      case ancestor' of
-        Nothing -> error "Unable to merge: no common ancestor"
-        Just ancestor -> do
-          newVer <- viewRevision new
-          case runMerge (coreData newVer) (coreData current) (coreData ancestor) merge of
-            Nothing -> error "Unable to merge: conflict"
-            Just merged -> do
-              treeId <- artistTree merged
-              revisionId <- newRevision editor >>=
-                            newArtistRevision (coreRevision current) treeId
-              addChild revisionId new
-              addChild revisionId (coreRevision current)
-              linkRevision artistId revisionId

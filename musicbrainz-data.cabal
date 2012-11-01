@@ -27,6 +27,7 @@ Library
     MusicBrainz.Data.Artist
     MusicBrainz.Data.ArtistCredit
     MusicBrainz.Data.Country
+    MusicBrainz.Data.Edit
     MusicBrainz.Data.Editor
     MusicBrainz.Data.FindLatest
     MusicBrainz.Data.Label
@@ -37,12 +38,14 @@ Library
     MusicBrainz.Data.ReleasePackaging
     MusicBrainz.Data.ReleaseStatus
     MusicBrainz.Data.Script
+    MusicBrainz.Edit
     MusicBrainz.Merge
     MusicBrainz.Schema
     MusicBrainz.Types
   other-modules:
     MusicBrainz.Data.Generic.Create
     MusicBrainz.Data.Revision
+    MusicBrainz.Monad
   ghc-options: -Wall -fwarn-tabs -funbox-strict-fields -O2
                -fno-warn-orphans -fno-warn-unused-do-bind
 

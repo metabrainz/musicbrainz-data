@@ -18,6 +18,8 @@ import Database.PostgreSQL.Simple.FromField (FromField(..), ResultError(..), ret
 import Database.PostgreSQL.Simple.FromRow (FromRow(..), field)
 import Database.PostgreSQL.Simple.ToField (ToField(..), Action(..), inQuotes)
 import Database.PostgreSQL.Simple.ToRow (ToRow(..))
+
+import MusicBrainz.Edit
 import MusicBrainz.Types
 
 import qualified Data.ByteString.Char8 as LBS
@@ -34,6 +36,10 @@ instance FromField (Ref ArtistType) where
 
 instance FromField (Ref Country) where
   fromField f v = CountryRef <$> fromField f v
+
+
+instance FromField (Ref Edit) where
+  fromField f v = EditRef <$> fromField f v
 
 
 instance FromField (Ref Editor) where
@@ -179,6 +185,10 @@ instance ToField (Ref ArtistType) where
 
 instance ToField (Ref Country) where
   toField (CountryRef id') = toField id'
+
+
+instance ToField (Ref Edit) where
+  toField (EditRef id') = toField id'
 
 
 instance ToField (Ref Editor) where

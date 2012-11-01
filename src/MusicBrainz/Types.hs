@@ -46,6 +46,7 @@ import Data.Text (Text)
 import Data.Typeable (Typeable)
 import Data.UUID
 
+--------------------------------------------------------------------------------
 {-| A reference to a specific entity. In the database, this a foreign key
 relationship to an entity of type @a@. -}
 data family Ref a
