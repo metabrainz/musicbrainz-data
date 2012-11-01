@@ -5,6 +5,7 @@ module MusicBrainz.Data.Artist
     ( -- * Working with revisions
       viewRevision
     , revisionParents
+    , mergeRevision
 
       -- * Editing artists
     , create
@@ -14,12 +15,14 @@ module MusicBrainz.Data.Artist
 import Control.Applicative
 import Control.Monad (void)
 import Data.Maybe (listToMaybe)
-import Database.PostgreSQL.Simple (Only(..))
+import Data.Traversable (traverse)
+import Database.PostgreSQL.Simple (Only(..), In(..))
 import Database.PostgreSQL.Simple.SqlQQ
 
 import MusicBrainz
 import MusicBrainz.Data.FindLatest
 import MusicBrainz.Data.Revision
+import MusicBrainz.Merge
 
 import qualified MusicBrainz.Data.Generic.Create as GenericCreate
 
@@ -60,12 +63,14 @@ viewRevision revision = head <$> query q (Only revision)
       JOIN artist_name sort_name ON (artist_data.sort_name = sort_name.id)
       WHERE revision_id = ? |]
 
+
 --------------------------------------------------------------------------------
 {-| Find references to the parent revisions of a given revision. -}
 revisionParents :: Ref (Revision Artist) -> MusicBrainz [Ref (Revision Artist)]
 revisionParents artistRev = map fromOnly <$> query q (Only artistRev)
   where q = [sql| SELECT parent_revision_id FROM revision_parent
                   WHERE revision_id = ? |]
+
 
 --------------------------------------------------------------------------------
 {-| Create an entirely new artist, returning the final 'CoreEntity' as it is
@@ -83,8 +88,10 @@ create = GenericCreate.create GenericCreate.Specification
                   VALUES (?, ?, ?) RETURNING revision_id |]
         (artistId, revisionId, artistTreeId)
 
-    linkRevision artistId revisionId = void $
-      execute [sql| UPDATE artist SET master_revision_id = ? WHERE artist_id = ? |] (revisionId, artistId)
+
+linkRevision artistId revisionId = void $
+  execute [sql| UPDATE artist SET master_revision_id = ?
+                WHERE artist_id = ? |] (revisionId, artistId)
 
 
 --------------------------------------------------------------------------------
@@ -97,18 +104,25 @@ update editor baseRev artist = do
   addChild revisionId baseRev
   return revisionId
 
-  where
-    newArtistRevision :: Ref (Revision Artist) -> Ref (Tree Artist) -> Ref (Revision Artist)
-                      -> MusicBrainz (Ref (Revision Artist))
-    newArtistRevision parentRevision artistTreeId revisionId = selectValue $
-      query [sql| INSERT INTO artist_revision (artist_id, revision_id, artist_tree_id)
-                  VALUES ( (SELECT artist_id FROM artist_revision WHERE revision_id = ?)
-                         , ?, ?) RETURNING revision_id |]
-        (parentRevision, revisionId, artistTreeId)
 
-    addChild childRevision parentRevision =
-      execute [sql| INSERT INTO revision_parent (revision_id, parent_revision_id)
-                    VALUES (?, ?) |] (childRevision, parentRevision)
+--------------------------------------------------------------------------------
+newArtistRevision :: Ref (Revision Artist)
+                  -> Ref (Tree Artist)
+                  -> Ref (Revision Artist)
+                  -> MusicBrainz (Ref (Revision Artist))
+newArtistRevision parentRevision artistTreeId revisionId = selectValue $
+  query [sql| INSERT INTO artist_revision (artist_id, revision_id, artist_tree_id)
+              VALUES ( (SELECT artist_id FROM artist_revision WHERE revision_id = ?)
+                     , ?, ?) RETURNING revision_id |]
+    (parentRevision, revisionId, artistTreeId)
+
+
+--------------------------------------------------------------------------------
+addChild childRevision parentRevision =
+  void $ execute
+    [sql| INSERT INTO revision_parent (revision_id, parent_revision_id)
+          VALUES (?, ?) |] (childRevision, parentRevision)
+
 
 --------------------------------------------------------------------------------
 artistTree :: Artist -> MusicBrainz (Ref (Tree Artist))
@@ -123,3 +137,52 @@ artistTree artist = findOrInsertArtistData >>= findOrInsertArtistTree
       query [sql| SELECT find_or_insert_artist_tree(?) |]
         (Only dataId)
 
+
+--------------------------------------------------------------------------------
+{-| Attempt to resolve a the revision which 2 revisions forked from. -}
+mergeBase :: Ref (Revision Artist) -> Ref (Revision Artist)
+          -> MusicBrainz (Maybe (Ref (Revision Artist)))
+mergeBase a b = selectValue $ query
+  [sql| WITH RECURSIVE revision_path (revision_id, parent_revision_id, distance)
+        AS (
+          SELECT revision_id, parent_revision_id, 1
+          FROM revision_parent
+          WHERE revision_id IN ?
+
+          UNION
+
+          SELECT
+            revision_path.revision_id, revision_parent.parent_revision_id,
+            distance + 1
+          FROM revision_parent
+          JOIN revision_path
+            ON (revision_parent.revision_id = revision_path.parent_revision_id)
+        )
+        SELECT parent_revision_id
+        FROM revision_path a
+        JOIN revision_path b USING (parent_revision_id)
+        ORDER BY a.distance, b.distance
+        LIMIT 1 |] (Only $ In [a, b])
+
+
+--------------------------------------------------------------------------------
+mergeRevision :: Ref Editor -> Ref (Revision Artist) -> MBID Artist -> MusicBrainz ()
+mergeRevision editor new artistId = do
+  current' <- findLatest artistId
+  case current' of
+    Nothing -> error "Unable to merge: nothing to merge into"
+    Just current -> do
+      ancestor' <- mergeBase new (coreRevision current) >>= traverse viewRevision
+      case ancestor' of
+        Nothing -> error "Unable to merge: no common ancestor"
+        Just ancestor -> do
+          newVer <- viewRevision new
+          case runMerge (coreData newVer) (coreData current) (coreData ancestor) merge of
+            Nothing -> error "Unable to merge: conflict"
+            Just merged -> do
+              treeId <- artistTree merged
+              revisionId <- newRevision editor >>=
+                            newArtistRevision (coreRevision current) treeId
+              addChild revisionId new
+              addChild revisionId (coreRevision current)
+              linkRevision artistId revisionId

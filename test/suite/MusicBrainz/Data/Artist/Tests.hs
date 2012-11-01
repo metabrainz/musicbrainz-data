@@ -46,21 +46,21 @@ testCreateFindLatest = testCase "findLatest when artist exists" $ do
 
 testUpdate :: Test
 testUpdate = testCase "update does change artist" $ do
-  (created, revised, parents) <- mbTest $ do
+  (created, Just revised, parents) <- mbTest $ do
     Just editor <- fmap entityRef <$> findEditorByName "acid2"
 
-    created <- create editor expected
-    newRev <- update editor (coreRevision created) expected
+    created <- create editor startWith
+    let artistId = coreMbid created
 
-    found <- viewRevision newRev
+    newRev <- update editor (coreRevision created) expected
+    mergeRevision editor newRev artistId
+
+    found <- findLatest artistId
     parents <- revisionParents newRev
+
     return (created, found, parents)
 
-  assertBool "MBID does not change over update" $
-    coreMbid revised == coreMbid created
-
-  assertBool "Revision does change over update" $
-    coreData revised == expected
+  coreData revised @?= expected
 
   assertBool "The old revision is a direct parent of the new revision" $
     parents == [coreRevision created]

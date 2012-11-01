@@ -37,6 +37,7 @@ Library
     MusicBrainz.Data.ReleasePackaging
     MusicBrainz.Data.ReleaseStatus
     MusicBrainz.Data.Script
+    MusicBrainz.Merge
     MusicBrainz.Schema
     MusicBrainz.Types
   other-modules:

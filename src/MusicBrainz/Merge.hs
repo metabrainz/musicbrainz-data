@@ -1,0 +1,72 @@
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE RecordWildCards #-}
+{-| How to merge various types of data, with the possibility of conflicts. -}
+module MusicBrainz.Merge
+    ( runMerge, mergeEq, Mergeable(..) ) where
+
+import Control.Applicative
+import Data.Functor.Compose
+
+import MusicBrainz
+
+data MergeScope a = MergeScope { new :: a, current :: a, ancestor :: a }
+
+--------------------------------------------------------------------------------
+{-| Merge actions take a 'MergeScope' (of type 'e'), and attempt to merge all 3
+sides into a single value of type 'a'. The merge has the option to fail, which
+will fail any larger merges that this merge is part of. -}
+newtype Merge e a = Merge { getMerge :: Compose ((->) (MergeScope e)) Maybe a }
+  deriving (Functor, Applicative)
+
+
+--------------------------------------------------------------------------------
+{-| The simplest merge strategy, which only succeeds if 2 of the sides agree. -}
+mergeEq :: Eq a => Merge a a
+mergeEq = Merge $ Compose go
+  where
+    go MergeScope{..}
+      | current == ancestor = Just new
+      | new == ancestor     = Just current
+      | new == current      = Just current
+      | otherwise           = Nothing
+
+
+--------------------------------------------------------------------------------
+{-| Attempt to run a merge. If the merge fails due to conflicts, then 'Nothing'
+is returned, otherwise 'Just' the merged value is returned. -}
+runMerge :: e -> e -> e -> Merge e a -> Maybe a
+runMerge new current ancestor (Merge (Compose m)) =
+  m (MergeScope new current ancestor)
+
+{-| Given lens to go from the current merge environment, to a component of it,
+and a merge strategy to apply those elements, return a merge strategy that is
+valid in the current environment.
+
+Less technically, this lets you merge values inside a larger structure (for
+example, to merge records). -}
+mergedVia :: (e -> e') -> Merge e' a -> Merge e a
+mergedVia l m = Merge $ Compose go
+  where
+    go = (getCompose $ getMerge m) . rescoped
+    rescoped m = MergeScope { current = l $ current m
+                            , new = l $ new m
+                            , ancestor = l $ ancestor m
+                            }
+
+--------------------------------------------------------------------------------
+{-| The 'Mergeable' class lets you define a merge strategy for a specific
+type. -}
+class Mergeable a where
+  merge :: Merge a a
+
+instance Mergeable Artist where
+  merge =
+    Artist <$> artistName `mergedVia` mergeEq
+           <*> artistSortName `mergedVia` mergeEq
+           <*> artistComment `mergedVia` mergeEq
+           <*> artistBeginDate `mergedVia` mergeEq
+           <*> artistEndDate `mergedVia` mergeEq
+           <*> artistEnded `mergedVia` mergeEq
+           <*> artistGender `mergedVia` mergeEq
+           <*> artistType `mergedVia` mergeEq
+           <*> artistCountry `mergedVia` mergeEq
