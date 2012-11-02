@@ -67,9 +67,10 @@ class Editable a where
 have a discussion about the changes being made, or to provide references for
 other editors to verify changes against. -}
 data EditNote = EditNote
-  { editNoteBody :: Text
-  , editNoteAuthor :: Ref Editor
-  }
+    { editNoteBody :: Text
+    , editNoteAuthor :: Ref Editor
+    }
+  deriving (Eq, Show)
 
 data instance Ref EditNote = EditNoteRef
 
