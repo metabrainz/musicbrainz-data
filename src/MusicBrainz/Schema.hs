@@ -247,6 +247,11 @@ instance ToField (Ref (Tree a)) where
   toField (TreeRef id') = toField id'
 
 
+instance ToField Vote where
+  toField Accept = toField (1::Int)
+  toField Reject = toField (-1::Int)
+  toField Abstain = toField (0::Int)
+
 --------------------------------------------------------------------------------
 instance ToRow Artist where
   toRow Artist{..} = [ toField artistName

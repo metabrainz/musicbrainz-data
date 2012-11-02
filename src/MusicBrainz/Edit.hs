@@ -1,5 +1,7 @@
-{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE ExistentialQuantification #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE TypeFamilies #-}
 module MusicBrainz.Edit
     ( Edit(..)
     , Change(..)
@@ -7,6 +9,7 @@ module MusicBrainz.Edit
     , Ref(..)
     , EditNote(..)
     , EditStatus(..)
+    , Vote(..)
     ) where
 
 import Data.Text (Text)
@@ -24,6 +27,9 @@ data Edit = Edit { editChanges :: [Change]
                  }
 
 data instance Ref Edit = EditRef Int
+
+deriving instance Eq (Ref Edit)
+deriving instance Show (Ref Edit)
 
 --------------------------------------------------------------------------------
 {-| An existential wrapper around 'Ref' 'Revision'. Essentially, a 'Change' is
@@ -71,3 +77,8 @@ data instance Ref EditNote = EditNoteRef
 --------------------------------------------------------------------------------
 {-| The possible states an edit can be in. -}
 data EditStatus = Open | Closed
+
+
+--------------------------------------------------------------------------------
+{-| The possible types of votes that editors can cast on an edit. -}
+data Vote = Accept | Reject | Abstain

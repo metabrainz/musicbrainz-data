@@ -56,3 +56,10 @@ findEditNotes :: Ref Edit -> MusicBrainz [Entity EditNote]
 findEditNotes editId = query
   [sql| SELECT editor_id, text FROM edit_note WHERE edit_id = ? |]
     (Only editId)
+
+
+--------------------------------------------------------------------------------
+voteOnEdit :: Ref Editor -> Ref Edit -> Vote -> MusicBrainz ()
+voteOnEdit editorId editId vote = void $ execute
+  [sql| INSERT INTO vote (edit_id, editor_id, vote) VALUES (?, ?, ?) |]
+    (editorId, editId, vote)
