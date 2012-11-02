@@ -42,6 +42,10 @@ instance FromField (Ref Edit) where
   fromField f v = EditRef <$> fromField f v
 
 
+instance FromField (Ref EditNote) where
+  fromField _ _ = pure EditNoteRef
+
+
 instance FromField (Ref Editor) where
   fromField f v = EditorRef <$> fromField f v
 
@@ -115,6 +119,10 @@ instance FromRow Artist where
 
 instance FromRow Country where
   fromRow = Country <$> field <*> field
+
+
+instance FromRow EditNote where
+  fromRow = EditNote <$> field <*> field
 
 
 instance FromRow Editor where
@@ -256,6 +264,12 @@ instance ToRow Country where
   toRow Country{..} = [ toField countryIsoCode
                       , toField countryName
                       ]
+
+
+instance ToRow EditNote where
+  toRow EditNote{..} = [ toField editNoteAuthor
+                       , toField editNoteBody
+                       ]
 
 
 instance ToRow Label where

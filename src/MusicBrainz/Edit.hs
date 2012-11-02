@@ -5,7 +5,10 @@ module MusicBrainz.Edit
     , Change(..)
     , Editable(..)
     , Ref(..)
+    , EditNote(..)
     ) where
+
+import Data.Text (Text)
 
 import MusicBrainz.Monad
 import MusicBrainz.Types
@@ -49,3 +52,14 @@ class Editable a where
   {-| Merge a revision on top of the current master revision. -}
   mergeRevisionUpstream :: Ref (Revision a) -> MusicBrainz ()
 
+
+--------------------------------------------------------------------------------
+{-| An edit note is a comment that can be left by editors on edit notes, to
+have a discussion about the changes being made, or to provide references for
+other editors to verify changes against. -}
+data EditNote = EditNote
+  { editNoteBody :: Text
+  , editNoteAuthor :: Ref Editor
+  }
+
+data instance Ref EditNote = EditNoteRef

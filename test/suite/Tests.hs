@@ -6,6 +6,7 @@ import           Control.Monad (forM_)
 import           Test.Framework (defaultMain, testGroup)
 
 import qualified MusicBrainz.Data.Artist.Tests
+import qualified MusicBrainz.Data.Edit.Tests
 import qualified MusicBrainz.Data.Label.Tests
 import qualified MusicBrainz.Data.Recording.Tests
 import qualified MusicBrainz.Data.Release.Tests
@@ -21,6 +22,8 @@ main = cleanState >> defaultMain tests
   where
     tests = [ testGroup "MusicBrainz.Data.Artist"
                 MusicBrainz.Data.Artist.Tests.tests
+            , testGroup "MusicBrainz.Data.Edit"
+                MusicBrainz.Data.Edit.Tests.tests
             , testGroup "MusicBrainz.Data.Label"
                 MusicBrainz.Data.Label.Tests.tests
             , testGroup "MusicBrainz.Data.Recording"

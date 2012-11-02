@@ -3,12 +3,14 @@
 module MusicBrainz.Data.Edit
     ( apply
     , openEdit
+    , addEditNote
+    , findEditNotes
     , module MusicBrainz.Edit
     ) where
 
 import Control.Applicative
 import Control.Monad
-import Database.PostgreSQL.Simple (Only(..))
+import Database.PostgreSQL.Simple (Only(..), (:.)(..))
 import Database.PostgreSQL.Simple.SqlQQ (sql)
 
 import MusicBrainz
@@ -35,3 +37,17 @@ apply editId = getChanges >>= mapM_ merge
 openEdit :: MusicBrainz (Ref Edit)
 openEdit = selectValue $ query_
   [sql| INSERT INTO edit DEFAULT VALUES RETURNING edit_id |]
+
+
+--------------------------------------------------------------------------------
+addEditNote :: Ref Edit -> EditNote -> MusicBrainz ()
+addEditNote editId note = void $ execute
+  [sql| INSERT INTO edit_note (edit_id, editor_id, text) VALUES (?, ?, ?) |]
+    (Only editId :. note)
+
+
+--------------------------------------------------------------------------------
+findEditNotes :: Ref Edit -> MusicBrainz [Entity EditNote]
+findEditNotes editId = query
+  [sql| SELECT editor_id, text FROM edit_note WHERE edit_id = ? |]
+    (Only editId)
