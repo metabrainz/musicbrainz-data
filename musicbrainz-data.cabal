@@ -65,6 +65,7 @@ Test-Suite integration-tests
     test-framework >= 0.6.1 && <0.7,
     test-framework-hunit >= 0.2.7 && <0.3,
     test-framework-quickcheck2 >= 0.2.12.3 && <0.3,
+    transformers >= 0.3 && < 0.4,
     uuid >= 1.2.7 && < 1.3
   ghc-options: -Wall -fwarn-tabs -funbox-strict-fields -O2
                -fno-warn-orphans -fno-warn-unused-do-bind

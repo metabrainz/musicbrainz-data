@@ -19,17 +19,14 @@ tests = [ testCreateFindLatest
         ]
 
 testCreateFindLatest :: Test
-testCreateFindLatest = testCase "findLatest when recording exists" $ do
-  (created, Just found) <- mbTest $ do
-    Just editor <- fmap entityRef <$> findEditorByName "acid2"
-    ac <- singleArtistAc editor portishead
+testCreateFindLatest = testCase "findLatest when recording exists" $ mbTest $ do
+  Just editor <- fmap entityRef <$> findEditorByName "acid2"
+  ac <- singleArtistAc editor portishead
 
-    created <- Recording.create editor (expected ac)
-    found <- findLatest (coreMbid created)
+  created <- Recording.create editor (expected ac)
+  Just found <- findLatest (coreMbid created)
 
-    return (created, found)
-
-  found @?= created
+  liftIO $ found @?= created
   where
     expected ac = Recording { recordingName = "Mysterons"
                             , recordingComment = ""

@@ -1,7 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Test.MusicBrainz
-    ( -- * Re-export the testframework
-      module Test.Framework
+    ( -- * Re-export test modules
+      module Control.Monad.IO.Class
+    , module Test.Framework
     , module Test.Framework.Providers.HUnit
     , module Test.Framework.Providers.QuickCheck2
     , module Test.HUnit
@@ -15,6 +16,7 @@ module Test.MusicBrainz
 import Control.Applicative
 import Control.Exception (handleJust)
 import Control.Monad.CatchIO
+import Control.Monad.IO.Class
 import Test.Framework
 import Test.Framework.Providers.HUnit
 import Test.Framework.Providers.QuickCheck2

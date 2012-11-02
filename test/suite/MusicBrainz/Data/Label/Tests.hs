@@ -13,15 +13,13 @@ tests = [ testCreateFindLatest
         ]
 
 testCreateFindLatest :: Test
-testCreateFindLatest = testCase "findLatest when label exists" $ do
-  (created, Just found) <- mbTest $ do
-    Just editor <- findEditorByName "acid2"
+testCreateFindLatest = testCase "findLatest when label exists" $ mbTest $ do
+  Just editor <- findEditorByName "acid2"
 
-    created <- create (entityRef editor) expected
-    found <- findLatest (coreMbid created)
+  created <- create (entityRef editor) expected
+  Just found <- findLatest (coreMbid created)
 
-    return (created, found)
-  found @?= created
+  liftIO $ found @?= created
   where
     expected = Label { labelName = "Revolution Records"
                      , labelSortName = "Records, Revolution"

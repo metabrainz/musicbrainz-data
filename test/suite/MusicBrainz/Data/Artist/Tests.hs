@@ -20,16 +20,14 @@ tests = [ testCreateFindLatest
         ]
 
 testCreateFindLatest :: Test
-testCreateFindLatest = testCase "findLatest when artist exists" $ do
-  (created, Just found) <- mbTest $ do
-    Just editor <- findEditorByName "acid2"
-    country <- Country.addCountry uk
+testCreateFindLatest = testCase "findLatest when artist exists" $ mbTest $ do
+  Just editor <- findEditorByName "acid2"
+  country <- Country.addCountry uk
 
-    created <- create (entityRef editor) (expected (entityRef country))
-    found <- findLatest (coreMbid created)
+  created <- create (entityRef editor) (expected (entityRef country))
+  Just found <- findLatest (coreMbid created)
 
-    return (created, found)
-  found @?= created
+  liftIO $ found @?= created
   where
     expected country = Artist
       { artistName = "Freddie Mercury"
@@ -46,28 +44,25 @@ testCreateFindLatest = testCase "findLatest when artist exists" $ do
       }
 
 testUpdate :: Test
-testUpdate = testCase "update does change artist" $ do
-  (created, Just revised, parents) <- mbTest $ do
-    Just editor <- fmap entityRef <$> findEditorByName "acid2"
+testUpdate = testCase "update does change artist" $ mbTest $ do
+  Just editor <- fmap entityRef <$> findEditorByName "acid2"
 
-    created <- create editor startWith
-    let artistId = coreMbid created
+  created <- create editor startWith
+  let artistId = coreMbid created
 
-    newRev <- update editor (coreRevision created) expected
+  newRev <- update editor (coreRevision created) expected
 
-    editId <- openEdit
-    includeRevision editId newRev
-    apply editId
+  editId <- openEdit
+  includeRevision editId newRev
+  apply editId
 
-    found <- findLatest artistId
-    parents <- revisionParents newRev
+  Just found <- findLatest artistId
+  liftIO $ coreData found @?= expected
 
-    return (created, found, parents)
-
-  coreData revised @?= expected
-
-  assertBool "The old revision is a direct parent of the new revision" $
-    parents == [coreRevision created]
+  parents <- revisionParents newRev
+  liftIO $
+    assertBool "The old revision is a direct parent of the new revision" $
+      parents == [coreRevision created]
 
   where
     startWith = Artist { artistName = "Freddie Mercury"

@@ -25,37 +25,34 @@ tests = [ testCreateFindLatest
         ]
 
 testCreateFindLatest :: Test
-testCreateFindLatest = testCase "findLatest when release exists" $ do
-  (created, Just found) <- mbTest $ do
-    Just editor <- fmap entityRef <$> findEditorByName "acid2"
-    portisheadAc <- singleArtistAc editor portishead
-    portisheadRg <- ReleaseGroup.create editor (dummy portisheadAc)
-    country <- Country.addCountry uk
-    script <- Script.addScript Script { scriptName = "United Kingdom"
-                                      , scriptIsoCode = "gb"
-                                      , scriptIsoNumber = "360"
-                                      }
-    language <- Language.addLanguage Language
-      { languageName = "United Kingdom"
-      , languageIsoCode2t = "gb"
-      , languageIsoCode2b = ""
-      , languageIsoCode1 = ""
-      , languageIsoCode3 = ""
-      }
-    packaging <- ReleasePackaging.addReleasePackaging ReleasePackaging
-      { releasePackagingName = "Jewel Case" }
-    status <- ReleaseStatus.addReleaseStatus ReleaseStatus
-      { releaseStatusName = "Official" }
+testCreateFindLatest = testCase "findLatest when release exists" $ mbTest $ do
+  Just editor <- fmap entityRef <$> findEditorByName "acid2"
+  portisheadAc <- singleArtistAc editor portishead
+  portisheadRg <- ReleaseGroup.create editor (dummy portisheadAc)
+  country <- Country.addCountry uk
+  script <- Script.addScript Script { scriptName = "United Kingdom"
+                                    , scriptIsoCode = "gb"
+                                    , scriptIsoNumber = "360"
+                                    }
+  language <- Language.addLanguage Language
+    { languageName = "United Kingdom"
+    , languageIsoCode2t = "gb"
+    , languageIsoCode2b = ""
+    , languageIsoCode1 = ""
+    , languageIsoCode3 = ""
+    }
+  packaging <- ReleasePackaging.addReleasePackaging ReleasePackaging
+    { releasePackagingName = "Jewel Case" }
+  status <- ReleaseStatus.addReleaseStatus ReleaseStatus
+    { releaseStatusName = "Official" }
 
-    created <- Release.create editor $
-      expected (ReleaseGroupRef $ coreMbid portisheadRg) portisheadAc
-        (entityRef country) (entityRef script) (entityRef language)
-        (entityRef packaging) (entityRef status)
+  created <- Release.create editor $
+    expected (ReleaseGroupRef $ coreMbid portisheadRg) portisheadAc
+      (entityRef country) (entityRef script) (entityRef language)
+      (entityRef packaging) (entityRef status)
 
-    found <- findLatest (coreMbid created)
-
-    return (created, found)
-  found @?= created
+  Just found <- findLatest (coreMbid created)
+  liftIO $ found @?= created
   where
     expected rg ac country script language packaging status =
       Release { releaseName = "Dummy"

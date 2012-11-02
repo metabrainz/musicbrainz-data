@@ -18,20 +18,16 @@ tests = [ testFindLatest
         ]
 
 testFindLatest :: Test
-testFindLatest = testCase "findLatest when release group exists" $ do
-  (created, Just found) <- mbTest $ do
-    Just editor <- findEditorByName "acid2"
-    artist <- Artist.create (entityRef editor) portishead
-    ac <- ArtistCredit.getRef
-            [ ArtistCreditName { acnArtist = ArtistRef $ coreMbid artist
-                               , acnName = artistName (coreData artist)
-                               , acnJoinPhrase = ""
-                               }
-            ]
+testFindLatest = testCase "findLatest when release group exists" $ mbTest $ do
+  Just editor <- findEditorByName "acid2"
+  artist <- Artist.create (entityRef editor) portishead
+  ac <- ArtistCredit.getRef
+          [ ArtistCreditName { acnArtist = ArtistRef $ coreMbid artist
+                             , acnName = artistName (coreData artist)
+                             , acnJoinPhrase = ""
+                             }
+          ]
 
-    created <- ReleaseGroup.create (entityRef editor) (dummy ac)
-    found <- findLatest (coreMbid created)
-
-    return (created, found)
-
-  found @?= created
+  created <- ReleaseGroup.create (entityRef editor) (dummy ac)
+  Just found <- findLatest (coreMbid created)
+  liftIO $ found @?= created
