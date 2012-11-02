@@ -6,6 +6,7 @@ module MusicBrainz.Edit
     , Editable(..)
     , Ref(..)
     , EditNote(..)
+    , EditStatus(..)
     ) where
 
 import Data.Text (Text)
@@ -18,7 +19,9 @@ import MusicBrainz.Types
 entities. Editors can then vote on these edits to decide if they should be
 merge, which ModBot can then later merge (or reject) once a consensus
 emerges. -}
-data Edit = Edit { editChanges :: [Change] }
+data Edit = Edit { editChanges :: [Change]
+                 , editStatus :: EditStatus
+                 }
 
 data instance Ref Edit = EditRef Int
 
@@ -63,3 +66,8 @@ data EditNote = EditNote
   }
 
 data instance Ref EditNote = EditNoteRef
+
+
+--------------------------------------------------------------------------------
+{-| The possible states an edit can be in. -}
+data EditStatus = Open | Closed

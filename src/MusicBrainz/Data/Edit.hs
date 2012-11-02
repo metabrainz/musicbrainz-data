@@ -19,7 +19,9 @@ import MusicBrainz.Edit
 
 --------------------------------------------------------------------------------
 apply :: Ref Edit -> MusicBrainz ()
-apply editId = getChanges >>= mapM_ merge
+apply editId = do
+  getChanges >>= mapM_ merge
+  closeEdit
   where
     getChanges = map toChange <$> query [sql|
       SELECT 'artist'::text, revision_id FROM edit_artist WHERE edit_id = ?
@@ -32,11 +34,14 @@ apply editId = getChanges >>= mapM_ merge
         "artist" -> Change (RevisionRef revisionId :: Ref (Revision Artist))
         _ -> error $ "Attempt to load an edit with revision of unknown kind '" ++ kind ++ "'"
 
+    closeEdit = void $ execute
+      [sql| UPDATE edit SET status = ? WHERE edit_id = ? |] (Closed, editId)
+
 
 --------------------------------------------------------------------------------
 openEdit :: MusicBrainz (Ref Edit)
 openEdit = selectValue $ query_
-  [sql| INSERT INTO edit DEFAULT VALUES RETURNING edit_id |]
+  [sql| INSERT INTO edit ( status ) DEFAULT VALUES RETURNING edit_id |]
 
 
 --------------------------------------------------------------------------------
