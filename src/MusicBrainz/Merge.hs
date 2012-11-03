@@ -9,7 +9,14 @@ import Data.Functor.Compose
 
 import MusicBrainz
 
+--------------------------------------------------------------------------------
 data MergeScope a = MergeScope { new :: a, current :: a, ancestor :: a }
+
+instance Functor MergeScope where
+  fmap f m = MergeScope { new = f $ new m
+                        , current = f $ current m
+                        , ancestor = f $ ancestor m
+                        }
 
 --------------------------------------------------------------------------------
 {-| Merge actions take a 'MergeScope' (of type 'e'), and attempt to merge all 3
@@ -45,13 +52,7 @@ valid in the current environment.
 Less technically, this lets you merge values inside a larger structure (for
 example, to merge records). -}
 mergedVia :: (e -> e') -> Merge e' a -> Merge e a
-mergedVia l m = Merge $ Compose go
-  where
-    go = (getCompose $ getMerge m) . rescoped
-    rescoped m = MergeScope { current = l $ current m
-                            , new = l $ new m
-                            , ancestor = l $ ancestor m
-                            }
+mergedVia l m = Merge $ Compose $ (getCompose $ getMerge m) . fmap l
 
 --------------------------------------------------------------------------------
 {-| The 'Mergeable' class lets you define a merge strategy for a specific
