@@ -1,8 +1,9 @@
-{-# LANGUAGE UndecidableInstances #-}
-{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE GADTs #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE UndecidableInstances #-}
 {-| Contains instances of 'FromField', 'FromRow', 'ToField' and 'ToRow' to
 serialize to the MusicBrainz PostgreSQL database, and retrieve data from
 it. This module doesn't really export much, but importing it will bring in

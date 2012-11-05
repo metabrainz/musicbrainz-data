@@ -21,20 +21,6 @@ import MusicBrainz.Monad
 import MusicBrainz.Types
 
 --------------------------------------------------------------------------------
-{-| An edit bundles up multiple 'Revision's that have not yet been applied to
-entities. Editors can then vote on these edits to decide if they should be
-merge, which ModBot can then later merge (or reject) once a consensus
-emerges. -}
-data Edit = Edit { editChanges :: Set Change
-                 , editStatus :: EditStatus
-                 }
-
-data instance Ref Edit = EditRef Int
-
-deriving instance Eq (Ref Edit)
-deriving instance Show (Ref Edit)
-
---------------------------------------------------------------------------------
 {-| An existential wrapper around 'Ref' 'Revision'. Essentially, a 'Change' is
 a 'Ref' 'Revision' except /you don't know what type/ @a@ is. All you know is
 that it's an instance of 'Editable'.
@@ -63,26 +49,3 @@ class Editable a where
 
   {-| Merge a revision on top of the current master revision. -}
   mergeRevisionUpstream :: Ref (Revision a) -> MusicBrainz ()
-
-
---------------------------------------------------------------------------------
-{-| An edit note is a comment that can be left by editors on edit notes, to
-have a discussion about the changes being made, or to provide references for
-other editors to verify changes against. -}
-data EditNote = EditNote
-    { editNoteBody :: Text
-    , editNoteAuthor :: Ref Editor
-    }
-  deriving (Eq, Show)
-
-data instance Ref EditNote = EditNoteRef Int
-
-
---------------------------------------------------------------------------------
-{-| The possible states an edit can be in. -}
-data EditStatus = Open | Closed
-
-
---------------------------------------------------------------------------------
-{-| The possible types of votes that editors can cast on an edit. -}
-data Vote = Accept | Reject | Abstain
