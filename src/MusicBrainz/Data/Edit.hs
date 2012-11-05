@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
+{-| Functions to work with MusicBrainz edits. -}
 module MusicBrainz.Data.Edit
     ( apply
     , openEdit
@@ -19,6 +20,7 @@ import MusicBrainz.Data.Artist ()
 import MusicBrainz.Edit
 
 --------------------------------------------------------------------------------
+{-| Apply an edit by merging all revisions in the edit upstream. -}
 apply :: Ref Edit -> MusicBrainz ()
 apply editId = do
   getChanges >>= mapM_ merge
@@ -40,6 +42,7 @@ apply editId = do
 
 
 --------------------------------------------------------------------------------
+{-| Open a fresh edit, which can then have revisions added. -}
 openEdit :: MusicBrainz (Ref Edit)
 openEdit = selectValue $ query
   [sql| INSERT INTO edit (status) VALUES (?) RETURNING edit_id |]
@@ -47,6 +50,7 @@ openEdit = selectValue $ query
 
 
 --------------------------------------------------------------------------------
+{-| Append an edit note to the list of edit notes for an edit. -}
 addEditNote :: Ref Edit -> EditNote -> MusicBrainz ()
 addEditNote editId note = void $ execute
   [sql| INSERT INTO edit_note (edit_id, editor_id, text) VALUES (?, ?, ?) |]
@@ -54,6 +58,7 @@ addEditNote editId note = void $ execute
 
 
 --------------------------------------------------------------------------------
+{-| Find all edit notes for an edit. -}
 findEditNotes :: Ref Edit -> MusicBrainz [Entity EditNote]
 findEditNotes editId = query
   [sql| SELECT edit_note_id, text, editor_id FROM edit_note WHERE edit_id = ? |]
@@ -61,6 +66,7 @@ findEditNotes editId = query
 
 
 --------------------------------------------------------------------------------
+{-| Allow an editor to cast a 'Vote' on an edit. -}
 voteOnEdit :: Ref Editor -> Ref Edit -> Vote -> MusicBrainz ()
 voteOnEdit editorId editId vote = void $ execute
   [sql| INSERT INTO vote (edit_id, editor_id, vote) VALUES (?, ?, ?) |]
