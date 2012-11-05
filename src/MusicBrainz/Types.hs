@@ -359,6 +359,7 @@ data Revision a
 data instance Ref (Revision a) = RevisionRef Int
 deriving instance Eq (Ref (Revision a))
 deriving instance Show (Ref (Revision a))
+deriving instance Ord (Ref (Revision a))
 
 
 --------------------------------------------------------------------------------

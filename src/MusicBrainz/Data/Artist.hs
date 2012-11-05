@@ -18,6 +18,8 @@ import Data.Traversable (traverse)
 import Database.PostgreSQL.Simple (Only(..), In(..))
 import Database.PostgreSQL.Simple.SqlQQ
 
+import qualified Data.Set as Set
+
 import MusicBrainz
 import MusicBrainz.Data.FindLatest
 import MusicBrainz.Data.Revision
@@ -99,8 +101,9 @@ viewRevision revision = head <$> query q (Only revision)
 
 --------------------------------------------------------------------------------
 {-| Find references to the parent revisions of a given revision. -}
-revisionParents :: Ref (Revision Artist) -> MusicBrainz [Ref (Revision Artist)]
-revisionParents artistRev = map fromOnly <$> query q (Only artistRev)
+revisionParents :: Ref (Revision Artist) -> MusicBrainz (Set.Set (Ref (Revision Artist)))
+revisionParents artistRev =
+  Set.fromList . map fromOnly <$> query q (Only artistRev)
   where q = [sql| SELECT parent_revision_id FROM revision_parent
                   WHERE revision_id = ? |]
 

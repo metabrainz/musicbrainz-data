@@ -2,6 +2,7 @@
 module MusicBrainz.Data.Artist.Tests ( tests ) where
 
 import Control.Applicative
+import qualified Data.Set as Set
 
 import Test.MusicBrainz
 import Test.MusicBrainz.Repository (uk, acid2, male, person)
@@ -67,7 +68,7 @@ testUpdate = testCase "update does change artist" $ mbTest $ do
   parents <- revisionParents newRev
   liftIO $
     assertBool "The old revision is a direct parent of the new revision" $
-      parents == [coreRevision created]
+      parents == Set.singleton (coreRevision created)
 
   where
     startWith = Artist { artistName = "Freddie Mercury"

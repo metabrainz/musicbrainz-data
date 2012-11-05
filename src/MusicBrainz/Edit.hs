@@ -14,6 +14,7 @@ module MusicBrainz.Edit
     , Vote(..)
     ) where
 
+import Data.Set (Set)
 import Data.Text (Text)
 
 import MusicBrainz.Monad
@@ -24,7 +25,7 @@ import MusicBrainz.Types
 entities. Editors can then vote on these edits to decide if they should be
 merge, which ModBot can then later merge (or reject) once a consensus
 emerges. -}
-data Edit = Edit { editChanges :: [Change]
+data Edit = Edit { editChanges :: Set Change
                  , editStatus :: EditStatus
                  }
 
