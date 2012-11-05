@@ -43,7 +43,7 @@ instance Editable Artist where
         ancestor' <- mergeBase new (coreRevision current) >>= traverse viewRevision
         case ancestor' of
           Nothing -> error "Unable to merge: no common ancestor"
-          Just ancestor -> do
+          Just ancestor ->
             case runMerge (coreData newVer) (coreData current) (coreData ancestor) merge of
               Nothing -> error "Unable to merge: conflict"
               Just merged -> do
@@ -110,16 +110,17 @@ create :: Ref Editor -> Artist -> MusicBrainz (CoreEntity Artist)
 create = GenericCreate.create GenericCreate.Specification
     { GenericCreate.getTree = artistTree
     , GenericCreate.reserveEntity = GenericCreate.reserveEntityTable "artist"
-    , GenericCreate.newEntityRevision = newArtistRevision
+    , GenericCreate.newEntityRevision = newArtistRevision'
     , GenericCreate.linkRevision = linkRevision
     }
   where
-    newArtistRevision artistId artistTreeId revisionId = selectValue $
+    newArtistRevision' artistId artistTreeId revisionId = selectValue $
       query [sql| INSERT INTO artist_revision (artist_id, revision_id, artist_tree_id)
                   VALUES (?, ?, ?) RETURNING revision_id |]
         (artistId, revisionId, artistTreeId)
 
 
+linkRevision :: MBID Artist -> Ref (Revision Artist) -> MusicBrainz ()
 linkRevision artistId revisionId = void $
   execute [sql| UPDATE artist SET master_revision_id = ?
                 WHERE artist_id = ? |] (revisionId, artistId)
@@ -146,13 +147,6 @@ newArtistRevision parentRevision artistTreeId revisionId = selectValue $
               VALUES ( (SELECT artist_id FROM artist_revision WHERE revision_id = ?)
                      , ?, ?) RETURNING revision_id |]
     (parentRevision, revisionId, artistTreeId)
-
-
---------------------------------------------------------------------------------
-addChild childRevision parentRevision =
-  void $ execute
-    [sql| INSERT INTO revision_parent (revision_id, parent_revision_id)
-          VALUES (?, ?) |] (childRevision, parentRevision)
 
 
 --------------------------------------------------------------------------------

@@ -5,6 +5,7 @@ module MusicBrainz.Data.Edit
     , openEdit
     , addEditNote
     , findEditNotes
+    , voteOnEdit
     , module MusicBrainz.Edit
     ) where
 
@@ -14,7 +15,7 @@ import Database.PostgreSQL.Simple (Only(..), (:.)(..))
 import Database.PostgreSQL.Simple.SqlQQ (sql)
 
 import MusicBrainz
-import MusicBrainz.Data.Artist
+import MusicBrainz.Data.Artist ()
 import MusicBrainz.Edit
 
 --------------------------------------------------------------------------------

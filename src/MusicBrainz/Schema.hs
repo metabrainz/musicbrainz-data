@@ -177,7 +177,7 @@ instance FromRow Script where
 --------------------------------------------------------------------------------
 instance ToField EditStatus where
   toField Open = toField (1::Int)
-
+  toField Closed = toField (2::Int)
 
 instance ToField (MBID a) where
   toField id' = Plain $ inQuotes . fromString $ (id' ^. by mbid)
