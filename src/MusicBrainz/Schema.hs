@@ -43,7 +43,7 @@ instance FromField (Ref Edit) where
 
 
 instance FromField (Ref EditNote) where
-  fromField _ _ = pure EditNoteRef
+  fromField f v = EditNoteRef <$> fromField f v
 
 
 instance FromField (Ref Editor) where

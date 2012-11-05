@@ -72,7 +72,7 @@ data EditNote = EditNote
     }
   deriving (Eq, Show)
 
-data instance Ref EditNote = EditNoteRef
+data instance Ref EditNote = EditNoteRef Int
 
 
 --------------------------------------------------------------------------------

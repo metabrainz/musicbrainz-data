@@ -41,8 +41,9 @@ apply editId = do
 
 --------------------------------------------------------------------------------
 openEdit :: MusicBrainz (Ref Edit)
-openEdit = selectValue $ query_
-  [sql| INSERT INTO edit ( status ) DEFAULT VALUES RETURNING edit_id |]
+openEdit = selectValue $ query
+  [sql| INSERT INTO edit (status) VALUES (?) RETURNING edit_id |]
+    (Only Open)
 
 
 --------------------------------------------------------------------------------
@@ -55,7 +56,7 @@ addEditNote editId note = void $ execute
 --------------------------------------------------------------------------------
 findEditNotes :: Ref Edit -> MusicBrainz [Entity EditNote]
 findEditNotes editId = query
-  [sql| SELECT editor_id, text FROM edit_note WHERE edit_id = ? |]
+  [sql| SELECT edit_note_id, text, editor_id FROM edit_note WHERE edit_id = ? |]
     (Only editId)
 
 
