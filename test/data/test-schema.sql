@@ -3,7 +3,7 @@
 --
 
 SET statement_timeout = 0;
-SET client_encoding = 'SQL_ASCII';
+SET client_encoding = 'UTF8';
 SET standard_conforming_strings = on;
 SET check_function_bodies = false;
 SET client_min_messages = warning;
@@ -313,6 +313,266 @@ $$;
 ALTER FUNCTION musicbrainz.find_or_insert_artist_tree(in_data_id integer) OWNER TO musicbrainz;
 
 --
+-- Name: find_or_insert_label_data(text, text, text, integer, integer, integer, integer, integer, integer, boolean, integer, integer); Type: FUNCTION; Schema: musicbrainz; Owner: musicbrainz
+--
+
+CREATE FUNCTION find_or_insert_label_data(in_name text, in_sort_name text, in_comment text, in_b_year integer, in_b_month integer, in_b_day integer, in_e_year integer, in_e_month integer, in_e_day integer, in_ended boolean, in_type_id integer, in_code integer) RETURNS integer
+    LANGUAGE plpgsql
+    AS $$
+  DECLARE
+    found_id INT;
+    name_id INT;
+    sort_name_id INT;
+  BEGIN
+    SELECT find_or_insert_label_name(in_name) INTO name_id;
+    SELECT find_or_insert_label_name(in_sort_name) INTO sort_name_id;
+
+    SELECT label_data_id INTO found_id
+    FROM label_data
+    WHERE name = name_id AND sort_name = sort_name_id AND comment = in_comment AND
+      begin_date_year IS NOT DISTINCT FROM in_b_year AND
+      begin_date_month IS NOT DISTINCT FROM in_b_month AND
+      begin_date_day IS NOT DISTINCT FROM in_b_day AND
+      end_date_year IS NOT DISTINCT FROM in_b_year AND
+      end_date_month IS NOT DISTINCT FROM in_b_month AND
+      end_date_day IS NOT DISTINCT FROM in_b_day AND
+      ended = in_ended AND
+      label_type_id IS NOT DISTINCT FROM in_type_id AND
+      label_code IS NOT DISTINCT FROM in_code;
+
+    IF FOUND
+    THEN
+      RETURN found_id;
+    ELSE
+      INSERT INTO label_data (name, sort_name, comment,
+        begin_date_year, begin_date_month, begin_date_day,
+        end_date_year, end_date_month, end_date_day,
+        ended, label_type_id, label_code)
+      VALUES (name_id, sort_name_id, in_comment,
+        in_b_year, in_b_month, in_b_day,
+        in_e_year, in_e_month, in_e_day,
+        in_ended, in_type_id, in_code)
+      RETURNING label_data_id INTO found_id;
+      RETURN found_id;
+    END IF;
+  END;
+$$;
+
+
+ALTER FUNCTION musicbrainz.find_or_insert_label_data(in_name text, in_sort_name text, in_comment text, in_b_year integer, in_b_month integer, in_b_day integer, in_e_year integer, in_e_month integer, in_e_day integer, in_ended boolean, in_type_id integer, in_code integer) OWNER TO musicbrainz;
+
+--
+-- Name: find_or_insert_label_name(text); Type: FUNCTION; Schema: musicbrainz; Owner: musicbrainz
+--
+
+CREATE FUNCTION find_or_insert_label_name(in_name text) RETURNS integer
+    LANGUAGE plpgsql
+    AS $$
+  DECLARE
+    found_id INT;
+  BEGIN
+    SELECT id INTO found_id
+    FROM label_name WHERE name = in_name;
+
+    IF FOUND
+    THEN
+      RETURN found_id;
+    ELSE
+      INSERT INTO label_name (name)
+      VALUES (in_name) RETURNING id INTO found_id;
+      RETURN found_id;
+    END IF;
+  END;
+$$;
+
+
+ALTER FUNCTION musicbrainz.find_or_insert_label_name(in_name text) OWNER TO musicbrainz;
+
+--
+-- Name: find_or_insert_label_tree(integer); Type: FUNCTION; Schema: musicbrainz; Owner: musicbrainz
+--
+
+CREATE FUNCTION find_or_insert_label_tree(in_data_id integer) RETURNS integer
+    LANGUAGE plpgsql
+    AS $$
+  DECLARE
+    found_id INT;
+  BEGIN
+    SELECT label_tree_id INTO found_id
+    FROM label_tree WHERE label_data_id = in_data_id;
+
+    IF FOUND
+    THEN
+      RETURN found_id;
+    ELSE
+      INSERT INTO label_tree (label_data_id)
+      VALUES (in_data_id)
+      RETURNING label_tree_id INTO found_id;
+      RETURN found_id;
+    END IF;
+  END;
+$$;
+
+
+ALTER FUNCTION musicbrainz.find_or_insert_label_tree(in_data_id integer) OWNER TO musicbrainz;
+
+--
+-- Name: find_or_insert_recording_data(text, text, integer, integer); Type: FUNCTION; Schema: musicbrainz; Owner: musicbrainz
+--
+
+CREATE FUNCTION find_or_insert_recording_data(in_name text, in_comment text, in_ac integer, in_length integer) RETURNS integer
+    LANGUAGE plpgsql
+    AS $$
+  DECLARE
+    found_id INT;
+    name_id INT;
+  BEGIN
+    SELECT find_or_insert_track_name(in_name) INTO name_id;
+
+    SELECT recording_data_id INTO found_id
+    FROM recording_data
+    WHERE name = name_id AND
+      comment = in_comment AND
+      artist_credit_id = in_ac AND
+      length IS NOT DISTINCT FROM in_length;
+
+    IF FOUND
+    THEN
+      RETURN found_id;
+    ELSE
+      INSERT INTO recording_data (name, comment, artist_credit_id, length)
+      VALUES (name_id, in_comment, in_ac, in_length)
+      RETURNING recording_data_id INTO found_id;
+      RETURN found_id;
+    END IF;
+  END;
+$$;
+
+
+ALTER FUNCTION musicbrainz.find_or_insert_recording_data(in_name text, in_comment text, in_ac integer, in_length integer) OWNER TO musicbrainz;
+
+--
+-- Name: find_or_insert_recording_tree(integer); Type: FUNCTION; Schema: musicbrainz; Owner: musicbrainz
+--
+
+CREATE FUNCTION find_or_insert_recording_tree(in_data_id integer) RETURNS integer
+    LANGUAGE plpgsql
+    AS $$
+  DECLARE
+    found_id INT;
+  BEGIN
+    SELECT recording_tree_id INTO found_id
+    FROM recording_tree WHERE recording_data_id = in_data_id;
+
+    IF FOUND
+    THEN
+      RETURN found_id;
+    ELSE
+      INSERT INTO recording_tree (recording_data_id)
+      VALUES (in_data_id)
+      RETURNING recording_tree_id INTO found_id;
+      RETURN found_id;
+    END IF;
+  END;
+$$;
+
+
+ALTER FUNCTION musicbrainz.find_or_insert_recording_tree(in_data_id integer) OWNER TO musicbrainz;
+
+--
+-- Name: find_or_insert_release_data(text, text, integer, integer, integer, integer, integer, integer, integer, integer, integer); Type: FUNCTION; Schema: musicbrainz; Owner: musicbrainz
+--
+
+CREATE FUNCTION find_or_insert_release_data(in_name text, in_comment text, in_ac integer, in_date_year integer, in_date_month integer, in_date_day integer, in_country_id integer, in_script_id integer, in_language_id integer, in_packaging_id integer, in_status_id integer) RETURNS integer
+    LANGUAGE plpgsql
+    AS $$
+  DECLARE
+    found_id INT;
+    name_id INT;
+  BEGIN
+    SELECT find_or_insert_release_name(in_name) INTO name_id;
+
+    SELECT release_data_id INTO found_id
+    FROM release_data
+    WHERE name = name_id AND
+      comment = in_comment AND
+      artist_credit_id = in_ac AND
+      date_year IS NOT DISTINCT FROM in_date_year AND
+      date_month IS NOT DISTINCT FROM in_date_month AND
+      date_day IS NOT DISTINCT FROM in_date_day AND
+      country_id IS NOT DISTINCT FROM in_country_id AND
+      script_id IS NOT DISTINCT FROM in_script_id AND
+      language_id IS NOT DISTINCT FROM in_language_id AND
+      release_packaging_id IS NOT DISTINCT FROM in_packaging_id AND
+      release_status_id IS NOT DISTINCT FROM in_status_id;
+
+    IF FOUND
+    THEN
+      RETURN found_id;
+    ELSE
+      INSERT INTO release_data (name, comment, artist_credit_id, date_year,
+        date_month, date_day, country_id, script_id, language_id,
+        release_packaging_id, release_status_id)
+      VALUES (name_id, in_comment, in_ac, in_date_year, in_date_month,
+        in_date_day, in_country_id, in_script_id, in_language_id, in_packaging_id,
+        in_status_id)
+      RETURNING release_data_id INTO found_id;
+      RETURN found_id;
+    END IF;
+  END;
+$$;
+
+
+ALTER FUNCTION musicbrainz.find_or_insert_release_data(in_name text, in_comment text, in_ac integer, in_date_year integer, in_date_month integer, in_date_day integer, in_country_id integer, in_script_id integer, in_language_id integer, in_packaging_id integer, in_status_id integer) OWNER TO musicbrainz;
+
+--
+-- Name: find_or_insert_release_data(text, text, integer, uuid, integer, integer, integer, integer, integer, integer, integer, integer); Type: FUNCTION; Schema: musicbrainz; Owner: musicbrainz
+--
+
+CREATE FUNCTION find_or_insert_release_data(in_name text, in_comment text, in_ac integer, in_rg uuid, in_date_year integer, in_date_month integer, in_date_day integer, in_country_id integer, in_script_id integer, in_language_id integer, in_packaging_id integer, in_status_id integer) RETURNS integer
+    LANGUAGE plpgsql
+    AS $$
+  DECLARE
+    found_id INT;
+    name_id INT;
+  BEGIN
+    SELECT find_or_insert_release_name(in_name) INTO name_id;
+
+    SELECT release_data_id INTO found_id
+    FROM release_data
+    WHERE name = name_id AND
+      comment = in_comment AND
+      artist_credit_id = in_ac AND
+      release_group_id = in_rg AND
+      date_year IS NOT DISTINCT FROM in_date_year AND
+      date_month IS NOT DISTINCT FROM in_date_month AND
+      date_day IS NOT DISTINCT FROM in_date_day AND
+      country_id IS NOT DISTINCT FROM in_country_id AND
+      script_id IS NOT DISTINCT FROM in_script_id AND
+      language_id IS NOT DISTINCT FROM in_language_id AND
+      release_packaging_id IS NOT DISTINCT FROM in_packaging_id AND
+      release_status_id IS NOT DISTINCT FROM in_status_id;
+
+    IF FOUND
+    THEN
+      RETURN found_id;
+    ELSE
+      INSERT INTO release_data (name, comment, artist_credit_id, release_group_id,
+        date_year, date_month, date_day, country_id, script_id, language_id,
+        release_packaging_id, release_status_id)
+      VALUES (name_id, in_comment, in_ac, in_rg, in_date_year, in_date_month,
+        in_date_day, in_country_id, in_script_id, in_language_id, in_packaging_id,
+        in_status_id)
+      RETURNING release_data_id INTO found_id;
+      RETURN found_id;
+    END IF;
+  END;
+$$;
+
+
+ALTER FUNCTION musicbrainz.find_or_insert_release_data(in_name text, in_comment text, in_ac integer, in_rg uuid, in_date_year integer, in_date_month integer, in_date_day integer, in_country_id integer, in_script_id integer, in_language_id integer, in_packaging_id integer, in_status_id integer) OWNER TO musicbrainz;
+
+--
 -- Name: find_or_insert_release_group_data(text, text, integer, integer); Type: FUNCTION; Schema: musicbrainz; Owner: musicbrainz
 --
 
@@ -403,6 +663,89 @@ $$;
 
 
 ALTER FUNCTION musicbrainz.find_or_insert_release_name(in_name text) OWNER TO musicbrainz;
+
+--
+-- Name: find_or_insert_release_tree(integer); Type: FUNCTION; Schema: musicbrainz; Owner: musicbrainz
+--
+
+CREATE FUNCTION find_or_insert_release_tree(in_data_id integer) RETURNS integer
+    LANGUAGE plpgsql
+    AS $$
+  DECLARE
+    found_id INT;
+  BEGIN
+    SELECT release_tree_id INTO found_id
+    FROM release_tree WHERE release_data_id = in_data_id;
+
+    IF FOUND
+    THEN
+      RETURN found_id;
+    ELSE
+      INSERT INTO release_tree (release_data_id)
+      VALUES (in_data_id)
+      RETURNING release_tree_id INTO found_id;
+      RETURN found_id;
+    END IF;
+  END;
+$$;
+
+
+ALTER FUNCTION musicbrainz.find_or_insert_release_tree(in_data_id integer) OWNER TO musicbrainz;
+
+--
+-- Name: find_or_insert_release_tree(integer, uuid); Type: FUNCTION; Schema: musicbrainz; Owner: musicbrainz
+--
+
+CREATE FUNCTION find_or_insert_release_tree(in_data_id integer, in_rg uuid) RETURNS integer
+    LANGUAGE plpgsql
+    AS $$
+  DECLARE
+    found_id INT;
+  BEGIN
+    SELECT release_tree_id INTO found_id
+    FROM release_tree WHERE release_data_id = in_data_id AND release_group_id = in_rg;
+
+    IF FOUND
+    THEN
+      RETURN found_id;
+    ELSE
+      INSERT INTO release_tree (release_data_id, release_group_id)
+      VALUES (in_data_id, in_rg)
+      RETURNING release_tree_id INTO found_id;
+      RETURN found_id;
+    END IF;
+  END;
+$$;
+
+
+ALTER FUNCTION musicbrainz.find_or_insert_release_tree(in_data_id integer, in_rg uuid) OWNER TO musicbrainz;
+
+--
+-- Name: find_or_insert_track_name(text); Type: FUNCTION; Schema: musicbrainz; Owner: musicbrainz
+--
+
+CREATE FUNCTION find_or_insert_track_name(in_name text) RETURNS integer
+    LANGUAGE plpgsql
+    AS $$
+  DECLARE
+    found_id INT;
+  BEGIN
+    SELECT id INTO found_id
+    FROM track_name WHERE name = in_name;
+
+    IF FOUND
+    THEN
+      RETURN found_id;
+    ELSE
+      INSERT INTO track_name (name)
+      VALUES (in_name) RETURNING id INTO found_id;
+      RETURN found_id;
+    END IF;
+  END;
+$$;
+
+
+ALTER FUNCTION musicbrainz.find_or_insert_track_name(in_name text) OWNER TO musicbrainz;
 
 SET default_tablespace = '';
 
@@ -569,54 +912,6 @@ ALTER SEQUENCE artist_data_artist_data_id_seq OWNED BY artist_data.artist_data_i
 
 
 --
--- Name: artist_name; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
---
-
-CREATE TABLE artist_name (
-    id integer NOT NULL,
-    name non_empty_presentational_text NOT NULL
-);
-
-
-ALTER TABLE musicbrainz.artist_name OWNER TO musicbrainz;
-
---
--- Name: artist_revision; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
---
-
-CREATE TABLE artist_revision (
-    revision_id integer NOT NULL,
-    artist_id uuid NOT NULL,
-    artist_tree_id integer NOT NULL
-);
-
-
-ALTER TABLE musicbrainz.artist_revision OWNER TO musicbrainz;
-
---
--- Name: artist_tree; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
---
-
-CREATE TABLE artist_tree (
-    artist_tree_id integer NOT NULL,
-    artist_data_id integer NOT NULL,
-    annotation text
-);
-
-
-ALTER TABLE musicbrainz.artist_tree OWNER TO musicbrainz;
-
---
--- Name: artist_head; Type: VIEW; Schema: musicbrainz; Owner: musicbrainz
---
-
-CREATE VIEW artist_head AS
-    SELECT artist.artist_id, artist_revision.revision_id, name.name, sort_name.name AS sort_name, artist_data.comment, artist_data.begin_date_year, artist_data.begin_date_month, artist_data.begin_date_day, artist_data.end_date_year, artist_data.end_date_month, artist_data.end_date_day, artist_data.ended, artist_data.gender_id, artist_data.artist_type_id, artist_data.country_id FROM (((((artist JOIN artist_revision USING (artist_id)) JOIN artist_tree USING (artist_tree_id)) JOIN artist_data USING (artist_data_id)) JOIN artist_name name ON ((artist_data.name = name.id))) JOIN artist_name sort_name ON ((artist_data.sort_name = sort_name.id))) WHERE (artist_revision.revision_id = artist.master_revision_id);
-
-
-ALTER TABLE musicbrainz.artist_head OWNER TO musicbrainz;
-
---
 -- Name: artist_ipi; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
 --
 
@@ -640,6 +935,18 @@ CREATE TABLE artist_meta (
 
 
 ALTER TABLE musicbrainz.artist_meta OWNER TO musicbrainz;
+
+--
+-- Name: artist_name; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE artist_name (
+    id integer NOT NULL,
+    name non_empty_presentational_text NOT NULL
+);
+
+
+ALTER TABLE musicbrainz.artist_name OWNER TO musicbrainz;
 
 --
 -- Name: artist_name_id_seq; Type: SEQUENCE; Schema: musicbrainz; Owner: musicbrainz
@@ -676,6 +983,19 @@ CREATE TABLE artist_rating_raw (
 ALTER TABLE musicbrainz.artist_rating_raw OWNER TO musicbrainz;
 
 --
+-- Name: artist_revision; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE artist_revision (
+    revision_id integer NOT NULL,
+    artist_id uuid NOT NULL,
+    artist_tree_id integer NOT NULL
+);
+
+
+ALTER TABLE musicbrainz.artist_revision OWNER TO musicbrainz;
+
+--
 -- Name: artist_tag; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
 --
 
@@ -702,10 +1022,23 @@ CREATE TABLE artist_tag_raw (
 ALTER TABLE musicbrainz.artist_tag_raw OWNER TO musicbrainz;
 
 --
--- Name: artist_tree_artist_tree_id_seq; Type: SEQUENCE; Schema: musicbrainz; Owner: musicbrainz
+-- Name: artist_tree; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
 --
 
-CREATE SEQUENCE artist_tree_artist_tree_id_seq
+CREATE TABLE artist_tree (
+    artist_tree_id integer NOT NULL,
+    artist_data_id integer NOT NULL,
+    annotation text
+);
+
+
+ALTER TABLE musicbrainz.artist_tree OWNER TO musicbrainz;
+
+--
+-- Name: artist_tree_id_seq; Type: SEQUENCE; Schema: musicbrainz; Owner: musicbrainz
+--
+
+CREATE SEQUENCE artist_tree_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -713,13 +1046,13 @@ CREATE SEQUENCE artist_tree_artist_tree_id_seq
     CACHE 1;
 
 
-ALTER TABLE musicbrainz.artist_tree_artist_tree_id_seq OWNER TO musicbrainz;
+ALTER TABLE musicbrainz.artist_tree_id_seq OWNER TO musicbrainz;
 
 --
--- Name: artist_tree_artist_tree_id_seq; Type: SEQUENCE OWNED BY; Schema: musicbrainz; Owner: musicbrainz
+-- Name: artist_tree_id_seq; Type: SEQUENCE OWNED BY; Schema: musicbrainz; Owner: musicbrainz
 --
 
-ALTER SEQUENCE artist_tree_artist_tree_id_seq OWNED BY artist_tree.artist_tree_id;
+ALTER SEQUENCE artist_tree_id_seq OWNED BY artist_tree.artist_tree_id;
 
 
 --
@@ -860,6 +1193,86 @@ ALTER TABLE musicbrainz.country_id_seq OWNER TO musicbrainz;
 --
 
 ALTER SEQUENCE country_id_seq OWNED BY country.id;
+
+
+--
+-- Name: edit; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE edit (
+    edit_id integer NOT NULL,
+    status smallint
+);
+
+
+ALTER TABLE musicbrainz.edit OWNER TO musicbrainz;
+
+--
+-- Name: edit_artist; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE edit_artist (
+    edit_id integer NOT NULL,
+    revision_id integer NOT NULL
+);
+
+
+ALTER TABLE musicbrainz.edit_artist OWNER TO musicbrainz;
+
+--
+-- Name: edit_edit_id_seq; Type: SEQUENCE; Schema: musicbrainz; Owner: musicbrainz
+--
+
+CREATE SEQUENCE edit_edit_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE musicbrainz.edit_edit_id_seq OWNER TO musicbrainz;
+
+--
+-- Name: edit_edit_id_seq; Type: SEQUENCE OWNED BY; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER SEQUENCE edit_edit_id_seq OWNED BY edit.edit_id;
+
+
+--
+-- Name: edit_note; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE edit_note (
+    editor_id integer NOT NULL,
+    edit_id integer NOT NULL,
+    text text,
+    edit_note_id integer NOT NULL
+);
+
+
+ALTER TABLE musicbrainz.edit_note OWNER TO musicbrainz;
+
+--
+-- Name: edit_note_edit_note_id_seq; Type: SEQUENCE; Schema: musicbrainz; Owner: musicbrainz
+--
+
+CREATE SEQUENCE edit_note_edit_note_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE musicbrainz.edit_note_edit_note_id_seq OWNER TO musicbrainz;
+
+--
+-- Name: edit_note_edit_note_id_seq; Type: SEQUENCE OWNED BY; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER SEQUENCE edit_note_edit_note_id_seq OWNED BY edit_note.edit_note_id;
 
 
 --
@@ -1033,12 +1446,8 @@ CREATE TABLE label_alias (
     sort_name integer NOT NULL,
     locale locale,
     label_alias_type_id integer,
-    begin_date_year smallint,
-    begin_date_month smallint,
-    begin_date_day smallint,
-    end_date_year smallint,
-    end_date_month smallint,
-    end_date_day smallint,
+    begin_date partial_date,
+    end_date partial_date,
     primary_for_locale boolean DEFAULT false NOT NULL
 );
 
@@ -1345,12 +1754,8 @@ ALTER SEQUENCE language_id_seq OWNED BY language.id;
 CREATE TABLE link (
     id integer NOT NULL,
     link_type integer NOT NULL,
-    begin_date_year smallint,
-    begin_date_month smallint,
-    begin_date_day smallint,
-    end_date_year smallint,
-    end_date_month smallint,
-    end_date_day smallint,
+    begin_date partial_date,
+    end_date partial_date,
     attribute_count natural_integer DEFAULT 0 NOT NULL,
     created timestamp with time zone DEFAULT now(),
     ended boolean DEFAULT false NOT NULL
@@ -1898,9 +2303,7 @@ ALTER SEQUENCE release_group_data_release_group_data_id_seq OWNED BY release_gro
 CREATE TABLE release_group_meta (
     release_group_id uuid NOT NULL,
     release_count natural_integer DEFAULT 0 NOT NULL,
-    first_release_date_year smallint,
-    first_release_date_month smallint,
-    first_release_date_day smallint,
+    first_release_date partial_date,
     rating rating,
     rating_count natural_integer NOT NULL
 );
@@ -2027,19 +2430,6 @@ CREATE TABLE release_group_tag_raw (
 ALTER TABLE musicbrainz.release_group_tag_raw OWNER TO musicbrainz;
 
 --
--- Name: release_group_tree; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
---
-
-CREATE TABLE release_group_tree (
-    release_group_tree_id integer NOT NULL,
-    release_group_data_id integer NOT NULL,
-    annotation text
-);
-
-
-ALTER TABLE musicbrainz.release_group_tree OWNER TO musicbrainz;
-
---
 -- Name: release_group_tree_release_group_tree_id_seq; Type: SEQUENCE; Schema: musicbrainz; Owner: musicbrainz
 --
 
@@ -2054,11 +2444,17 @@ CREATE SEQUENCE release_group_tree_release_group_tree_id_seq
 ALTER TABLE musicbrainz.release_group_tree_release_group_tree_id_seq OWNER TO musicbrainz;
 
 --
--- Name: release_group_tree_release_group_tree_id_seq; Type: SEQUENCE OWNED BY; Schema: musicbrainz; Owner: musicbrainz
+-- Name: release_group_tree; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
 --
 
-ALTER SEQUENCE release_group_tree_release_group_tree_id_seq OWNED BY release_group_tree.release_group_tree_id;
+CREATE TABLE release_group_tree (
+    release_group_tree_id integer DEFAULT nextval('release_group_tree_release_group_tree_id_seq'::regclass) NOT NULL,
+    release_group_data_id integer NOT NULL,
+    annotation text
+);
 
+
+ALTER TABLE musicbrainz.release_group_tree OWNER TO musicbrainz;
 
 --
 -- Name: release_group_tree_secondary_type; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
@@ -2294,11 +2690,21 @@ ALTER TABLE musicbrainz.revision OWNER TO musicbrainz;
 CREATE TABLE revision_parent (
     revision_id integer NOT NULL,
     parent_revision_id integer NOT NULL,
-    CONSTRAINT revision_parent_check CHECK ((parent_revision_id <> revision_id))
+    CONSTRAINT revision_parent_check CHECK ((revision_id <> parent_revision_id))
 );
 
 
 ALTER TABLE musicbrainz.revision_parent OWNER TO musicbrainz;
+
+--
+-- Name: revision_path; Type: VIEW; Schema: musicbrainz; Owner: musicbrainz
+--
+
+CREATE VIEW revision_path AS
+    WITH RECURSIVE revision_path(revision_id, parent_revision_id, distance) AS (SELECT revision_parent.revision_id, revision_parent.parent_revision_id, 1 FROM revision_parent UNION SELECT revision_path.revision_id, revision_parent.parent_revision_id, (revision_path.distance + 1) FROM (revision_parent JOIN revision_path ON ((revision_parent.revision_id = revision_path.parent_revision_id)))) SELECT revision_path.revision_id, revision_path.parent_revision_id, revision_path.distance FROM revision_path;
+
+
+ALTER TABLE musicbrainz.revision_path OWNER TO musicbrainz;
 
 --
 -- Name: revision_revision_id_seq; Type: SEQUENCE; Schema: musicbrainz; Owner: musicbrainz
@@ -2610,25 +3016,19 @@ CREATE TABLE url_tree (
 ALTER TABLE musicbrainz.url_tree OWNER TO musicbrainz;
 
 --
--- Name: url_tree_url_tree_id_seq; Type: SEQUENCE; Schema: musicbrainz; Owner: musicbrainz
+-- Name: vote; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
 --
 
-CREATE SEQUENCE url_tree_url_tree_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
+CREATE TABLE vote (
+    editor_id integer NOT NULL,
+    edit_id integer NOT NULL,
+    vote smallint NOT NULL,
+    vote_time timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT vote_vote_check CHECK ((vote = ANY (ARRAY[(-1), 0, 1])))
+);
 
 
-ALTER TABLE musicbrainz.url_tree_url_tree_id_seq OWNER TO musicbrainz;
-
---
--- Name: url_tree_url_tree_id_seq; Type: SEQUENCE OWNED BY; Schema: musicbrainz; Owner: musicbrainz
---
-
-ALTER SEQUENCE url_tree_url_tree_id_seq OWNED BY url_tree.url_tree_id;
-
+ALTER TABLE musicbrainz.vote OWNER TO musicbrainz;
 
 --
 -- Name: work; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
@@ -2653,12 +3053,8 @@ CREATE TABLE work_alias (
     sort_name integer NOT NULL,
     locale locale,
     work_alias_type_id integer,
-    begin_date_year smallint,
-    begin_date_month smallint,
-    begin_date_day smallint,
-    end_date_year smallint,
-    end_date_month smallint,
-    end_date_day smallint,
+    begin_date partial_date,
+    end_date partial_date,
     primary_for_locale boolean DEFAULT false NOT NULL
 );
 
@@ -2846,27 +3242,6 @@ CREATE TABLE work_tree (
 ALTER TABLE musicbrainz.work_tree OWNER TO musicbrainz;
 
 --
--- Name: work_tree_work_tree_id_seq; Type: SEQUENCE; Schema: musicbrainz; Owner: musicbrainz
---
-
-CREATE SEQUENCE work_tree_work_tree_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER TABLE musicbrainz.work_tree_work_tree_id_seq OWNER TO musicbrainz;
-
---
--- Name: work_tree_work_tree_id_seq; Type: SEQUENCE OWNED BY; Schema: musicbrainz; Owner: musicbrainz
---
-
-ALTER SEQUENCE work_tree_work_tree_id_seq OWNED BY work_tree.work_tree_id;
-
-
---
 -- Name: work_type; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
 --
 
@@ -2931,7 +3306,7 @@ ALTER TABLE ONLY artist_name ALTER COLUMN id SET DEFAULT nextval('artist_name_id
 -- Name: artist_tree_id; Type: DEFAULT; Schema: musicbrainz; Owner: musicbrainz
 --
 
-ALTER TABLE ONLY artist_tree ALTER COLUMN artist_tree_id SET DEFAULT nextval('artist_tree_artist_tree_id_seq'::regclass);
+ALTER TABLE ONLY artist_tree ALTER COLUMN artist_tree_id SET DEFAULT nextval('artist_tree_id_seq'::regclass);
 
 
 --
@@ -2960,6 +3335,20 @@ ALTER TABLE ONLY clientversion ALTER COLUMN id SET DEFAULT nextval('clientversio
 --
 
 ALTER TABLE ONLY country ALTER COLUMN id SET DEFAULT nextval('country_id_seq'::regclass);
+
+
+--
+-- Name: edit_id; Type: DEFAULT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY edit ALTER COLUMN edit_id SET DEFAULT nextval('edit_edit_id_seq'::regclass);
+
+
+--
+-- Name: edit_note_id; Type: DEFAULT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY edit_note ALTER COLUMN edit_note_id SET DEFAULT nextval('edit_note_edit_note_id_seq'::regclass);
 
 
 --
@@ -3117,13 +3506,6 @@ ALTER TABLE ONLY release_group_secondary_type ALTER COLUMN id SET DEFAULT nextva
 
 
 --
--- Name: release_group_tree_id; Type: DEFAULT; Schema: musicbrainz; Owner: musicbrainz
---
-
-ALTER TABLE ONLY release_group_tree ALTER COLUMN release_group_tree_id SET DEFAULT nextval('release_group_tree_release_group_tree_id_seq'::regclass);
-
-
---
 -- Name: id; Type: DEFAULT; Schema: musicbrainz; Owner: musicbrainz
 --
 
@@ -3201,13 +3583,6 @@ ALTER TABLE ONLY url_data ALTER COLUMN url_data_id SET DEFAULT nextval('url_data
 
 
 --
--- Name: url_tree_id; Type: DEFAULT; Schema: musicbrainz; Owner: musicbrainz
---
-
-ALTER TABLE ONLY url_tree ALTER COLUMN url_tree_id SET DEFAULT nextval('url_tree_url_tree_id_seq'::regclass);
-
-
---
 -- Name: id; Type: DEFAULT; Schema: musicbrainz; Owner: musicbrainz
 --
 
@@ -3226,13 +3601,6 @@ ALTER TABLE ONLY work_data ALTER COLUMN work_data_id SET DEFAULT nextval('work_d
 --
 
 ALTER TABLE ONLY work_name ALTER COLUMN id SET DEFAULT nextval('work_name_id_seq'::regclass);
-
-
---
--- Name: work_tree_id; Type: DEFAULT; Schema: musicbrainz; Owner: musicbrainz
---
-
-ALTER TABLE ONLY work_tree ALTER COLUMN work_tree_id SET DEFAULT nextval('work_tree_work_tree_id_seq'::regclass);
 
 
 --
@@ -3440,6 +3808,30 @@ ALTER TABLE ONLY country
 
 ALTER TABLE ONLY country
     ADD CONSTRAINT country_pkey PRIMARY KEY (iso_code);
+
+
+--
+-- Name: edit_artist_pkey; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+ALTER TABLE ONLY edit_artist
+    ADD CONSTRAINT edit_artist_pkey PRIMARY KEY (edit_id, revision_id);
+
+
+--
+-- Name: edit_note_pkey; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+ALTER TABLE ONLY edit_note
+    ADD CONSTRAINT edit_note_pkey PRIMARY KEY (edit_note_id);
+
+
+--
+-- Name: edit_pkey; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+ALTER TABLE ONLY edit
+    ADD CONSTRAINT edit_pkey PRIMARY KEY (edit_id);
 
 
 --
@@ -4598,6 +4990,38 @@ ALTER TABLE ONLY artist_tree
 
 
 --
+-- Name: edit_artist_edit_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY edit_artist
+    ADD CONSTRAINT edit_artist_edit_id_fkey FOREIGN KEY (edit_id) REFERENCES edit(edit_id);
+
+
+--
+-- Name: edit_artist_revision_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY edit_artist
+    ADD CONSTRAINT edit_artist_revision_id_fkey FOREIGN KEY (revision_id) REFERENCES artist_revision(revision_id);
+
+
+--
+-- Name: edit_note_edit_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY edit_note
+    ADD CONSTRAINT edit_note_edit_id_fkey FOREIGN KEY (edit_id) REFERENCES edit(edit_id);
+
+
+--
+-- Name: edit_note_editor_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY edit_note
+    ADD CONSTRAINT edit_note_editor_id_fkey FOREIGN KEY (editor_id) REFERENCES editor(editor_id);
+
+
+--
 -- Name: isrc_recording_tree_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
 --
 
@@ -4643,14 +5067,6 @@ ALTER TABLE ONLY label_alias
 
 ALTER TABLE ONLY label_alias
     ADD CONSTRAINT label_alias_sort_name_fkey FOREIGN KEY (sort_name) REFERENCES label_name(id);
-
-
---
--- Name: label_data_country_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
---
-
-ALTER TABLE ONLY label_data
-    ADD CONSTRAINT label_data_country_id_fkey FOREIGN KEY (country_id) REFERENCES country(id);
 
 
 --
@@ -5214,14 +5630,6 @@ ALTER TABLE ONLY release_tag
 
 
 --
--- Name: release_tree_release_data_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
---
-
-ALTER TABLE ONLY release_tree
-    ADD CONSTRAINT release_tree_release_data_id_fkey FOREIGN KEY (release_data_id) REFERENCES release_data(release_data_id);
-
-
---
 -- Name: revision_editor_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
 --
 
@@ -5322,7 +5730,7 @@ ALTER TABLE ONLY tracklist_index
 --
 
 ALTER TABLE ONLY url
-    ADD CONSTRAINT url_master_revision_id_fkey FOREIGN KEY (master_revision_id) REFERENCES url_revision(revision_id) DEFERRABLE INITIALLY DEFERRED;
+    ADD CONSTRAINT url_master_revision_id_fkey FOREIGN KEY (master_revision_id) REFERENCES url_revision(revision_id);
 
 
 --
@@ -5363,6 +5771,22 @@ ALTER TABLE ONLY url_revision
 
 ALTER TABLE ONLY url_tree
     ADD CONSTRAINT url_tree_url_data_id_fkey FOREIGN KEY (url_data_id) REFERENCES url_data(url_data_id);
+
+
+--
+-- Name: vote_edit_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY vote
+    ADD CONSTRAINT vote_edit_id_fkey FOREIGN KEY (edit_id) REFERENCES edit(edit_id);
+
+
+--
+-- Name: vote_editor_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY vote
+    ADD CONSTRAINT vote_editor_id_fkey FOREIGN KEY (editor_id) REFERENCES editor(editor_id);
 
 
 --
@@ -5426,7 +5850,7 @@ ALTER TABLE ONLY work_data
 --
 
 ALTER TABLE ONLY work
-    ADD CONSTRAINT work_master_revision_id_fkey FOREIGN KEY (master_revision_id) REFERENCES work_revision(revision_id) DEFERRABLE INITIALLY DEFERRED;
+    ADD CONSTRAINT work_master_revision_id_fkey FOREIGN KEY (master_revision_id) REFERENCES work_revision(revision_id);
 
 
 --
