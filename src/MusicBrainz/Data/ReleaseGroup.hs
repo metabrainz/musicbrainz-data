@@ -31,7 +31,7 @@ instance FindLatest ReleaseGroup where
 --------------------------------------------------------------------------------
 {-| Create an entirely new release group, returning the final 'CoreEntity' as it
 is in the database. -}
-create :: Ref Editor -> ReleaseGroup -> MusicBrainz (CoreEntity ReleaseGroup)
+create :: Ref Editor -> Tree ReleaseGroup -> MusicBrainz (CoreEntity ReleaseGroup)
 create = GenericCreate.create GenericCreate.Specification
     { GenericCreate.getTree = findOrInsertRgTree
     , GenericCreate.reserveEntity = GenericCreate.reserveEntityTable "release_group"
@@ -39,10 +39,10 @@ create = GenericCreate.create GenericCreate.Specification
     , GenericCreate.linkRevision = linkRevision
     }
   where
-    findOrInsertRgData :: ReleaseGroup -> MusicBrainz Int
+    findOrInsertRgData :: Tree ReleaseGroup -> MusicBrainz Int
     findOrInsertRgData rg = selectValue $
       query [sql| SELECT find_or_insert_release_group_data(?, ?, ?, ?) |]
-        rg
+        (treeData rg)
 
     findOrInsertRgTree rg = do
       dataId <- findOrInsertRgData rg

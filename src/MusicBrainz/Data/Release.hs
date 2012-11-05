@@ -33,7 +33,7 @@ instance FindLatest Release where
 --------------------------------------------------------------------------------
 {-| Create an entirely new release, returning the final 'CoreEntity' as it is
 in the database. -}
-create :: Ref Editor -> Release -> MusicBrainz (CoreEntity Release)
+create :: Ref Editor -> Tree Release -> MusicBrainz (CoreEntity Release)
 create = GenericCreate.create GenericCreate.Specification
     { GenericCreate.getTree = releaseTree
     , GenericCreate.reserveEntity = GenericCreate.reserveEntityTable "release"
@@ -51,15 +51,15 @@ create = GenericCreate.create GenericCreate.Specification
 
 
 --------------------------------------------------------------------------------
-releaseTree :: Release -> MusicBrainz (Ref (Tree Release))
+releaseTree :: Tree Release -> MusicBrainz (Ref (Tree Release))
 releaseTree release = findOrInsertReleaseData >>= findOrInsertReleaseTree
   where
     findOrInsertReleaseData :: MusicBrainz Int
     findOrInsertReleaseData = selectValue $
       query [sql| SELECT find_or_insert_release_data(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) |]
-        release
+        (treeData release)
 
     findOrInsertReleaseTree dataId = selectValue $
       query [sql| SELECT find_or_insert_release_tree(?, ?) |]
-        (dataId, releaseReleaseGroup release)
+        (dataId, releaseReleaseGroup $ treeData release)
 

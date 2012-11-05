@@ -30,7 +30,7 @@ testCreateFindLatest = testCase "findLatest when artist exists" $ mbTest $ do
   maleRef <- entityRef <$> Gender.addGender male
   personRef <- entityRef <$> ArtistType.addArtistType person
 
-  created <- create (entityRef editor) (expected country maleRef personRef)
+  created <- create (entityRef editor) (ArtistTree $ expected country maleRef personRef)
   Just found <- findLatest (coreMbid created)
 
   liftIO $ found @?= created
@@ -53,10 +53,10 @@ testUpdate :: Test
 testUpdate = testCase "update does change artist" $ mbTest $ do
   editor <- entityRef <$> register acid2
 
-  created <- create editor startWith
+  created <- create editor (ArtistTree startWith)
   let artistId = coreMbid created
 
-  newRev <- update editor (coreRevision created) expected
+  newRev <- update editor (coreRevision created) (ArtistTree expected)
 
   editId <- openEdit
   includeRevision editId newRev

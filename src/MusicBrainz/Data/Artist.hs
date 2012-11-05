@@ -28,6 +28,9 @@ import MusicBrainz.Merge
 
 import qualified MusicBrainz.Data.Generic.Create as GenericCreate
 
+viewTree :: Ref (Revision Artist) -> MusicBrainz (Tree Artist)
+viewTree r = ArtistTree . coreData <$> viewRevision r
+
 --------------------------------------------------------------------------------
 instance Editable Artist where
   includeRevision editId revisionId = void $ execute
@@ -45,8 +48,12 @@ instance Editable Artist where
         ancestor' <- mergeBase new (coreRevision current) >>= traverse viewRevision
         case ancestor' of
           Nothing -> error "Unable to merge: no common ancestor"
-          Just ancestor ->
-            case runMerge (coreData newVer) (coreData current) (coreData ancestor) merge of
+          Just ancestor -> do
+            newTree <- viewTree new
+            currentTree <- viewTree (coreRevision current)
+            ancestorTree <- viewTree (coreRevision ancestor)
+
+            case runMerge newTree currentTree ancestorTree merge of
               Nothing -> error "Unable to merge: conflict"
               Just merged -> do
                 editorId <- selectValue $ query
@@ -111,7 +118,7 @@ revisionParents artistRev =
 --------------------------------------------------------------------------------
 {-| Create an entirely new artist, returning the final 'CoreEntity' as it is
 in the database. -}
-create :: Ref Editor -> Artist -> MusicBrainz (CoreEntity Artist)
+create :: Ref Editor -> Tree Artist -> MusicBrainz (CoreEntity Artist)
 create = GenericCreate.create GenericCreate.Specification
     { GenericCreate.getTree = artistTree
     , GenericCreate.reserveEntity = GenericCreate.reserveEntityTable "artist"
@@ -133,7 +140,7 @@ linkRevision artistId revisionId = void $
 
 --------------------------------------------------------------------------------
 {-| Update the information about an artist, yielding a new revision. -}
-update :: Ref Editor -> Ref (Revision Artist) -> Artist
+update :: Ref Editor -> Ref (Revision Artist) -> Tree Artist
        -> MusicBrainz (Ref (Revision Artist))
 update editor baseRev artist = do
   newTree <- artistTree artist
@@ -155,13 +162,13 @@ newArtistRevision parentRevision artistTreeId revisionId = selectValue $
 
 
 --------------------------------------------------------------------------------
-artistTree :: Artist -> MusicBrainz (Ref (Tree Artist))
+artistTree :: Tree Artist -> MusicBrainz (Ref (Tree Artist))
 artistTree artist = findOrInsertArtistData >>= findOrInsertArtistTree
   where
     findOrInsertArtistData :: MusicBrainz Int
     findOrInsertArtistData = selectValue $
       query [sql| SELECT find_or_insert_artist_data(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) |]
-        artist
+        (artistData artist)
 
     findOrInsertArtistTree dataId = selectValue $
       query [sql| SELECT find_or_insert_artist_tree(?) |]

@@ -37,7 +37,7 @@ instance FindLatest Label where
 --------------------------------------------------------------------------------
 {-| Create an entirely new 'Label', returning the final 'CoreEntity' as it is
 in the database. -}
-create :: Ref Editor -> Label -> MusicBrainz (CoreEntity Label)
+create :: Ref Editor -> Tree Label -> MusicBrainz (CoreEntity Label)
 create = GenericCreate.create GenericCreate.Specification
     { GenericCreate.getTree = labelTree
     , GenericCreate.reserveEntity = GenericCreate.reserveEntityTable "label"
@@ -53,13 +53,13 @@ create = GenericCreate.create GenericCreate.Specification
     linkRevision labelId revisionId = void $
       execute [sql| UPDATE label SET master_revision_id = ? WHERE label_id = ? |] (revisionId, labelId)
 
-labelTree :: Label -> MusicBrainz (Ref (Tree Label))
+labelTree :: Tree Label -> MusicBrainz (Ref (Tree Label))
 labelTree label = findOrInsertLabelData >>= findOrInsertLabelTree
   where
     findOrInsertLabelData :: MusicBrainz Int
     findOrInsertLabelData = selectValue $
       query [sql| SELECT find_or_insert_label_data(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) |]
-        label
+        (treeData label)
 
     findOrInsertLabelTree dataId = selectValue $
       query [sql| SELECT find_or_insert_label_tree(?) |]

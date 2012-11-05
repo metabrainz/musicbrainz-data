@@ -14,9 +14,6 @@ module MusicBrainz.Edit
     , Vote(..)
     ) where
 
-import Data.Set (Set)
-import Data.Text (Text)
-
 import MusicBrainz.Monad
 import MusicBrainz.Types
 

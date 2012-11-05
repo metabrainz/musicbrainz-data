@@ -17,7 +17,7 @@ testCreateFindLatest :: Test
 testCreateFindLatest = testCase "findLatest when label exists" $ mbTest $ do
   editor <- register acid2
 
-  created <- create (entityRef editor) expected
+  created <- create (entityRef editor) (LabelTree expected)
   Just found <- findLatest (coreMbid created)
 
   liftIO $ found @?= created

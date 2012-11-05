@@ -3,6 +3,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GADTs #-}
+{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TypeFamilies #-}
 {-| Definitions of all types used within MusicBrainz. -}
@@ -34,7 +35,8 @@ module MusicBrainz.Types
       -- * Versioning
     , CoreEntity(..)
     , Revision
-    , Tree
+    , Tree(..)
+    , treeData
 
       -- ** Edit system mechanics
     , Edit(..)
@@ -356,8 +358,34 @@ data Revision a
 {-| Trees for entities are a somewhat internal concept of the way MusicBrainz
 versioning works. A tree consists of all the data that is versioned for a
 specific entity (of type @a@). -}
-data Tree a
+data Tree a where
+  ArtistTree :: {
+    artistData :: Artist
+  } -> Tree Artist
 
+  LabelTree :: {
+    labelData :: Label
+  } -> Tree Label
+
+  RecordingTree :: {
+    recordingData :: Recording
+  } -> Tree Recording
+
+  ReleaseTree :: {
+    releaseData :: Release
+  } -> Tree Release
+
+  ReleaseGroupTree :: {
+    releaseGroupData :: ReleaseGroup
+  } -> Tree ReleaseGroup
+
+
+treeData :: Tree a -> a
+treeData ArtistTree{..} = artistData
+treeData LabelTree{..} = labelData
+treeData RecordingTree{..} = recordingData
+treeData ReleaseTree{..} = releaseData
+treeData ReleaseGroupTree{..} = releaseGroupData
 
 --------------------------------------------------------------------------------
 {-| An edit bundles up multiple 'Revision's that have not yet been applied to

@@ -20,7 +20,7 @@ tests = [ testFindLatest
 testFindLatest :: Test
 testFindLatest = testCase "findLatest when release group exists" $ mbTest $ do
   editor <- register acid2
-  artist <- Artist.create (entityRef editor) portishead
+  artist <- Artist.create (entityRef editor) (ArtistTree portishead)
   ac <- ArtistCredit.getRef
           [ ArtistCreditName { acnArtist = ArtistRef $ coreMbid artist
                              , acnName = artistName (coreData artist)
@@ -28,6 +28,6 @@ testFindLatest = testCase "findLatest when release group exists" $ mbTest $ do
                              }
           ]
 
-  created <- ReleaseGroup.create (entityRef editor) (dummy ac)
+  created <- ReleaseGroup.create (entityRef editor) (ReleaseGroupTree $ dummy ac)
   Just found <- findLatest (coreMbid created)
   liftIO $ found @?= created

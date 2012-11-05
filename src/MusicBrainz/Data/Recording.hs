@@ -32,7 +32,7 @@ instance FindLatest Recording where
 --------------------------------------------------------------------------------
 {-| Create an entirely new recording, returning the final 'CoreEntity' as it is
 in the database. -}
-create :: Ref Editor -> Recording -> MusicBrainz (CoreEntity Recording)
+create :: Ref Editor -> Tree Recording -> MusicBrainz (CoreEntity Recording)
 create = GenericCreate.create GenericCreate.Specification
     { GenericCreate.getTree = recordingTree
     , GenericCreate.reserveEntity = GenericCreate.reserveEntityTable "recording"
@@ -50,13 +50,13 @@ create = GenericCreate.create GenericCreate.Specification
 
 
 --------------------------------------------------------------------------------
-recordingTree :: Recording -> MusicBrainz (Ref (Tree Recording))
+recordingTree :: Tree Recording -> MusicBrainz (Ref (Tree Recording))
 recordingTree recording = findOrInsertRecordingData >>= findOrInsertRecordingTree
   where
     findOrInsertRecordingData :: MusicBrainz Int
     findOrInsertRecordingData = selectValue $
       query [sql| SELECT find_or_insert_recording_data(?, ?, ?, ?) |]
-        recording
+        (treeData recording)
 
     findOrInsertRecordingTree dataId = selectValue $
       query [sql| SELECT find_or_insert_recording_tree(?) |]

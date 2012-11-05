@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE RecordWildCards #-}
 {-| How to merge various types of data, with the possibility of conflicts. -}
@@ -60,14 +61,17 @@ type. -}
 class Mergeable a where
   merge :: Merge a a
 
-instance Mergeable Artist where
+instance Mergeable (Tree Artist) where
   merge =
-    Artist <$> artistName `mergedVia` mergeEq
-           <*> artistSortName `mergedVia` mergeEq
-           <*> artistComment `mergedVia` mergeEq
-           <*> artistBeginDate `mergedVia` mergeEq
-           <*> artistEndDate `mergedVia` mergeEq
-           <*> artistEnded `mergedVia` mergeEq
-           <*> artistGender `mergedVia` mergeEq
-           <*> artistType `mergedVia` mergeEq
-           <*> artistCountry `mergedVia` mergeEq
+    ArtistTree <$> artistData `mergedVia` mergeArtistData
+    where
+      mergeArtistData =
+        Artist <$> artistName `mergedVia` mergeEq
+               <*> artistSortName `mergedVia` mergeEq
+               <*> artistComment `mergedVia` mergeEq
+               <*> artistBeginDate `mergedVia` mergeEq
+               <*> artistEndDate `mergedVia` mergeEq
+               <*> artistEnded `mergedVia` mergeEq
+               <*> artistGender `mergedVia` mergeEq
+               <*> artistType `mergedVia` mergeEq
+               <*> artistCountry `mergedVia` mergeEq

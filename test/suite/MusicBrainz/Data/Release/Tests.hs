@@ -28,7 +28,7 @@ testCreateFindLatest :: Test
 testCreateFindLatest = testCase "findLatest when release exists" $ mbTest $ do
   editor <- entityRef <$> register acid2
   portisheadAc <- singleArtistAc editor portishead
-  portisheadRg <- ReleaseGroup.create editor (dummy portisheadAc)
+  portisheadRg <- ReleaseGroup.create editor (ReleaseGroupTree $ dummy portisheadAc)
   country <- Country.addCountry uk
   script <- Script.addScript Script { scriptName = "United Kingdom"
                                     , scriptIsoCode = "gb"
@@ -46,7 +46,7 @@ testCreateFindLatest = testCase "findLatest when release exists" $ mbTest $ do
   status <- ReleaseStatus.addReleaseStatus ReleaseStatus
     { releaseStatusName = "Official" }
 
-  created <- Release.create editor $
+  created <- Release.create editor $ ReleaseTree $
     expected (ReleaseGroupRef $ coreMbid portisheadRg) portisheadAc
       (entityRef country) (entityRef script) (entityRef language)
       (entityRef packaging) (entityRef status)

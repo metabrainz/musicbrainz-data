@@ -23,7 +23,7 @@ testCreateFindLatest = testCase "findLatest when recording exists" $ mbTest $ do
   editor <- entityRef <$> register acid2
   ac <- singleArtistAc editor portishead
 
-  created <- Recording.create editor (expected ac)
+  created <- Recording.create editor (RecordingTree $ expected ac)
   Just found <- findLatest (coreMbid created)
 
   liftIO $ found @?= created

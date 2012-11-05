@@ -13,13 +13,13 @@ import MusicBrainz
 import MusicBrainz.Data.Revision (newRevision)
 
 data Specification a = Specification
-    { getTree :: a -> MusicBrainz (Ref (Tree a))
+    { getTree :: Tree a -> MusicBrainz (Ref (Tree a))
     , reserveEntity :: MusicBrainz (MBID a)
     , newEntityRevision :: MBID a -> Ref (Tree a) -> Ref (Revision a) -> MusicBrainz (Ref (Revision a))
     , linkRevision :: MBID a -> Ref (Revision a) -> MusicBrainz ()
     }
 
-create :: Specification a -> Ref Editor -> a -> MusicBrainz (CoreEntity a)
+create :: Specification a -> Ref Editor -> Tree a -> MusicBrainz (CoreEntity a)
 create Specification{..} editor entity = do
   treeId <- getTree entity
   entityId <- reserveEntity
@@ -27,7 +27,7 @@ create Specification{..} editor entity = do
   linkRevision entityId revisionId
   return CoreEntity { coreMbid = entityId
                     , coreRevision = revisionId
-                    , coreData = entity
+                    , coreData = treeData entity
                     }
 
 reserveEntityTable :: Typeable a => String -> MusicBrainz (MBID a)
