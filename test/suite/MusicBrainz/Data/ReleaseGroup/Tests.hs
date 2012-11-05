@@ -3,7 +3,7 @@ module MusicBrainz.Data.ReleaseGroup.Tests
     ( tests ) where
 
 import Test.MusicBrainz
-import Test.MusicBrainz.Repository (portishead, dummy)
+import Test.MusicBrainz.Repository (portishead, dummy, acid2)
 
 import MusicBrainz
 import MusicBrainz.Data.Editor
@@ -19,7 +19,7 @@ tests = [ testFindLatest
 
 testFindLatest :: Test
 testFindLatest = testCase "findLatest when release group exists" $ mbTest $ do
-  Just editor <- findEditorByName "acid2"
+  editor <- register acid2
   artist <- Artist.create (entityRef editor) portishead
   ac <- ArtistCredit.getRef
           [ ArtistCreditName { acnArtist = ArtistRef $ coreMbid artist

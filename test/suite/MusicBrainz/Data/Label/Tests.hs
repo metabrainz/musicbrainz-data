@@ -2,9 +2,10 @@
 module MusicBrainz.Data.Label.Tests ( tests ) where
 
 import Test.MusicBrainz
+import Test.MusicBrainz.Repository (acid2)
 
 import MusicBrainz
-import MusicBrainz.Data.Editor (findEditorByName)
+import MusicBrainz.Data.Editor (register)
 import MusicBrainz.Data.FindLatest
 import MusicBrainz.Data.Label (create)
 
@@ -14,7 +15,7 @@ tests = [ testCreateFindLatest
 
 testCreateFindLatest :: Test
 testCreateFindLatest = testCase "findLatest when label exists" $ mbTest $ do
-  Just editor <- findEditorByName "acid2"
+  editor <- register acid2
 
   created <- create (entityRef editor) expected
   Just found <- findLatest (coreMbid created)

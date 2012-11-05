@@ -26,3 +26,12 @@ uk :: Country
 uk = Country { countryName = "United Kingdom"
              , countryIsoCode = "gb"
              }
+
+acid2 :: Editor
+acid2 = Editor { editorName = "acid2" }
+
+male :: Gender
+male = Gender { genderName = "Male" }
+
+person :: ArtistType
+person = ArtistType { artistTypeName = "Person" }

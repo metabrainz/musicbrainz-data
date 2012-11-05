@@ -26,10 +26,12 @@ Library
     MusicBrainz
     MusicBrainz.Data.Artist
     MusicBrainz.Data.ArtistCredit
+    MusicBrainz.Data.ArtistType
     MusicBrainz.Data.Country
     MusicBrainz.Data.Edit
     MusicBrainz.Data.Editor
     MusicBrainz.Data.FindLatest
+    MusicBrainz.Data.Gender
     MusicBrainz.Data.Label
     MusicBrainz.Data.Language
     MusicBrainz.Data.Recording

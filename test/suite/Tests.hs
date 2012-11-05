@@ -39,8 +39,10 @@ main = cleanState >> defaultMain tests
             ]
     cleanState = mbTest $ forM_
       [ "SET client_min_messages TO warning"
+      , "TRUNCATE artist_type CASCADE"
       , "TRUNCATE country CASCADE"
-      , "TRUNCATE revision CASCADE"
+      , "TRUNCATE editor CASCADE"
+      , "TRUNCATE gender CASCADE"
       , "ALTER SEQUENCE revision_revision_id_seq RESTART 1"
       , "COMMIT"
       ] $ \q -> execute q ()

@@ -47,7 +47,9 @@ instance Editable Artist where
             case runMerge (coreData newVer) (coreData current) (coreData ancestor) merge of
               Nothing -> error "Unable to merge: conflict"
               Just merged -> do
-                let editorId = EditorRef 1
+                editorId <- selectValue $ query
+                  [sql| SELECT editor_id FROM revision WHERE revision_id = ? |]
+                    (Only $ coreRevision current)
 
                 treeId <- artistTree merged
                 revisionId <- newRevision editorId >>=

@@ -117,6 +117,10 @@ instance FromRow Artist where
                    <*> field
 
 
+instance FromRow ArtistType where
+  fromRow = ArtistType <$> field
+
+
 instance FromRow Country where
   fromRow = Country <$> field <*> field
 
@@ -134,6 +138,10 @@ instance (FromField (Ref a), FromRow a) => FromRow (Entity a) where
                    <$> field
                        -- Delegetate to the actual entity to parse its data.
                    <*> fromRow
+
+
+instance FromRow Gender where
+  fromRow = Gender <$> field
 
 
 instance FromRow Label where
@@ -269,6 +277,11 @@ instance ToRow Artist where
                      ]
 
 
+instance ToRow ArtistType where
+  toRow ArtistType{..} = [ toField artistTypeName
+                         ]
+
+
 instance ToRow Country where
   toRow Country{..} = [ toField countryIsoCode
                       , toField countryName
@@ -279,6 +292,16 @@ instance ToRow EditNote where
   toRow EditNote{..} = [ toField editNoteAuthor
                        , toField editNoteBody
                        ]
+
+
+instance ToRow Editor where
+  toRow Editor{..} = [ toField editorName
+                     ]
+
+
+instance ToRow Gender where
+  toRow Gender{..} = [ toField genderName
+                     ]
 
 
 instance ToRow Label where

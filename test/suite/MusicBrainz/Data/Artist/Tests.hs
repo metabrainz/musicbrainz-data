@@ -4,15 +4,17 @@ module MusicBrainz.Data.Artist.Tests ( tests ) where
 import Control.Applicative
 
 import Test.MusicBrainz
-import Test.MusicBrainz.Repository (uk)
+import Test.MusicBrainz.Repository (uk, acid2, male, person)
 
 import MusicBrainz
 import MusicBrainz.Data.Artist
 import MusicBrainz.Data.Edit
 import MusicBrainz.Data.FindLatest
-import MusicBrainz.Data.Editor (findEditorByName)
+import MusicBrainz.Data.Editor (register)
 
+import qualified MusicBrainz.Data.ArtistType as ArtistType
 import qualified MusicBrainz.Data.Country as Country
+import qualified MusicBrainz.Data.Gender as Gender
 
 tests :: [Test]
 tests = [ testCreateFindLatest
@@ -21,15 +23,18 @@ tests = [ testCreateFindLatest
 
 testCreateFindLatest :: Test
 testCreateFindLatest = testCase "findLatest when artist exists" $ mbTest $ do
-  Just editor <- findEditorByName "acid2"
-  country <- Country.addCountry uk
+  editor <- register acid2
 
-  created <- create (entityRef editor) (expected (entityRef country))
+  country <- entityRef <$> Country.addCountry uk
+  maleRef <- entityRef <$> Gender.addGender male
+  personRef <- entityRef <$> ArtistType.addArtistType person
+
+  created <- create (entityRef editor) (expected country maleRef personRef)
   Just found <- findLatest (coreMbid created)
 
   liftIO $ found @?= created
   where
-    expected country = Artist
+    expected country gender type' = Artist
       { artistName = "Freddie Mercury"
       , artistSortName = "Mercury, Freddie"
       , artistComment = "Of queen"
@@ -38,14 +43,14 @@ testCreateFindLatest = testCase "findLatest when artist exists" $ mbTest $ do
       , artistEndDate =
           PartialDate (Just 1991) (Just 11) (Just 24)
       , artistEnded = True
-      , artistGender = Just $ GenderRef 1
+      , artistGender = Just $ gender
       , artistCountry = Just $ country
-      , artistType = Just $ ArtistTypeRef 1
+      , artistType = Just $ type'
       }
 
 testUpdate :: Test
 testUpdate = testCase "update does change artist" $ mbTest $ do
-  Just editor <- fmap entityRef <$> findEditorByName "acid2"
+  editor <- entityRef <$> register acid2
 
   created <- create editor startWith
   let artistId = coreMbid created

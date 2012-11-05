@@ -1282,7 +1282,6 @@ ALTER SEQUENCE edit_note_edit_note_id_seq OWNED BY edit_note.edit_note_id;
 CREATE TABLE editor (
     editor_id integer NOT NULL,
     name character varying(64) NOT NULL,
-    password character varying(64) NOT NULL,
     privs integer DEFAULT 0,
     email character varying(64) DEFAULT NULL::character varying,
     website character varying(255) DEFAULT NULL::character varying,

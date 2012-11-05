@@ -5,10 +5,10 @@ module MusicBrainz.Data.Release.Tests
 import Control.Applicative
 import Test.MusicBrainz
 import Test.MusicBrainz.Data (singleArtistAc)
-import Test.MusicBrainz.Repository (portishead, dummy, uk)
+import Test.MusicBrainz.Repository (portishead, dummy, uk, acid2)
 
 import MusicBrainz
-import MusicBrainz.Data.Editor (findEditorByName)
+import MusicBrainz.Data.Editor (register)
 import MusicBrainz.Data.FindLatest
 import MusicBrainz.Data.Release ()
 
@@ -26,7 +26,7 @@ tests = [ testCreateFindLatest
 
 testCreateFindLatest :: Test
 testCreateFindLatest = testCase "findLatest when release exists" $ mbTest $ do
-  Just editor <- fmap entityRef <$> findEditorByName "acid2"
+  editor <- entityRef <$> register acid2
   portisheadAc <- singleArtistAc editor portishead
   portisheadRg <- ReleaseGroup.create editor (dummy portisheadAc)
   country <- Country.addCountry uk

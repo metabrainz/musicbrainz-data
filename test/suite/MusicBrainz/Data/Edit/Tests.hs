@@ -5,6 +5,7 @@ module MusicBrainz.Data.Edit.Tests
 import Control.Applicative
 
 import Test.MusicBrainz
+import Test.MusicBrainz.Repository
 
 import MusicBrainz
 import MusicBrainz.Data.Edit
@@ -15,7 +16,7 @@ tests = [ testAddEditNote ]
 
 testAddEditNote :: Test
 testAddEditNote = testCase "Add & retrieve edit notes for edits" $ mbTest $ do
-  Just editor <- fmap entityRef <$> findEditorByName "acid2"
+  editor <- entityRef <$> register acid2
   editId <- openEdit
   addEditNote editId (expected editor)
   editNotes <- findEditNotes editId

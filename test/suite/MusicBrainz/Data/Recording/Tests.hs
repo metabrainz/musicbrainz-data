@@ -6,10 +6,10 @@ import Control.Applicative
 
 import Test.MusicBrainz
 import Test.MusicBrainz.Data (singleArtistAc)
-import Test.MusicBrainz.Repository (portishead)
+import Test.MusicBrainz.Repository (portishead, acid2)
 
 import MusicBrainz
-import MusicBrainz.Data.Editor (findEditorByName)
+import MusicBrainz.Data.Editor (register)
 import MusicBrainz.Data.FindLatest
 
 import qualified MusicBrainz.Data.Recording as Recording
@@ -20,7 +20,7 @@ tests = [ testCreateFindLatest
 
 testCreateFindLatest :: Test
 testCreateFindLatest = testCase "findLatest when recording exists" $ mbTest $ do
-  Just editor <- fmap entityRef <$> findEditorByName "acid2"
+  editor <- entityRef <$> register acid2
   ac <- singleArtistAc editor portishead
 
   created <- Recording.create editor (expected ac)
