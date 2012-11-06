@@ -196,9 +196,9 @@ artistTree artist = do
   return treeId
   where
     insertArtistData :: (Functor m, MonadIO m) => Artist -> MusicBrainzT m Int
-    insertArtistData artist = selectValue $
+    insertArtistData data' = selectValue $
       query [sql| SELECT find_or_insert_artist_data(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) |]
-        artist
+        data'
 
     insertArtistTree dataId = selectValue $
       query [sql| INSERT INTO artist_tree (artist_data_id)

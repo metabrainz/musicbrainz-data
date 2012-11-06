@@ -9,7 +9,6 @@ module MusicBrainz.Data.Edit
     , findEditNotes
     , voteOnEdit
     , module MusicBrainz.Edit
-    , includeRevision
     ) where
 
 import Control.Applicative
