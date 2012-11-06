@@ -208,8 +208,7 @@ instance FromRow (Tagged Artist Relationship) where
 
 --------------------------------------------------------------------------------
 instance ToField EditStatus where
-  toField Open = toField (1::Int)
-  toField Closed = toField (2::Int)
+  toField = toField . fromEnum
 
 instance ToField (MBID a) where
   toField id' = Plain $ inQuotes . fromString $ (id' ^. by mbid)
@@ -292,9 +291,7 @@ instance ToField (Ref (Tree a)) where
 
 
 instance ToField Vote where
-  toField Accept = toField (1::Int)
-  toField Reject = toField (-1::Int)
-  toField Abstain = toField (0::Int)
+  toField = toField . fromEnum
 
 --------------------------------------------------------------------------------
 instance ToRow Artist where

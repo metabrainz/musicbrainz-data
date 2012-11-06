@@ -407,11 +407,31 @@ data Edit = Edit
 --------------------------------------------------------------------------------
 {-| The possible states an edit can be in. -}
 data EditStatus = Open | Closed
+  deriving (Eq, Show)
 
+instance Enum EditStatus where
+  fromEnum Open = 1
+  fromEnum Closed = 2
+
+  toEnum 1 = Open
+  toEnum 2 = Closed
+  toEnum n = error $ show n ++ " cannot be converted to EditStatus"
 
 --------------------------------------------------------------------------------
 {-| The possible types of votes that editors can cast on an edit. -}
 data Vote = Accept | Reject | Abstain
+  deriving (Eq, Show)
+
+-- A custom instance here allows us to use -1 for reject.
+instance Enum Vote where
+  fromEnum Accept = 1
+  fromEnum Reject = -1
+  fromEnum Abstain = 0
+
+  toEnum 1 = Accept
+  toEnum (-1) = Reject
+  toEnum 0 = Abstain
+  toEnum n = error $ show n ++ " cannot be converted to Vote"
 
 
 --------------------------------------------------------------------------------
