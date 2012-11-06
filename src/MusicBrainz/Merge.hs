@@ -8,6 +8,8 @@ module MusicBrainz.Merge
 import Control.Applicative
 import Data.Functor.Compose
 
+import qualified Data.Set as Set
+
 import MusicBrainz
 
 --------------------------------------------------------------------------------
@@ -61,9 +63,11 @@ type. -}
 class Mergeable a where
   merge :: Merge a a
 
+
 instance Mergeable (Tree Artist) where
   merge =
     ArtistTree <$> artistData `mergedVia` mergeArtistData
+               <*> artistRelationships `mergedVia` merge
     where
       mergeArtistData =
         Artist <$> artistName `mergedVia` mergeEq
@@ -75,3 +79,12 @@ instance Mergeable (Tree Artist) where
                <*> artistGender `mergedVia` mergeEq
                <*> artistType `mergedVia` mergeEq
                <*> artistCountry `mergedVia` mergeEq
+
+
+instance Ord a => Mergeable (Set.Set a) where
+  merge = Merge $ Compose go
+    where
+      go MergeScope{..} =
+        let removed = ancestor `Set.difference` current
+            added = current `Set.difference` ancestor
+        in Just $ new `Set.difference` (removed `Set.intersection` added)

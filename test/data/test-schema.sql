@@ -1423,6 +1423,18 @@ ALTER SEQUENCE iswc_id_seq OWNED BY iswc.id;
 
 
 --
+-- Name: l_artist_artist; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE l_artist_artist (
+    source_id integer NOT NULL,
+    target_id uuid NOT NULL
+);
+
+
+ALTER TABLE musicbrainz.l_artist_artist OWNER TO musicbrainz;
+
+--
 -- Name: label; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
 --
 
@@ -3874,6 +3886,14 @@ ALTER TABLE ONLY iswc
 
 
 --
+-- Name: l_artist_artist_pkey; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+ALTER TABLE ONLY l_artist_artist
+    ADD CONSTRAINT l_artist_artist_pkey PRIMARY KEY (source_id, target_id);
+
+
+--
 -- Name: label_alias_label_tree_id_name_locale_key; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
 --
 
@@ -5034,6 +5054,22 @@ ALTER TABLE ONLY isrc
 
 ALTER TABLE ONLY iswc
     ADD CONSTRAINT iswc_work_tree_id_fkey FOREIGN KEY (work_tree_id) REFERENCES work_tree(work_tree_id);
+
+
+--
+-- Name: l_artist_artist_source_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_artist_artist
+    ADD CONSTRAINT l_artist_artist_source_id_fkey FOREIGN KEY (source_id) REFERENCES artist_tree(artist_tree_id);
+
+
+--
+-- Name: l_artist_artist_target_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_artist_artist
+    ADD CONSTRAINT l_artist_artist_target_id_fkey FOREIGN KEY (target_id) REFERENCES artist(artist_id);
 
 
 --

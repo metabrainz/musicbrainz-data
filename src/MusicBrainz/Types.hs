@@ -27,6 +27,9 @@ module MusicBrainz.Types
     , ReleaseStatus(..)
     , Script(..)
 
+      -- ** Relationships
+    , Relationship(..)
+
       -- * Various types of data used in entity attributes
     , MBID(..), mbid
     , PartialDate(..)
@@ -54,6 +57,8 @@ import Data.Text (Text)
 import Data.Typeable (Typeable)
 import Data.UUID
 
+import qualified Data.Set as Set
+
 --------------------------------------------------------------------------------
 {-| A reference to a specific entity. In the database, this a foreign key
 relationship to an entity of type @a@. -}
@@ -66,10 +71,11 @@ data Ref a where
     EditNoteRef :: Int -> Ref EditNote
     EditorRef :: Int -> Ref Editor
     GenderRef :: Int -> Ref Gender
+    LabelRef :: (MBID Label) -> Ref Label
     LabelTypeRef :: Int -> Ref LabelType
     LanguageRef :: Int -> Ref Language
-    RecordingRef :: Int -> Ref Recording
-    ReleaseRef :: Int -> Ref Release
+    RecordingRef :: (MBID Recording) -> Ref Recording
+    ReleaseRef :: (MBID Release) -> Ref Release
     ReleaseGroupRef :: (MBID ReleaseGroup) -> Ref ReleaseGroup
     ReleaseGroupTypeRef :: Int -> Ref (ReleaseGroupType a)
     ReleasePackagingRef :: Int -> Ref ReleasePackaging
@@ -338,7 +344,7 @@ mbid = projection mbidToString parseMbid
 {-| Represents a view of a versioned MusicBrainz \'core\' entity at a specific
 point in time (a specific 'Revision'). -}
 data CoreEntity a = CoreEntity
-    { coreMbid :: MBID a
+    { coreRef :: Ref a
     , coreRevision :: Ref (Revision a)
     , coreData :: a
     }
@@ -361,6 +367,7 @@ specific entity (of type @a@). -}
 data Tree a where
   ArtistTree :: {
     artistData :: Artist
+  , artistRelationships :: Set.Set Relationship
   } -> Tree Artist
 
   LabelTree :: {
@@ -392,8 +399,9 @@ treeData ReleaseGroupTree{..} = releaseGroupData
 entities. Editors can then vote on these edits to decide if they should be
 merge, which ModBot can then later merge (or reject) once a consensus
 emerges. -}
-data Edit = Edit { editStatus :: EditStatus
-                 }
+data Edit = Edit
+    { editStatus :: EditStatus
+    }
 
 
 --------------------------------------------------------------------------------
@@ -415,3 +423,8 @@ data EditNote = EditNote
     , editNoteAuthor :: Ref Editor
     }
   deriving (Eq, Show)
+
+
+--------------------------------------------------------------------------------
+data Relationship = ArtistRelationship (Ref Artist)
+  deriving (Eq, Ord, Show)

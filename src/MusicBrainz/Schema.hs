@@ -14,6 +14,7 @@ module MusicBrainz.Schema () where
 import Blaze.ByteString.Builder.Char8 (fromString)
 import Control.Applicative
 import Control.Lens
+import Data.Tagged
 import Data.Typeable (Typeable)
 import Database.PostgreSQL.Simple.FromField (FromField(..), ResultError(..), returnError, typename)
 import Database.PostgreSQL.Simple.FromRow (FromRow(..), field)
@@ -27,6 +28,10 @@ import qualified Data.ByteString.Char8 as LBS
 import qualified Data.UUID as UUID
 
 --------------------------------------------------------------------------------
+instance FromField (Ref Artist) where
+  fromField f v = ArtistRef <$> fromField f v
+
+
 instance FromField (Ref ArtistCredit) where
   fromField f v = ArtistCreditRef <$> fromField f v
 
@@ -55,12 +60,24 @@ instance FromField (Ref Gender) where
   fromField f v = GenderRef <$> fromField f v
 
 
+instance FromField (Ref Label) where
+  fromField f v = LabelRef <$> fromField f v
+
+
 instance FromField (Ref LabelType) where
   fromField f v = LabelTypeRef <$> fromField f v
 
 
 instance FromField (Ref Language) where
   fromField f v = LanguageRef <$> fromField f v
+
+
+instance FromField (Ref Recording) where
+  fromField f v = RecordingRef <$> fromField f v
+
+
+instance FromField (Ref Release) where
+  fromField f v = ReleaseRef <$> fromField f v
 
 
 instance FromField (Ref ReleaseGroup) where
@@ -103,7 +120,7 @@ instance FromField (Ref (Tree a)) where
 
 
 --------------------------------------------------------------------------------
-instance (FromRow a, Typeable a) => FromRow (CoreEntity a) where
+instance (FromField (Ref a), FromRow a, Typeable a) => FromRow (CoreEntity a) where
   fromRow = CoreEntity     -- Core entity's MBID
                        <$> field
                            -- The revision reference
@@ -183,6 +200,12 @@ instance FromRow Script where
   fromRow = Script <$> field <*> field <*> field
 
 
+-- All relationships go through 'tagged' in order to provide the type system a
+-- hint of the relationship this row represents.
+
+instance FromRow (Tagged Artist Relationship) where
+  fromRow = Tagged . ArtistRelationship <$> field
+
 --------------------------------------------------------------------------------
 instance ToField EditStatus where
   toField Open = toField (1::Int)
@@ -220,12 +243,24 @@ instance ToField (Ref Gender) where
   toField (GenderRef id') = toField id'
 
 
+instance ToField (Ref Label) where
+  toField (LabelRef id') = toField id'
+
+
 instance ToField (Ref LabelType) where
   toField (LabelTypeRef id') = toField id'
 
 
 instance ToField (Ref Language) where
   toField (LanguageRef id') = toField id'
+
+
+instance ToField (Ref Recording) where
+  toField (RecordingRef id') = toField id'
+
+
+instance ToField (Ref Release) where
+  toField (ReleaseRef id') = toField id'
 
 
 instance ToField (Ref ReleaseGroup) where

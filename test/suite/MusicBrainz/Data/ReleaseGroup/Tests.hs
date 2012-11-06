@@ -2,15 +2,16 @@
 module MusicBrainz.Data.ReleaseGroup.Tests
     ( tests ) where
 
+import Control.Applicative
+
 import Test.MusicBrainz
+import Test.MusicBrainz.Data
 import Test.MusicBrainz.Repository (portishead, dummy, acid2)
 
 import MusicBrainz
 import MusicBrainz.Data.Editor
 import MusicBrainz.Data.FindLatest
 
-import qualified MusicBrainz.Data.Artist as Artist
-import qualified MusicBrainz.Data.ArtistCredit as ArtistCredit
 import qualified MusicBrainz.Data.ReleaseGroup as ReleaseGroup
 
 tests :: [Test]
@@ -19,15 +20,9 @@ tests = [ testFindLatest
 
 testFindLatest :: Test
 testFindLatest = testCase "findLatest when release group exists" $ mbTest $ do
-  editor <- register acid2
-  artist <- Artist.create (entityRef editor) (ArtistTree portishead)
-  ac <- ArtistCredit.getRef
-          [ ArtistCreditName { acnArtist = ArtistRef $ coreMbid artist
-                             , acnName = artistName (coreData artist)
-                             , acnJoinPhrase = ""
-                             }
-          ]
+  editor <- entityRef <$> register acid2
+  ac <- singleArtistAc editor portishead
 
-  created <- ReleaseGroup.create (entityRef editor) (ReleaseGroupTree $ dummy ac)
-  Just found <- findLatest (coreMbid created)
+  created <- ReleaseGroup.create editor (ReleaseGroupTree $ dummy ac)
+  Just found <- findLatest (coreRef created)
   liftIO $ found @?= created

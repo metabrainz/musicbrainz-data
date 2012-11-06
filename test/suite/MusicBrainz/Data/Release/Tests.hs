@@ -47,11 +47,11 @@ testCreateFindLatest = testCase "findLatest when release exists" $ mbTest $ do
     { releaseStatusName = "Official" }
 
   created <- Release.create editor $ ReleaseTree $
-    expected (ReleaseGroupRef $ coreMbid portisheadRg) portisheadAc
+    expected (coreRef portisheadRg) portisheadAc
       (entityRef country) (entityRef script) (entityRef language)
       (entityRef packaging) (entityRef status)
 
-  Just found <- findLatest (coreMbid created)
+  Just found <- findLatest (coreRef created)
   liftIO $ found @?= created
   where
     expected rg ac country script language packaging status =

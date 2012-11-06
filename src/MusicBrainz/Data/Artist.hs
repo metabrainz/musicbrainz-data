@@ -5,15 +5,20 @@ module MusicBrainz.Data.Artist
     ( -- * Working with revisions
       viewRevision
     , revisionParents
+    , viewRelationships
 
       -- * Editing artists
     , create
     , update
     ) where
 
+import Prelude hiding (mapM_)
+
 import Control.Applicative
 import Control.Monad (void)
+import Data.Foldable (mapM_)
 import Data.Maybe (listToMaybe)
+import Data.Proxy
 import Data.Traversable (traverse)
 import Database.PostgreSQL.Simple (Only(..), In(..))
 import Database.PostgreSQL.Simple.SqlQQ
@@ -29,7 +34,23 @@ import MusicBrainz.Merge
 import qualified MusicBrainz.Data.Generic.Create as GenericCreate
 
 viewTree :: Ref (Revision Artist) -> MusicBrainz (Tree Artist)
-viewTree r = ArtistTree . coreData <$> viewRevision r
+viewTree r = ArtistTree <$> fmap coreData (viewRevision r)
+                        <*> viewRelationships r
+
+
+viewRelationships :: Ref (Revision Artist) -> MusicBrainz (Set.Set Relationship)
+viewRelationships r = Set.fromList . concat <$> sequence [ toArtist ]
+  where
+    toArtist =
+      let detag x = proxy x (Proxy :: Proxy Artist)
+      in map detag <$> query [sql|
+          SELECT target_id
+          FROM artist_revision
+          JOIN artist_tree USING (artist_tree_id)
+          JOIN l_artist_artist ON (source_id = artist_tree_id)
+          WHERE revision_id = ?
+        |] (Only r)
+
 
 --------------------------------------------------------------------------------
 instance Editable Artist where
@@ -39,7 +60,7 @@ instance Editable Artist where
 
   mergeRevisionUpstream new = do
     newVer <- viewRevision new
-    let artistId = coreMbid newVer
+    let artistId = coreRef newVer
 
     current' <- findLatest artistId
     case current' of
@@ -132,7 +153,7 @@ create = GenericCreate.create GenericCreate.Specification
         (artistId, revisionId, artistTreeId)
 
 
-linkRevision :: MBID Artist -> Ref (Revision Artist) -> MusicBrainz ()
+linkRevision :: Ref Artist -> Ref (Revision Artist) -> MusicBrainz ()
 linkRevision artistId revisionId = void $
   execute [sql| UPDATE artist SET master_revision_id = ?
                 WHERE artist_id = ? |] (revisionId, artistId)
@@ -163,16 +184,28 @@ newArtistRevision parentRevision artistTreeId revisionId = selectValue $
 
 --------------------------------------------------------------------------------
 artistTree :: Tree Artist -> MusicBrainz (Ref (Tree Artist))
-artistTree artist = findOrInsertArtistData >>= findOrInsertArtistTree
-  where
-    findOrInsertArtistData :: MusicBrainz Int
-    findOrInsertArtistData = selectValue $
-      query [sql| SELECT find_or_insert_artist_data(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) |]
-        (artistData artist)
+artistTree artist = do
+  dataId <- insertArtistData (artistData artist)
+  treeId <- insertArtistTree dataId
 
-    findOrInsertArtistTree dataId = selectValue $
-      query [sql| SELECT find_or_insert_artist_tree(?) |]
+  mapM_ (addRelationship treeId) $ artistRelationships artist
+
+  return treeId
+  where
+    insertArtistData :: Artist -> MusicBrainz Int
+    insertArtistData artist = selectValue $
+      query [sql| SELECT find_or_insert_artist_data(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) |]
+        artist
+
+    insertArtistTree dataId = selectValue $
+      query [sql| INSERT INTO artist_tree (artist_data_id)
+                  VALUES (?)
+                  RETURNING artist_tree_id  |]
         (Only dataId)
+
+    addRelationship treeId (ArtistRelationship targetId) =
+      execute [sql| INSERT INTO l_artist_artist (source_id, target_id) VALUES (?, ?) |]
+        (treeId, targetId)
 
 
 --------------------------------------------------------------------------------

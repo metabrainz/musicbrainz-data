@@ -2,10 +2,11 @@
 module MusicBrainz.Data.Artist.Tests ( tests ) where
 
 import Control.Applicative
+
 import qualified Data.Set as Set
 
 import Test.MusicBrainz
-import Test.MusicBrainz.Repository (uk, acid2, male, person)
+import Test.MusicBrainz.Repository (uk, acid2, male, person, portishead)
 
 import MusicBrainz
 import MusicBrainz.Data.Artist
@@ -20,6 +21,7 @@ import qualified MusicBrainz.Data.Gender as Gender
 tests :: [Test]
 tests = [ testCreateFindLatest
         , testUpdate
+        , testRelationships
         ]
 
 testCreateFindLatest :: Test
@@ -30,8 +32,8 @@ testCreateFindLatest = testCase "findLatest when artist exists" $ mbTest $ do
   maleRef <- entityRef <$> Gender.addGender male
   personRef <- entityRef <$> ArtistType.addArtistType person
 
-  created <- create (entityRef editor) (ArtistTree $ expected country maleRef personRef)
-  Just found <- findLatest (coreMbid created)
+  created <- create (entityRef editor) (ArtistTree (expected country maleRef personRef) Set.empty)
+  Just found <- findLatest (coreRef created)
 
   liftIO $ found @?= created
   where
@@ -53,10 +55,10 @@ testUpdate :: Test
 testUpdate = testCase "update does change artist" $ mbTest $ do
   editor <- entityRef <$> register acid2
 
-  created <- create editor (ArtistTree startWith)
-  let artistId = coreMbid created
+  created <- create editor (ArtistTree freddie Set.empty)
+  let artistId = coreRef created
 
-  newRev <- update editor (coreRevision created) (ArtistTree expected)
+  newRev <- update editor (coreRevision created) (ArtistTree expected Set.empty)
 
   editId <- openEdit
   includeRevision editId newRev
@@ -71,18 +73,41 @@ testUpdate = testCase "update does change artist" $ mbTest $ do
       parents == Set.singleton (coreRevision created)
 
   where
-    startWith = Artist { artistName = "Freddie Mercury"
-                       , artistSortName = "Mercury, Freddie"
-                       , artistComment = "Of queen"
-                       , artistBeginDate =
-                           PartialDate (Just 1946) (Just 9) (Just 5)
-                       , artistEndDate =
-                           PartialDate (Just 1991) (Just 11) (Just 24)
-                       , artistEnded = True
-                       , artistGender = Nothing
-                       , artistCountry = Nothing
-                       , artistType = Nothing
+    expected = freddie { artistName = "LAX is boring"
+                       , artistSortName = "I want to go home"
                        }
-    expected = startWith { artistName = "LAX is boring"
-                         , artistSortName = "I want to go home"
-                         }
+
+
+testRelationships :: Test
+testRelationships = testCase "update does change artist" $ mbTest $ do
+  editor <- entityRef <$> register acid2
+
+  a <- create editor (ArtistTree freddie Set.empty)
+  b <- create editor (ArtistTree portishead Set.empty)
+
+  newA <- update editor (coreRevision a) (ArtistTree freddie (Set.singleton $ ArtistRelationship (coreRef b)))
+
+  editId <- openEdit
+  includeRevision editId newA
+  apply editId
+
+  oldRels <- viewRelationships (coreRevision a)
+  newRels <- viewRelationships newA
+
+  liftIO $ do
+    oldRels @?= Set.empty
+    newRels @?= (Set.singleton $ ArtistRelationship (coreRef b) )
+
+freddie :: Artist
+freddie = Artist { artistName = "Freddie Mercury"
+                 , artistSortName = "Mercury, Freddie"
+                 , artistComment = "Of queen"
+                 , artistBeginDate =
+                     PartialDate (Just 1946) (Just 9) (Just 5)
+                 , artistEndDate =
+                     PartialDate (Just 1991) (Just 11) (Just 24)
+                 , artistEnded = True
+                 , artistGender = Nothing
+                 , artistCountry = Nothing
+                 , artistType = Nothing
+                 }
