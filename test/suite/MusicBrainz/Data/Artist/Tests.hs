@@ -58,19 +58,17 @@ testUpdate = testCase "update does change artist" $ mbTest $ do
   created <- create editor (ArtistTree freddie Set.empty)
   let artistId = coreRef created
 
-  newRev <- update editor (coreRevision created) (ArtistTree expected Set.empty)
+  editId <- createEdit $
+    update editor (coreRevision created) (ArtistTree expected Set.empty)
 
-  editId <- openEdit
-  includeRevision editId newRev
   apply editId
 
   Just found <- findLatest artistId
   liftIO $ coreData found @?= expected
 
-  parents <- revisionParents newRev
+  parents <- revisionParents (coreRevision found)
   liftIO $
-    assertBool "The old revision is a direct parent of the new revision" $
-      parents == Set.singleton (coreRevision created)
+    coreRevision created `Set.member` parents @? "Is parented to starting revision"
 
   where
     expected = freddie { artistName = "LAX is boring"
@@ -85,14 +83,14 @@ testRelationships = testCase "update does change artist" $ mbTest $ do
   a <- create editor (ArtistTree freddie Set.empty)
   b <- create editor (ArtistTree portishead Set.empty)
 
-  newA <- update editor (coreRevision a) (ArtistTree freddie (Set.singleton $ ArtistRelationship (coreRef b)))
+  editId <- createEdit $
+    update editor (coreRevision a) (ArtistTree freddie (Set.singleton $ ArtistRelationship (coreRef b)))
 
-  editId <- openEdit
-  includeRevision editId newA
   apply editId
 
+  Just latest <- findLatest (coreRef a)
   oldRels <- viewRelationships (coreRevision a)
-  newRels <- viewRelationships newA
+  newRels <- viewRelationships (coreRevision latest)
 
   liftIO $ do
     oldRels @?= Set.empty

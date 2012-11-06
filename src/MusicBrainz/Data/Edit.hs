@@ -4,14 +4,18 @@
 module MusicBrainz.Data.Edit
     ( apply
     , openEdit
+    , createEdit
     , addEditNote
     , findEditNotes
     , voteOnEdit
     , module MusicBrainz.Edit
+    , includeRevision
     ) where
 
 import Control.Applicative
 import Control.Monad
+import Control.Monad.Trans
+import Control.Monad.Trans.Writer
 import Database.PostgreSQL.Simple (Only(..), (:.)(..))
 import Database.PostgreSQL.Simple.SqlQQ (sql)
 
@@ -71,3 +75,13 @@ voteOnEdit :: Ref Editor -> Ref Edit -> Vote -> MusicBrainz ()
 voteOnEdit editorId editId vote = void $ execute
   [sql| INSERT INTO vote (edit_id, editor_id, vote) VALUES (?, ?, ?) |]
     (editorId, editId, vote)
+
+
+--------------------------------------------------------------------------------
+createEdit :: EditM a -> MusicBrainz (Ref Edit)
+createEdit actions = do
+  editId <- openEdit
+  changes <- fmap execWriterT (nestMb actions) >>= liftIO
+  mapM_ (linkChange editId) changes
+  return editId
+  where linkChange editId (Change r) = linkRevisionToEdit editId r

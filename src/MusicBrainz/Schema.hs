@@ -210,6 +210,7 @@ instance FromRow (Tagged Artist Relationship) where
 instance ToField EditStatus where
   toField = toField . fromEnum
 
+
 instance ToField (MBID a) where
   toField id' = Plain $ inQuotes . fromString $ (id' ^. by mbid)
 
@@ -292,6 +293,7 @@ instance ToField (Ref (Tree a)) where
 
 instance ToField Vote where
   toField = toField . fromEnum
+
 
 --------------------------------------------------------------------------------
 instance ToRow Artist where

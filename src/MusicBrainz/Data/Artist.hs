@@ -16,6 +16,7 @@ import Prelude hiding (mapM_)
 
 import Control.Applicative
 import Control.Monad (void)
+import Control.Monad.IO.Class (MonadIO)
 import Data.Foldable (mapM_)
 import Data.Maybe (listToMaybe)
 import Data.Proxy
@@ -33,12 +34,12 @@ import MusicBrainz.Merge
 
 import qualified MusicBrainz.Data.Generic.Create as GenericCreate
 
-viewTree :: Ref (Revision Artist) -> MusicBrainz (Tree Artist)
+viewTree :: (Applicative m, MonadIO m) => Ref (Revision Artist) -> MusicBrainzT m (Tree Artist)
 viewTree r = ArtistTree <$> fmap coreData (viewRevision r)
                         <*> viewRelationships r
 
 
-viewRelationships :: Ref (Revision Artist) -> MusicBrainz (Set.Set Relationship)
+viewRelationships :: (Functor m, MonadIO m) => Ref (Revision Artist) -> MusicBrainzT m (Set.Set Relationship)
 viewRelationships r = Set.fromList . concat <$> sequence [ toArtist ]
   where
     toArtist =
@@ -54,7 +55,7 @@ viewRelationships r = Set.fromList . concat <$> sequence [ toArtist ]
 
 --------------------------------------------------------------------------------
 instance Editable Artist where
-  includeRevision editId revisionId = void $ execute
+  linkRevisionToEdit editId revisionId = void $ execute
     [sql| INSERT INTO edit_artist (edit_id, revision_id) VALUES (?, ?) |]
       (editId, revisionId)
 
@@ -110,7 +111,7 @@ instance FindLatest Artist where
 
 --------------------------------------------------------------------------------
 {-| View an artist at an exact 'Revision'. -}
-viewRevision :: Ref (Revision Artist) -> MusicBrainz (CoreEntity Artist)
+viewRevision :: (Functor m, MonadIO m) => Ref (Revision Artist) -> MusicBrainzT m (CoreEntity Artist)
 viewRevision revision = head <$> query q (Only revision)
     where q = [sql|
        SELECT artist_id, revision_id,
@@ -129,7 +130,7 @@ viewRevision revision = head <$> query q (Only revision)
 
 --------------------------------------------------------------------------------
 {-| Find references to the parent revisions of a given revision. -}
-revisionParents :: Ref (Revision Artist) -> MusicBrainz (Set.Set (Ref (Revision Artist)))
+revisionParents :: (Functor m, MonadIO m) => Ref (Revision Artist) -> MusicBrainzT m (Set.Set (Ref (Revision Artist)))
 revisionParents artistRev =
   Set.fromList . map fromOnly <$> query q (Only artistRev)
   where q = [sql| SELECT parent_revision_id FROM revision_parent
@@ -139,7 +140,7 @@ revisionParents artistRev =
 --------------------------------------------------------------------------------
 {-| Create an entirely new artist, returning the final 'CoreEntity' as it is
 in the database. -}
-create :: Ref Editor -> Tree Artist -> MusicBrainz (CoreEntity Artist)
+create :: (Functor m, MonadIO m) => Ref Editor -> Tree Artist -> MusicBrainzT m (CoreEntity Artist)
 create = GenericCreate.create GenericCreate.Specification
     { GenericCreate.getTree = artistTree
     , GenericCreate.reserveEntity = GenericCreate.reserveEntityTable "artist"
@@ -153,7 +154,7 @@ create = GenericCreate.create GenericCreate.Specification
         (artistId, revisionId, artistTreeId)
 
 
-linkRevision :: Ref Artist -> Ref (Revision Artist) -> MusicBrainz ()
+linkRevision :: (Functor m, MonadIO m) => Ref Artist -> Ref (Revision Artist) -> MusicBrainzT m ()
 linkRevision artistId revisionId = void $
   execute [sql| UPDATE artist SET master_revision_id = ?
                 WHERE artist_id = ? |] (revisionId, artistId)
@@ -162,19 +163,21 @@ linkRevision artistId revisionId = void $
 --------------------------------------------------------------------------------
 {-| Update the information about an artist, yielding a new revision. -}
 update :: Ref Editor -> Ref (Revision Artist) -> Tree Artist
-       -> MusicBrainz (Ref (Revision Artist))
+       -> EditM (Ref (Revision Artist))
 update editor baseRev artist = do
   newTree <- artistTree artist
   revisionId <- newRevision editor >>= newArtistRevision baseRev newTree
+  includeRevision revisionId
   addChild revisionId baseRev
   return revisionId
 
 
 --------------------------------------------------------------------------------
-newArtistRevision :: Ref (Revision Artist)
+newArtistRevision :: (Functor m, MonadIO m)
+                  => Ref (Revision Artist)
                   -> Ref (Tree Artist)
                   -> Ref (Revision Artist)
-                  -> MusicBrainz (Ref (Revision Artist))
+                  -> MusicBrainzT m (Ref (Revision Artist))
 newArtistRevision parentRevision artistTreeId revisionId = selectValue $
   query [sql| INSERT INTO artist_revision (artist_id, revision_id, artist_tree_id)
               VALUES ( (SELECT artist_id FROM artist_revision WHERE revision_id = ?)
@@ -183,7 +186,7 @@ newArtistRevision parentRevision artistTreeId revisionId = selectValue $
 
 
 --------------------------------------------------------------------------------
-artistTree :: Tree Artist -> MusicBrainz (Ref (Tree Artist))
+artistTree :: (Functor m, Monad m, MonadIO m) => Tree Artist -> MusicBrainzT m (Ref (Tree Artist))
 artistTree artist = do
   dataId <- insertArtistData (artistData artist)
   treeId <- insertArtistTree dataId
@@ -192,7 +195,7 @@ artistTree artist = do
 
   return treeId
   where
-    insertArtistData :: Artist -> MusicBrainz Int
+    insertArtistData :: (Functor m, MonadIO m) => Artist -> MusicBrainzT m Int
     insertArtistData artist = selectValue $
       query [sql| SELECT find_or_insert_artist_data(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) |]
         artist
@@ -210,8 +213,8 @@ artistTree artist = do
 
 --------------------------------------------------------------------------------
 {-| Attempt to resolve a the revision which 2 revisions forked from. -}
-mergeBase :: Ref (Revision Artist) -> Ref (Revision Artist)
-          -> MusicBrainz (Maybe (Ref (Revision Artist)))
+mergeBase :: (Functor m, MonadIO m) => Ref (Revision Artist) -> Ref (Revision Artist)
+          -> MusicBrainzT m (Maybe (Ref (Revision Artist)))
 mergeBase a b = selectValue $ query
   [sql| WITH RECURSIVE revision_path (revision_id, parent_revision_id, distance)
         AS (

@@ -12,7 +12,12 @@ module MusicBrainz.Edit
     , EditNote(..)
     , EditStatus(..)
     , Vote(..)
+    , EditM
+    , includeRevision
     ) where
+
+import Control.Monad.Trans
+import Control.Monad.Trans.Writer
 
 import MusicBrainz.Monad
 import MusicBrainz.Types
@@ -42,7 +47,17 @@ data Change = forall a. Editable a => Change (Ref (Revision a))
 included in edits. -}
 class Editable a where
   {-| Add a revision into an edit. -}
-  includeRevision :: Ref Edit -> Ref (Revision a) -> MusicBrainz ()
+  linkRevisionToEdit :: Ref Edit -> Ref (Revision a) -> MusicBrainz ()
 
   {-| Merge a revision on top of the current master revision. -}
   mergeRevisionUpstream :: Ref (Revision a) -> MusicBrainz ()
+
+
+--------------------------------------------------------------------------------
+{-| Accumulate many changes inside a single Edit. -}
+type EditM = MusicBrainzT (WriterT [Change] IO)
+
+
+--------------------------------------------------------------------------------
+includeRevision :: Editable a => Ref (Revision a) -> EditM ()
+includeRevision = lift . tell . return . Change
