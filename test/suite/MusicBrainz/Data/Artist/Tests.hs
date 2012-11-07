@@ -23,6 +23,7 @@ tests = [ testCreateFindLatest
         , testUpdate
         , testRelationships
         , testAliases
+        , testIpiCodes
         ]
 
 testCreateFindLatest :: Test
@@ -168,7 +169,7 @@ testIpiCodes = testCase "Can add and remove artist IPI codes" $ mbTest $ do
   liftIO $ ipiPostUpdate @?= Set.empty
 
   where
-    ipi = IPI "123123123"
+    ipi = IPI "12345678912"
 
 
 freddie :: Tree Artist

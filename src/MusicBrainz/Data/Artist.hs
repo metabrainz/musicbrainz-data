@@ -260,7 +260,7 @@ artistTree artist = do
         (SELECT find_or_insert_artist_name(?)), ?, ?, ?, ?, ?, ?, ?, ?, ?) |]
       (Only treeId :. alias)
 
-  executeMany [sql| INSERT INTO artist_ipi (artist_tree_id, ipi_code) VALUES (?, ?) |]
+  executeMany [sql| INSERT INTO artist_ipi (artist_tree_id, ipi) VALUES (?, ?) |]
     $ map (Only treeId :.) (Set.toList $ artistIpiCodes artist)
 
   return treeId
