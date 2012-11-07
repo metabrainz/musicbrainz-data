@@ -9,7 +9,9 @@
 {-| Definitions of all types used within MusicBrainz. -}
 module MusicBrainz.Types
     ( -- * MusicBrainz entities
-      Artist(..)
+      Alias(..)
+    , AliasType(..)
+    , Artist(..)
     , ArtistCredit
     , ArtistCreditName(..)
     , ArtistType(..)
@@ -63,6 +65,7 @@ import qualified Data.Set as Set
 {-| A reference to a specific entity. In the database, this a foreign key
 relationship to an entity of type @a@. -}
 data Ref a where
+    AliasTypeRef :: Int -> Ref AliasType
     ArtistCreditRef :: Int -> Ref ArtistCredit
     ArtistRef :: (MBID Artist) -> Ref Artist
     ArtistTypeRef :: Int -> Ref ArtistType
@@ -108,6 +111,24 @@ instance Ord (Ref a) where
   compare (RevisionRef a) (RevisionRef b) = a `compare` b
   compare (TreeRef a) (TreeRef b) = a `compare` b
   compare _ _ = error "Impossible condition: comparing references of different types"
+
+
+--------------------------------------------------------------------------------
+data Alias = Alias
+    { aliasName :: Text
+    , aliasSortName :: Text
+    , aliasBeginDate :: PartialDate
+    , aliasEndDate :: PartialDate
+    , aliasEnded :: Bool
+    , aliasType :: Maybe (Ref AliasType)
+    , aliasLocale :: Maybe Text
+    }
+  deriving (Eq, Ord, Show)
+
+
+data AliasType = AliasType
+    { aliasTypeName :: Text }
+  deriving (Eq, Show)
 
 
 --------------------------------------------------------------------------------
@@ -305,7 +326,7 @@ data PartialDate = PartialDate
     , dateMonth :: Maybe Int
     , dateDay :: Maybe Int
     }
-  deriving (Eq, Show)
+  deriving (Eq, Ord, Show)
 
 
 {-| A 'PartialDate' with no year, month or day. -}
@@ -368,6 +389,7 @@ data Tree a where
   ArtistTree :: {
     artistData :: Artist
   , artistRelationships :: Set.Set Relationship
+  , artistAliases :: Set.Set Alias
   } -> Tree Artist
 
   LabelTree :: {

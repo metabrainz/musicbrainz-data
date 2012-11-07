@@ -28,6 +28,10 @@ import qualified Data.ByteString.Char8 as LBS
 import qualified Data.UUID as UUID
 
 --------------------------------------------------------------------------------
+instance FromField (Ref AliasType) where
+  fromField f v = AliasTypeRef <$> fromField f v
+
+
 instance FromField (Ref Artist) where
   fromField f v = ArtistRef <$> fromField f v
 
@@ -129,6 +133,11 @@ instance (FromField (Ref a), FromRow a, Typeable a) => FromRow (CoreEntity a) wh
                        <*> fromRow
 
 
+instance FromRow Alias where
+  fromRow = Alias <$> field <*> field <*> fromRow <*> fromRow <*> field <*> field
+                  <*> field
+
+
 instance FromRow Artist where
   fromRow = Artist <$> field <*> field <*> field <*> fromRow
                    <*> fromRow <*> field <*> field <*> field
@@ -215,6 +224,10 @@ instance ToField (MBID a) where
   toField id' = Plain $ inQuotes . fromString $ (id' ^. by mbid)
 
 
+instance ToField (Ref AliasType) where
+  toField (AliasTypeRef id') = toField id'
+
+
 instance ToField (Ref Artist) where
   toField (ArtistRef id') = toField id'
 
@@ -296,6 +309,19 @@ instance ToField Vote where
 
 
 --------------------------------------------------------------------------------
+instance ToRow Alias where
+  toRow Alias{..} = [ toField aliasName
+                    , toField aliasSortName
+                    ]
+                    ++ toRow aliasBeginDate
+                    ++ toRow aliasEndDate
+                    ++
+                    [ toField aliasEnded
+                    , toField aliasType
+                    , toField aliasLocale
+                    ]
+
+
 instance ToRow Artist where
   toRow Artist{..} = [ toField artistName
                      , toField artistSortName

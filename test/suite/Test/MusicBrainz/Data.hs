@@ -10,7 +10,7 @@ import qualified MusicBrainz.Data.ArtistCredit as ArtistCredit
 
 singleArtistAc :: Ref Editor -> Artist -> MusicBrainz (Ref ArtistCredit)
 singleArtistAc editor artist =
-  Artist.create editor (ArtistTree artist Set.empty) >>= ArtistCredit.getRef . liftAc
+  Artist.create editor (ArtistTree artist Set.empty Set.empty) >>= ArtistCredit.getRef . liftAc
   where liftAc a = [ ArtistCreditName
                             { acnArtist = coreRef a
                             , acnName = artistName (coreData a)

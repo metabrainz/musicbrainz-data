@@ -6,6 +6,7 @@ module MusicBrainz.Data.Artist
       viewRevision
     , revisionParents
     , viewRelationships
+    , viewAliases
 
       -- * Editing artists
     , create
@@ -20,7 +21,7 @@ import Control.Monad (void, when)
 import Control.Monad.IO.Class (MonadIO)
 import Data.Foldable (mapM_, forM_)
 import Data.Proxy
-import Database.PostgreSQL.Simple (Only(..), In(..))
+import Database.PostgreSQL.Simple (Only(..), In(..), (:.)(..))
 import Database.PostgreSQL.Simple.SqlQQ
 
 import qualified Data.Set as Set
@@ -37,6 +38,7 @@ import qualified MusicBrainz.Data.Generic.Create as GenericCreate
 viewTree :: (Applicative m, MonadIO m) => Ref (Revision Artist) -> MusicBrainzT m (Tree Artist)
 viewTree r = ArtistTree <$> fmap coreData (viewRevision r)
                         <*> viewRelationships r
+                        <*> viewAliases r
 
 
 viewRelationships :: (Functor m, MonadIO m) => Ref (Revision Artist) -> MusicBrainzT m (Set.Set Relationship)
@@ -52,6 +54,19 @@ viewRelationships r = Set.fromList . concat <$> sequence [ toArtist ]
           WHERE revision_id = ?
         |] (Only r)
 
+
+viewAliases :: (Functor m, MonadIO m) => Ref (Revision Artist) -> MusicBrainzT m (Set.Set Alias)
+viewAliases r = Set.fromList <$> query
+  [sql| SELECT name.name, sort_name.name,
+          begin_date_year, begin_date_month, begin_date_day,
+          end_date_year, end_date_month, end_date_day,
+          ended, artist_alias_type_id, locale
+        FROM artist_alias
+        JOIN artist_name name ON (artist_alias.name = name.id)
+        JOIN artist_name sort_name ON (artist_alias.sort_name = sort_name.id)
+        JOIN artist_tree USING (artist_tree_id)
+        JOIN artist_revision USING (artist_tree_id)
+        WHERE revision_id = ? |] (Only r)
 
 --------------------------------------------------------------------------------
 instance Editable Artist where
@@ -216,6 +231,16 @@ artistTree artist = do
   treeId <- insertArtistTree dataId
 
   mapM_ (addRelationship treeId) $ artistRelationships artist
+
+  forM_ (Set.toList $ artistAliases artist) $ \alias -> do
+    execute [sql|
+      INSERT INTO artist_alias (artist_tree_id, name, sort_name,
+        begin_date_year, begin_date_month, begin_date_day,
+        end_date_year, end_date_month, end_date_day,
+        ended, artist_alias_type_id, locale)
+      VALUES (?, (SELECT find_or_insert_artist_name(?)),
+        (SELECT find_or_insert_artist_name(?)), ?, ?, ?, ?, ?, ?, ?, ?, ?) |]
+      (Only treeId :. alias)
 
   return treeId
   where

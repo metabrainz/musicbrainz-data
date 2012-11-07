@@ -22,6 +22,7 @@ tests :: [Test]
 tests = [ testCreateFindLatest
         , testUpdate
         , testRelationships
+        , testAliases
         ]
 
 testCreateFindLatest :: Test
@@ -32,7 +33,7 @@ testCreateFindLatest = testCase "findLatest when artist exists" $ mbTest $ do
   maleRef <- entityRef <$> Gender.addGender male
   personRef <- entityRef <$> ArtistType.addArtistType person
 
-  created <- create (entityRef editor) (ArtistTree (expected country maleRef personRef) Set.empty)
+  created <- create (entityRef editor) (ArtistTree (expected country maleRef personRef) Set.empty Set.empty)
   found <- findLatest (coreRef created)
 
   liftIO $ found @?= created
@@ -55,11 +56,11 @@ testUpdate :: Test
 testUpdate = testCase "update does change artist" $ mbTest $ do
   editor <- entityRef <$> register acid2
 
-  created <- create editor (ArtistTree freddie Set.empty)
+  created <- create editor (ArtistTree freddie Set.empty Set.empty)
   let artistId = coreRef created
 
   editId <- createEdit $
-    update editor (coreRevision created) (ArtistTree expected Set.empty)
+    update editor (coreRevision created) (ArtistTree expected Set.empty Set.empty)
 
   apply editId
 
@@ -77,14 +78,14 @@ testUpdate = testCase "update does change artist" $ mbTest $ do
 
 
 testRelationships :: Test
-testRelationships = testCase "update does change artist" $ mbTest $ do
+testRelationships = testCase "Relationships are bidirectional over addition and deletion" $ mbTest $ do
   editor <- entityRef <$> register acid2
 
-  a <- create editor (ArtistTree freddie Set.empty)
-  b <- create editor (ArtistTree portishead Set.empty)
+  a <- create editor (ArtistTree freddie Set.empty Set.empty)
+  b <- create editor (ArtistTree portishead Set.empty Set.empty)
 
   edit1 <- createEdit $
-    update editor (coreRevision a) (ArtistTree freddie (Set.singleton $ ArtistRelationship (coreRef b)))
+    update editor (coreRevision a) (ArtistTree freddie (Set.singleton $ ArtistRelationship (coreRef b)) Set.empty)
 
   apply edit1
 
@@ -96,7 +97,7 @@ testRelationships = testCase "update does change artist" $ mbTest $ do
 
   edit2 <- createEdit $
     update editor (coreRevision $ changedB)
-      (ArtistTree portishead Set.empty)
+      (ArtistTree portishead Set.empty Set.empty)
 
   apply edit2
 
@@ -112,6 +113,34 @@ testRelationships = testCase "update does change artist" $ mbTest $ do
       liftIO $ do
         oldRels @?= old
         newRels @?= new
+
+
+testAliases :: Test
+testAliases = testCase "Can add and remove aliases" $ mbTest $ do
+  editor <- entityRef <$> register acid2
+
+  artist <- create editor (ArtistTree freddie Set.empty (Set.singleton alias))
+  aliasesPreUpdate <- viewAliases (coreRevision artist)
+  liftIO $ aliasesPreUpdate @?= Set.singleton alias
+
+  edit <- createEdit $
+    update editor (coreRevision artist) (ArtistTree freddie Set.empty Set.empty)
+
+  apply edit
+
+  latest <- findLatest (coreRef artist)
+  aliasesPostUpdate <- viewAliases (coreRevision latest)
+  liftIO $ aliasesPostUpdate @?= Set.empty
+
+  where
+    alias = Alias { aliasName = "Freddie"
+                  , aliasSortName = "eidderF"
+                  , aliasBeginDate = emptyDate
+                  , aliasEndDate = emptyDate
+                  , aliasEnded = False
+                  , aliasType = Nothing
+                  , aliasLocale = Nothing
+                  }
 
 freddie :: Artist
 freddie = Artist { artistName = "Freddie Mercury"
