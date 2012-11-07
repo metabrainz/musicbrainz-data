@@ -780,7 +780,8 @@ CREATE TABLE artist_alias (
     end_date_year smallint,
     end_date_month smallint,
     end_date_day smallint,
-    primary_for_locale boolean DEFAULT false NOT NULL
+    primary_for_locale boolean DEFAULT false NOT NULL,
+    ended boolean DEFAULT false NOT NULL
 );
 
 
