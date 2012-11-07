@@ -21,7 +21,7 @@ import Control.Monad (void, when)
 import Control.Monad.IO.Class (MonadIO)
 import Data.Foldable (mapM_, forM_)
 import Data.Proxy
-import Database.PostgreSQL.Simple (Only(..), In(..), (:.)(..))
+import Database.PostgreSQL.Simple (Only(..), (:.)(..))
 import Database.PostgreSQL.Simple.SqlQQ
 
 import qualified Data.Set as Set
@@ -35,12 +35,14 @@ import MusicBrainz.Merge
 
 import qualified MusicBrainz.Data.Generic.Create as GenericCreate
 
+--------------------------------------------------------------------------------
 viewTree :: (Applicative m, MonadIO m) => Ref (Revision Artist) -> MusicBrainzT m (Tree Artist)
 viewTree r = ArtistTree <$> fmap coreData (viewRevision r)
                         <*> viewRelationships r
                         <*> viewAliases r
 
 
+--------------------------------------------------------------------------------
 viewRelationships :: (Functor m, MonadIO m) => Ref (Revision Artist) -> MusicBrainzT m (Set.Set Relationship)
 viewRelationships r = Set.fromList . concat <$> sequence [ toArtist ]
   where
@@ -55,6 +57,7 @@ viewRelationships r = Set.fromList . concat <$> sequence [ toArtist ]
         |] (Only r)
 
 
+--------------------------------------------------------------------------------
 viewAliases :: (Functor m, MonadIO m) => Ref (Revision Artist) -> MusicBrainzT m (Set.Set Alias)
 viewAliases r = Set.fromList <$> query
   [sql| SELECT name.name, sort_name.name,
@@ -67,6 +70,7 @@ viewAliases r = Set.fromList <$> query
         JOIN artist_tree USING (artist_tree_id)
         JOIN artist_revision USING (artist_tree_id)
         WHERE revision_id = ? |] (Only r)
+
 
 --------------------------------------------------------------------------------
 instance Editable Artist where
@@ -166,6 +170,7 @@ create = GenericCreate.create GenericCreate.Specification
         (artistId, revisionId, artistTreeId)
 
 
+--------------------------------------------------------------------------------
 linkRevision :: (Functor m, MonadIO m) => Ref Artist -> Ref (Revision Artist) -> MusicBrainzT m ()
 linkRevision artistId revisionId = void $
   execute [sql| UPDATE artist SET master_revision_id = ?
@@ -259,29 +264,3 @@ artistTree artist = do
       execute [sql| INSERT INTO l_artist_artist (source_id, target_id) VALUES (?, ?) |]
         (treeId, targetId)
 
-
---------------------------------------------------------------------------------
-{-| Attempt to resolve a the revision which 2 revisions forked from. -}
-mergeBase :: (Functor m, MonadIO m) => Ref (Revision Artist) -> Ref (Revision Artist)
-          -> MusicBrainzT m (Maybe (Ref (Revision Artist)))
-mergeBase a b = selectValue $ query
-  [sql| WITH RECURSIVE revision_path (revision_id, parent_revision_id, distance)
-        AS (
-          SELECT revision_id, parent_revision_id, 1
-          FROM revision_parent
-          WHERE revision_id IN ?
-
-          UNION
-
-          SELECT
-            revision_path.revision_id, revision_parent.parent_revision_id,
-            distance + 1
-          FROM revision_parent
-          JOIN revision_path
-            ON (revision_parent.revision_id = revision_path.parent_revision_id)
-        )
-        SELECT parent_revision_id
-        FROM revision_path a
-        JOIN revision_path b USING (parent_revision_id)
-        ORDER BY a.distance, b.distance
-        LIMIT 1 |] (Only $ In [a, b])
