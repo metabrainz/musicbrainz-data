@@ -5,8 +5,10 @@ module MusicBrainz.Data.Artist
     ( -- * Working with revisions
       viewRevision
     , revisionParents
+    , viewTree
     , viewRelationships
     , viewAliases
+    , viewIpiCodes
 
       -- * Editing artists
     , create
@@ -40,6 +42,7 @@ viewTree :: (Applicative m, MonadIO m) => Ref (Revision Artist) -> MusicBrainzT 
 viewTree r = ArtistTree <$> fmap coreData (viewRevision r)
                         <*> viewRelationships r
                         <*> viewAliases r
+                        <*> viewIpiCodes r
 
 
 --------------------------------------------------------------------------------
@@ -67,6 +70,16 @@ viewAliases r = Set.fromList <$> query
         FROM artist_alias
         JOIN artist_name name ON (artist_alias.name = name.id)
         JOIN artist_name sort_name ON (artist_alias.sort_name = sort_name.id)
+        JOIN artist_tree USING (artist_tree_id)
+        JOIN artist_revision USING (artist_tree_id)
+        WHERE revision_id = ? |] (Only r)
+
+
+--------------------------------------------------------------------------------
+viewIpiCodes :: (Functor m, MonadIO m) => Ref (Revision Artist) -> MusicBrainzT m (Set.Set IPI)
+viewIpiCodes r = Set.fromList <$> query
+  [sql| SELECT ipi
+        FROM artist_ipi
         JOIN artist_tree USING (artist_tree_id)
         JOIN artist_revision USING (artist_tree_id)
         WHERE revision_id = ? |] (Only r)
@@ -246,6 +259,9 @@ artistTree artist = do
       VALUES (?, (SELECT find_or_insert_artist_name(?)),
         (SELECT find_or_insert_artist_name(?)), ?, ?, ?, ?, ?, ?, ?, ?, ?) |]
       (Only treeId :. alias)
+
+  executeMany [sql| INSERT INTO artist_ipi (artist_tree_id, ipi_code) VALUES (?, ?) |]
+    $ map (Only treeId :.) (Set.toList $ artistIpiCodes artist)
 
   return treeId
   where

@@ -18,6 +18,7 @@ module MusicBrainz.Types
     , Country(..)
     , Editor(..)
     , Gender(..)
+    , IPI(..)
     , Label(..)
     , LabelType(..)
     , Language(..)
@@ -209,6 +210,12 @@ data Gender = Gender
 
 
 --------------------------------------------------------------------------------
+data IPI = IPI
+    { ipiCode :: Text }
+  deriving (Eq, Ord, Show)
+
+
+--------------------------------------------------------------------------------
 {-| A label who is repsonsible for releasing/distributing music. -}
 data Label = Label { labelName :: Text
                    , labelSortName :: Text
@@ -390,6 +397,7 @@ data Tree a where
     artistData :: Artist
   , artistRelationships :: Set.Set Relationship
   , artistAliases :: Set.Set Alias
+  , artistIpiCodes :: Set.Set IPI
   } -> Tree Artist
 
   LabelTree :: {
@@ -407,6 +415,9 @@ data Tree a where
   ReleaseGroupTree :: {
     releaseGroupData :: ReleaseGroup
   } -> Tree ReleaseGroup
+
+deriving instance Eq (Tree a)
+deriving instance Show (Tree a)
 
 treeData :: Tree a -> a
 treeData ArtistTree{..} = artistData

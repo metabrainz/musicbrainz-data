@@ -171,6 +171,10 @@ instance FromRow Gender where
   fromRow = Gender <$> field
 
 
+instance FromRow IPI where
+  fromRow = IPI <$> field
+
+
 instance FromRow Label where
   fromRow = Label <$> field <*> field <*> field <*> fromRow <*> fromRow
                   <*> field <*> field <*> field
@@ -363,6 +367,11 @@ instance ToRow Editor where
 instance ToRow Gender where
   toRow Gender{..} = [ toField genderName
                      ]
+
+
+instance ToRow IPI where
+  toRow IPI{..} = [ toField ipiCode
+                  ]
 
 
 instance ToRow Label where

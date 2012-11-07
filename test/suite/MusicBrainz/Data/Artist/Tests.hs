@@ -33,7 +33,11 @@ testCreateFindLatest = testCase "findLatest when artist exists" $ mbTest $ do
   maleRef <- entityRef <$> Gender.addGender male
   personRef <- entityRef <$> ArtistType.addArtistType person
 
-  created <- create (entityRef editor) (ArtistTree (expected country maleRef personRef) Set.empty Set.empty)
+  created <- create (entityRef editor) ArtistTree { artistData = expected country maleRef personRef
+                                                  , artistAliases = Set.empty
+                                                  , artistIpiCodes = Set.empty
+                                                  , artistRelationships = Set.empty
+                                                  }
   found <- findLatest (coreRef created)
 
   liftIO $ found @?= created
@@ -56,24 +60,27 @@ testUpdate :: Test
 testUpdate = testCase "update does change artist" $ mbTest $ do
   editor <- entityRef <$> register acid2
 
-  created <- create editor (ArtistTree freddie Set.empty Set.empty)
+  created <- create editor freddie
   let artistId = coreRef created
 
   editId <- createEdit $
-    update editor (coreRevision created) (ArtistTree expected Set.empty Set.empty)
+    update editor (coreRevision created) expected
 
   apply editId
 
   found <- findLatest artistId
-  liftIO $ coreData found @?= expected
+  latestTree <- viewTree (coreRevision found)
+  liftIO $ latestTree @?= expected
 
   parents <- revisionParents (coreRevision found)
   liftIO $
     coreRevision created `Set.member` parents @? "Is parented to starting revision"
 
   where
-    expected = freddie { artistName = "LAX is boring"
-                       , artistSortName = "I want to go home"
+    expected = freddie { artistData = (artistData freddie)
+                           { artistName = "LAX is boring"
+                           , artistSortName = "I want to go home"
+                           }
                        }
 
 
@@ -81,11 +88,11 @@ testRelationships :: Test
 testRelationships = testCase "Relationships are bidirectional over addition and deletion" $ mbTest $ do
   editor <- entityRef <$> register acid2
 
-  a <- create editor (ArtistTree freddie Set.empty Set.empty)
-  b <- create editor (ArtistTree portishead Set.empty Set.empty)
+  a <- create editor freddie
+  b <- create editor (ArtistTree portishead Set.empty Set.empty Set.empty)
 
   edit1 <- createEdit $
-    update editor (coreRevision a) (ArtistTree freddie (Set.singleton $ ArtistRelationship (coreRef b)) Set.empty)
+    update editor (coreRevision a) freddie { artistRelationships = Set.singleton $ ArtistRelationship (coreRef b) }
 
   apply edit1
 
@@ -97,7 +104,7 @@ testRelationships = testCase "Relationships are bidirectional over addition and 
 
   edit2 <- createEdit $
     update editor (coreRevision $ changedB)
-      (ArtistTree portishead Set.empty Set.empty)
+      (ArtistTree portishead Set.empty Set.empty Set.empty)
 
   apply edit2
 
@@ -119,12 +126,12 @@ testAliases :: Test
 testAliases = testCase "Can add and remove aliases" $ mbTest $ do
   editor <- entityRef <$> register acid2
 
-  artist <- create editor (ArtistTree freddie Set.empty (Set.singleton alias))
+  artist <- create editor freddie { artistAliases = Set.singleton alias }
   aliasesPreUpdate <- viewAliases (coreRevision artist)
   liftIO $ aliasesPreUpdate @?= Set.singleton alias
 
   edit <- createEdit $
-    update editor (coreRevision artist) (ArtistTree freddie Set.empty Set.empty)
+    update editor (coreRevision artist) freddie
 
   apply edit
 
@@ -142,16 +149,45 @@ testAliases = testCase "Can add and remove aliases" $ mbTest $ do
                   , aliasLocale = Nothing
                   }
 
-freddie :: Artist
-freddie = Artist { artistName = "Freddie Mercury"
-                 , artistSortName = "Mercury, Freddie"
-                 , artistComment = "Of queen"
-                 , artistBeginDate =
-                     PartialDate (Just 1946) (Just 9) (Just 5)
-                 , artistEndDate =
-                     PartialDate (Just 1991) (Just 11) (Just 24)
-                 , artistEnded = True
-                 , artistGender = Nothing
-                 , artistCountry = Nothing
-                 , artistType = Nothing
-                 }
+
+testIpiCodes :: Test
+testIpiCodes = testCase "Can add and remove artist IPI codes" $ mbTest $ do
+  editor <- entityRef <$> register acid2
+
+  artist <- create editor freddie { artistIpiCodes = Set.singleton ipi }
+  ipiPreUpdate <- viewIpiCodes (coreRevision artist)
+  liftIO $ ipiPreUpdate @?= Set.singleton ipi
+
+  edit <- createEdit $
+    update editor (coreRevision artist) freddie
+
+  apply edit
+
+  latest <- findLatest (coreRef artist)
+  ipiPostUpdate <- viewAliases (coreRevision latest)
+  liftIO $ ipiPostUpdate @?= Set.empty
+
+  where
+    ipi = IPI "123123123"
+
+
+freddie :: Tree Artist
+freddie = ArtistTree
+  { artistData =  Artist
+      { artistName = "Freddie Mercury"
+      , artistSortName = "Mercury, Freddie"
+      , artistComment = "Of queen"
+      , artistBeginDate =
+          PartialDate (Just 1946) (Just 9) (Just 5)
+      , artistEndDate =
+          PartialDate (Just 1991) (Just 11) (Just 24)
+      , artistEnded = True
+      , artistGender = Nothing
+      , artistCountry = Nothing
+      , artistType = Nothing
+      }
+  , artistRelationships = Set.empty
+  , artistAliases = Set.empty
+  , artistIpiCodes = Set.empty
+  }
+
