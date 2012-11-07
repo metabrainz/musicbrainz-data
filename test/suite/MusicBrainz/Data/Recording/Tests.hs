@@ -24,7 +24,7 @@ testCreateFindLatest = testCase "findLatest when recording exists" $ mbTest $ do
   ac <- singleArtistAc editor portishead
 
   created <- Recording.create editor (RecordingTree $ expected ac)
-  Just found <- findLatest (coreRef created)
+  found <- findLatest (coreRef created)
 
   liftIO $ found @?= created
   where

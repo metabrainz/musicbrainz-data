@@ -51,7 +51,7 @@ testCreateFindLatest = testCase "findLatest when release exists" $ mbTest $ do
       (entityRef country) (entityRef script) (entityRef language)
       (entityRef packaging) (entityRef status)
 
-  Just found <- findLatest (coreRef created)
+  found <- findLatest (coreRef created)
   liftIO $ found @?= created
   where
     expected rg ac country script language packaging status =

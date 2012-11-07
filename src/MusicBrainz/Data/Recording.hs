@@ -6,7 +6,6 @@ module MusicBrainz.Data.Recording
 
 import Control.Applicative
 import Control.Monad
-import Data.Maybe (listToMaybe)
 import Database.PostgreSQL.Simple (Only(..))
 import Database.PostgreSQL.Simple.SqlQQ (sql)
 
@@ -16,7 +15,7 @@ import MusicBrainz.Data.FindLatest
 import qualified MusicBrainz.Data.Generic.Create as GenericCreate
 
 instance FindLatest Recording where
-  findLatest recordingId = listToMaybe <$> query q (Only recordingId)
+  findLatest recordingId = head <$> query q (Only recordingId)
     where q = [sql|
        SELECT recording_id, revision_id,
         name.name, comment, artist_credit_id, length

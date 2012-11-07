@@ -15,12 +15,11 @@ module MusicBrainz.Data.Artist
 import Prelude hiding (mapM_)
 
 import Control.Applicative
-import Control.Monad (void)
+import Control.Lens hiding (query)
+import Control.Monad (void, when)
 import Control.Monad.IO.Class (MonadIO)
-import Data.Foldable (mapM_)
-import Data.Maybe (listToMaybe)
+import Data.Foldable (mapM_, forM_)
 import Data.Proxy
-import Data.Traversable (traverse)
 import Database.PostgreSQL.Simple (Only(..), In(..))
 import Database.PostgreSQL.Simple.SqlQQ
 
@@ -30,6 +29,7 @@ import MusicBrainz
 import MusicBrainz.Data.FindLatest
 import MusicBrainz.Data.Revision
 import MusicBrainz.Edit
+import MusicBrainz.Lens
 import MusicBrainz.Merge
 
 import qualified MusicBrainz.Data.Generic.Create as GenericCreate
@@ -63,36 +63,33 @@ instance Editable Artist where
     newVer <- viewRevision new
     let artistId = coreRef newVer
 
-    current' <- findLatest artistId
-    case current' of
-      Nothing -> error "Unable to merge: nothing to merge into"
-      Just current -> do
-        ancestor' <- mergeBase new (coreRevision current) >>= traverse viewRevision
-        case ancestor' of
-          Nothing -> error "Unable to merge: no common ancestor"
-          Just ancestor -> do
-            newTree <- viewTree new
-            currentTree <- viewTree (coreRevision current)
-            ancestorTree <- viewTree (coreRevision ancestor)
+    current <- findLatest artistId
+    ancestor' <- mergeBase new (coreRevision current) >>= traverse viewRevision
+    case ancestor' of
+      Nothing -> error "Unable to merge: no common ancestor"
+      Just ancestor -> do
+        newTree <- viewTree new
+        currentTree <- viewTree (coreRevision current)
+        ancestorTree <- viewTree (coreRevision ancestor)
 
-            case runMerge newTree currentTree ancestorTree merge of
-              Nothing -> error "Unable to merge: conflict"
-              Just merged -> do
-                editorId <- selectValue $ query
-                  [sql| SELECT editor_id FROM revision WHERE revision_id = ? |]
-                    (Only $ coreRevision current)
+        case runMerge newTree currentTree ancestorTree merge of
+          Nothing -> error "Unable to merge: conflict"
+          Just merged -> do
+            editorId <- selectValue $ query
+              [sql| SELECT editor_id FROM revision WHERE revision_id = ? |]
+                (Only $ coreRevision current)
 
-                treeId <- artistTree merged
-                revisionId <- newRevision editorId >>=
-                              newArtistRevision (coreRevision current) treeId
-                addChild revisionId new
-                addChild revisionId (coreRevision current)
-                linkRevision artistId revisionId
+            treeId <- artistTree merged
+            revisionId <- newRevision editorId >>=
+                          newArtistRevision (coreRevision current) treeId
+            addChild revisionId new
+            addChild revisionId (coreRevision current)
+            linkRevision artistId revisionId
 
 
 --------------------------------------------------------------------------------
 instance FindLatest Artist where
-  findLatest artistId = listToMaybe <$> query q (Only artistId)
+  findLatest artistId = head <$> query q (Only artistId)
     where q = [sql|
        SELECT artist_id, revision_id,
         name.name, sort_name.name, comment,
@@ -165,11 +162,38 @@ linkRevision artistId revisionId = void $
 update :: Ref Editor -> Ref (Revision Artist) -> Tree Artist
        -> EditM (Ref (Revision Artist))
 update editor baseRev artist = do
-  newTree <- artistTree artist
-  revisionId <- newRevision editor >>= newArtistRevision baseRev newTree
-  includeRevision revisionId
-  addChild revisionId baseRev
+  -- Create the new revision for this artist
+  revisionId <- runUpdate artist baseRev
+
+  -- Reflect relationship changes against other entities
+  oldRelationships <- viewRelationships baseRev
+  let additions = (artistRelationships artist) `Set.difference` oldRelationships
+  let deletions = oldRelationships `Set.difference` (artistRelationships artist)
+
+  when (not $ Set.null additions && Set.null deletions) $ do
+    self <- viewRevision baseRev
+    let returnRelationship = ArtistRelationship (coreRef self)
+
+    forM_ additions $
+      reflectRelationshipChange (Set.insert returnRelationship)
+
+    forM_ deletions $
+      reflectRelationshipChange (Set.delete returnRelationship)
+
   return revisionId
+
+  where
+    runUpdate tree base = do
+      treeId <- artistTree tree
+      revisionId <- newRevision editor >>= newArtistRevision base treeId
+      includeRevision revisionId
+      addChild revisionId base
+      return revisionId
+
+    reflectRelationshipChange f (ArtistRelationship targetId) = do
+      target <- findLatest targetId
+      targetTree <- over relationships f <$> viewTree (coreRevision target)
+      runUpdate targetTree (coreRevision target)
 
 
 --------------------------------------------------------------------------------

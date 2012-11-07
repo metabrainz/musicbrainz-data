@@ -24,5 +24,5 @@ testFindLatest = testCase "findLatest when release group exists" $ mbTest $ do
   ac <- singleArtistAc editor portishead
 
   created <- ReleaseGroup.create editor (ReleaseGroupTree $ dummy ac)
-  Just found <- findLatest (coreRef created)
+  found <- findLatest (coreRef created)
   liftIO $ found @?= created

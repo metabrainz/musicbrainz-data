@@ -33,7 +33,7 @@ testCreateFindLatest = testCase "findLatest when artist exists" $ mbTest $ do
   personRef <- entityRef <$> ArtistType.addArtistType person
 
   created <- create (entityRef editor) (ArtistTree (expected country maleRef personRef) Set.empty)
-  Just found <- findLatest (coreRef created)
+  found <- findLatest (coreRef created)
 
   liftIO $ found @?= created
   where
@@ -63,7 +63,7 @@ testUpdate = testCase "update does change artist" $ mbTest $ do
 
   apply editId
 
-  Just found <- findLatest artistId
+  found <- findLatest artistId
   liftIO $ coreData found @?= expected
 
   parents <- revisionParents (coreRevision found)
@@ -83,18 +83,35 @@ testRelationships = testCase "update does change artist" $ mbTest $ do
   a <- create editor (ArtistTree freddie Set.empty)
   b <- create editor (ArtistTree portishead Set.empty)
 
-  editId <- createEdit $
+  edit1 <- createEdit $
     update editor (coreRevision a) (ArtistTree freddie (Set.singleton $ ArtistRelationship (coreRef b)))
 
-  apply editId
+  apply edit1
 
-  Just latest <- findLatest (coreRef a)
-  oldRels <- viewRelationships (coreRevision a)
-  newRels <- viewRelationships (coreRevision latest)
+  relationshipsChanged a Set.empty (Set.singleton $ ArtistRelationship (coreRef b))
+  relationshipsChanged b Set.empty (Set.singleton $ ArtistRelationship (coreRef a))
 
-  liftIO $ do
-    oldRels @?= Set.empty
-    newRels @?= (Set.singleton $ ArtistRelationship (coreRef b) )
+  changedA <- findLatest (coreRef a)
+  changedB <- findLatest (coreRef b)
+
+  edit2 <- createEdit $
+    update editor (coreRevision $ changedB)
+      (ArtistTree portishead Set.empty)
+
+  apply edit2
+
+  relationshipsChanged changedA (Set.singleton $ ArtistRelationship (coreRef b)) Set.empty
+  relationshipsChanged changedB (Set.singleton $ ArtistRelationship (coreRef a)) Set.empty
+
+  where
+    relationshipsChanged for old new = do
+      latest <- findLatest (coreRef for)
+      oldRels <- viewRelationships (coreRevision for)
+      newRels <- viewRelationships (coreRevision latest)
+
+      liftIO $ do
+        oldRels @?= old
+        newRels @?= new
 
 freddie :: Artist
 freddie = Artist { artistName = "Freddie Mercury"

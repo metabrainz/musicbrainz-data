@@ -7,7 +7,6 @@ module MusicBrainz.Data.Label
 
 import Control.Applicative
 import Control.Monad
-import Data.Maybe (listToMaybe)
 import Database.PostgreSQL.Simple (Only(..))
 import Database.PostgreSQL.Simple.SqlQQ
 
@@ -17,7 +16,7 @@ import MusicBrainz.Data.FindLatest
 import qualified MusicBrainz.Data.Generic.Create as GenericCreate
 
 instance FindLatest Label where
-  findLatest labelId = listToMaybe <$> query q (Only labelId)
+  findLatest labelId = head <$> query q (Only labelId)
     where q = [sql|
        SELECT label_id, revision_id,
         name.name, sort_name.name, comment,

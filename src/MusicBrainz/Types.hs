@@ -386,7 +386,6 @@ data Tree a where
     releaseGroupData :: ReleaseGroup
   } -> Tree ReleaseGroup
 
-
 treeData :: Tree a -> a
 treeData ArtistTree{..} = artistData
 treeData LabelTree{..} = labelData

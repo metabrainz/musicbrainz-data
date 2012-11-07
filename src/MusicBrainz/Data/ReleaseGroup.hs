@@ -6,7 +6,6 @@ module MusicBrainz.Data.ReleaseGroup
 
 import Control.Applicative
 import Control.Monad (void)
-import Data.Maybe (listToMaybe)
 import Database.PostgreSQL.Simple (Only(..))
 import Database.PostgreSQL.Simple.SqlQQ (sql)
 
@@ -16,7 +15,7 @@ import MusicBrainz.Data.FindLatest
 import qualified MusicBrainz.Data.Generic.Create as GenericCreate
 
 instance FindLatest ReleaseGroup where
-  findLatest releaseGroupId = listToMaybe <$> query q (Only releaseGroupId)
+  findLatest releaseGroupId = head <$> query q (Only releaseGroupId)
     where q = [sql|
        SELECT release_group_id, revision_id,
          name.name, comment, artist_credit_id, release_group_primary_type_id
