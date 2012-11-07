@@ -9,6 +9,7 @@ module MusicBrainz.Data.Artist
     , viewRelationships
     , viewAliases
     , viewIpiCodes
+    , viewAnnotation
 
       -- * Editing artists
     , create
@@ -23,6 +24,7 @@ import Control.Monad (void, when)
 import Control.Monad.IO.Class (MonadIO)
 import Data.Foldable (mapM_, forM_)
 import Data.Proxy
+import Data.Text (Text)
 import Database.PostgreSQL.Simple (Only(..), (:.)(..))
 import Database.PostgreSQL.Simple.SqlQQ
 
@@ -43,6 +45,7 @@ viewTree r = ArtistTree <$> fmap coreData (viewRevision r)
                         <*> viewRelationships r
                         <*> viewAliases r
                         <*> viewIpiCodes r
+                        <*> viewAnnotation r
 
 
 --------------------------------------------------------------------------------
@@ -84,6 +87,14 @@ viewIpiCodes r = Set.fromList <$> query
         JOIN artist_revision USING (artist_tree_id)
         WHERE revision_id = ? |] (Only r)
 
+
+--------------------------------------------------------------------------------
+viewAnnotation :: (Functor m, MonadIO m) => Ref (Revision Artist) -> MusicBrainzT m Text
+viewAnnotation r = fromOnly . head <$> query
+  [sql| SELECT annotation
+        FROM artist_tree
+        JOIN artist_revision USING (artist_tree_id)
+        WHERE revision_id = ? |] (Only r)
 
 --------------------------------------------------------------------------------
 instance Editable Artist where
@@ -246,7 +257,7 @@ newArtistRevision parentRevision artistTreeId revisionId = selectValue $
 artistTree :: (Functor m, Monad m, MonadIO m) => Tree Artist -> MusicBrainzT m (Ref (Tree Artist))
 artistTree artist = do
   dataId <- insertArtistData (artistData artist)
-  treeId <- insertArtistTree dataId
+  treeId <- insertArtistTree (artistAnnotation artist) dataId
 
   mapM_ (addRelationship treeId) $ artistRelationships artist
 
@@ -270,11 +281,11 @@ artistTree artist = do
       query [sql| SELECT find_or_insert_artist_data(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) |]
         data'
 
-    insertArtistTree dataId = selectValue $
-      query [sql| INSERT INTO artist_tree (artist_data_id)
-                  VALUES (?)
+    insertArtistTree annotation dataId = selectValue $
+      query [sql| INSERT INTO artist_tree (artist_data_id, annotation)
+                  VALUES (?, ?)
                   RETURNING artist_tree_id  |]
-        (Only dataId)
+        (dataId, annotation)
 
     addRelationship treeId (ArtistRelationship targetId) =
       execute [sql| INSERT INTO l_artist_artist (source_id, target_id) VALUES (?, ?) |]

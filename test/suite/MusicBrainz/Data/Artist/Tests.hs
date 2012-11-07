@@ -24,6 +24,7 @@ tests = [ testCreateFindLatest
         , testRelationships
         , testAliases
         , testIpiCodes
+        , testAnnotation
         ]
 
 testCreateFindLatest :: Test
@@ -38,6 +39,7 @@ testCreateFindLatest = testCase "findLatest when artist exists" $ mbTest $ do
                                                   , artistAliases = Set.empty
                                                   , artistIpiCodes = Set.empty
                                                   , artistRelationships = Set.empty
+                                                  , artistAnnotation = ""
                                                   }
   found <- findLatest (coreRef created)
 
@@ -90,7 +92,7 @@ testRelationships = testCase "Relationships are bidirectional over addition and 
   editor <- entityRef <$> register acid2
 
   a <- create editor freddie
-  b <- create editor (ArtistTree portishead Set.empty Set.empty Set.empty)
+  b <- create editor (ArtistTree portishead Set.empty Set.empty Set.empty "")
 
   edit1 <- createEdit $
     update editor (coreRevision a) freddie { artistRelationships = Set.singleton $ ArtistRelationship (coreRef b) }
@@ -105,7 +107,7 @@ testRelationships = testCase "Relationships are bidirectional over addition and 
 
   edit2 <- createEdit $
     update editor (coreRevision $ changedB)
-      (ArtistTree portishead Set.empty Set.empty Set.empty)
+      (ArtistTree portishead Set.empty Set.empty Set.empty "")
 
   apply edit2
 
@@ -172,6 +174,27 @@ testIpiCodes = testCase "Can add and remove artist IPI codes" $ mbTest $ do
     ipi = IPI "12345678912"
 
 
+testAnnotation :: Test
+testAnnotation = testCase "Can add and remove artist annotations" $ mbTest $ do
+  editor <- entityRef <$> register acid2
+
+  artist <- create editor freddie { artistAnnotation = expected }
+  annPreUpdate <- viewAnnotation (coreRevision artist)
+  liftIO $ annPreUpdate @?= expected
+
+  edit <- createEdit $
+    update editor (coreRevision artist) freddie
+
+  apply edit
+
+  latest <- findLatest (coreRef artist)
+  annPostUpdate <- viewAnnotation (coreRevision latest)
+  liftIO $ annPostUpdate @?= ""
+
+  where
+    expected = "This is an artist annotation"
+
+
 freddie :: Tree Artist
 freddie = ArtistTree
   { artistData =  Artist
@@ -190,5 +213,6 @@ freddie = ArtistTree
   , artistRelationships = Set.empty
   , artistAliases = Set.empty
   , artistIpiCodes = Set.empty
+  , artistAnnotation = ""
   }
 

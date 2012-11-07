@@ -14,6 +14,7 @@ singleArtistAc editor artist =
                                   , artistRelationships = Set.empty
                                   , artistAliases =  Set.empty
                                   , artistIpiCodes = Set.empty
+                                  , artistAnnotation = ""
                                   } >>= ArtistCredit.getRef . liftAc
   where liftAc a = [ ArtistCreditName
                             { acnArtist = coreRef a

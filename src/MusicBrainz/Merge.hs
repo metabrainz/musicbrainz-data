@@ -70,6 +70,7 @@ instance Mergeable (Tree Artist) where
                <*> artistRelationships `mergedVia` merge
                <*> artistAliases `mergedVia` merge
                <*> artistIpiCodes `mergedVia` merge
+               <*> artistAnnotation `mergedVia` mergeEq
     where
       mergeArtistData =
         Artist <$> artistName `mergedVia` mergeEq

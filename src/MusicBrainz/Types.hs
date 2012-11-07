@@ -398,6 +398,7 @@ data Tree a where
   , artistRelationships :: Set.Set Relationship
   , artistAliases :: Set.Set Alias
   , artistIpiCodes :: Set.Set IPI
+  , artistAnnotation :: Text
   } -> Tree Artist
 
   LabelTree :: {
