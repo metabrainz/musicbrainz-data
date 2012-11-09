@@ -1429,7 +1429,8 @@ ALTER SEQUENCE iswc_id_seq OWNED BY iswc.id;
 
 CREATE TABLE l_artist_artist (
     source_id integer NOT NULL,
-    target_id uuid NOT NULL
+    target_id uuid NOT NULL,
+    relationship_id integer NOT NULL
 );
 
 
@@ -2187,6 +2188,123 @@ ALTER TABLE musicbrainz.recording_tree_recording_tree_id_seq OWNER TO musicbrain
 --
 
 ALTER SEQUENCE recording_tree_recording_tree_id_seq OWNED BY recording_tree.recording_tree_id;
+
+
+--
+-- Name: relationship; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE relationship (
+    relationship_id integer NOT NULL,
+    relationship_type_id integer NOT NULL,
+    begin_date_year integer,
+    begin_date_month integer,
+    begin_date_day integer,
+    end_date_year smallint,
+    end_date_month smallint,
+    end_date_day smallint,
+    ended boolean DEFAULT false NOT NULL
+);
+
+
+ALTER TABLE musicbrainz.relationship OWNER TO musicbrainz;
+
+--
+-- Name: relationship_attribute; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE relationship_attribute (
+    relationship_id integer NOT NULL,
+    attribute_type_id integer NOT NULL
+);
+
+
+ALTER TABLE musicbrainz.relationship_attribute OWNER TO musicbrainz;
+
+--
+-- Name: relationship_attribute_type; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE relationship_attribute_type (
+    attribute_type_id integer NOT NULL
+);
+
+
+ALTER TABLE musicbrainz.relationship_attribute_type OWNER TO musicbrainz;
+
+--
+-- Name: relationship_attribute_type_attribute_type_id_seq; Type: SEQUENCE; Schema: musicbrainz; Owner: musicbrainz
+--
+
+CREATE SEQUENCE relationship_attribute_type_attribute_type_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE musicbrainz.relationship_attribute_type_attribute_type_id_seq OWNER TO musicbrainz;
+
+--
+-- Name: relationship_attribute_type_attribute_type_id_seq; Type: SEQUENCE OWNED BY; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER SEQUENCE relationship_attribute_type_attribute_type_id_seq OWNED BY relationship_attribute_type.attribute_type_id;
+
+
+--
+-- Name: relationship_relationship_id_seq; Type: SEQUENCE; Schema: musicbrainz; Owner: musicbrainz
+--
+
+CREATE SEQUENCE relationship_relationship_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE musicbrainz.relationship_relationship_id_seq OWNER TO musicbrainz;
+
+--
+-- Name: relationship_relationship_id_seq; Type: SEQUENCE OWNED BY; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER SEQUENCE relationship_relationship_id_seq OWNED BY relationship.relationship_id;
+
+
+--
+-- Name: relationship_type; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE relationship_type (
+    relationship_type_id integer NOT NULL,
+    name text NOT NULL
+);
+
+
+ALTER TABLE musicbrainz.relationship_type OWNER TO musicbrainz;
+
+--
+-- Name: relationship_type_relationship_type_id_seq; Type: SEQUENCE; Schema: musicbrainz; Owner: musicbrainz
+--
+
+CREATE SEQUENCE relationship_type_relationship_type_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE musicbrainz.relationship_type_relationship_type_id_seq OWNER TO musicbrainz;
+
+--
+-- Name: relationship_type_relationship_type_id_seq; Type: SEQUENCE OWNED BY; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER SEQUENCE relationship_type_relationship_type_id_seq OWNED BY relationship_type.relationship_type_id;
 
 
 --
@@ -3490,6 +3608,27 @@ ALTER TABLE ONLY recording_tree ALTER COLUMN recording_tree_id SET DEFAULT nextv
 
 
 --
+-- Name: relationship_id; Type: DEFAULT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY relationship ALTER COLUMN relationship_id SET DEFAULT nextval('relationship_relationship_id_seq'::regclass);
+
+
+--
+-- Name: attribute_type_id; Type: DEFAULT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY relationship_attribute_type ALTER COLUMN attribute_type_id SET DEFAULT nextval('relationship_attribute_type_attribute_type_id_seq'::regclass);
+
+
+--
+-- Name: relationship_type_id; Type: DEFAULT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY relationship_type ALTER COLUMN relationship_type_id SET DEFAULT nextval('relationship_type_relationship_type_id_seq'::regclass);
+
+
+--
 -- Name: release_data_id; Type: DEFAULT; Schema: musicbrainz; Owner: musicbrainz
 --
 
@@ -4292,6 +4431,30 @@ ALTER TABLE ONLY recording_tag_raw
 
 ALTER TABLE ONLY recording_tree
     ADD CONSTRAINT recording_tree_pkey PRIMARY KEY (recording_tree_id);
+
+
+--
+-- Name: relationship_attribute_type_pkey; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+ALTER TABLE ONLY relationship_attribute_type
+    ADD CONSTRAINT relationship_attribute_type_pkey PRIMARY KEY (attribute_type_id);
+
+
+--
+-- Name: relationship_pkey; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+ALTER TABLE ONLY relationship
+    ADD CONSTRAINT relationship_pkey PRIMARY KEY (relationship_id);
+
+
+--
+-- Name: relationship_type_pkey; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+ALTER TABLE ONLY relationship_type
+    ADD CONSTRAINT relationship_type_pkey PRIMARY KEY (relationship_type_id);
 
 
 --
@@ -5423,6 +5586,30 @@ ALTER TABLE ONLY recording_tag
 
 ALTER TABLE ONLY recording_tree
     ADD CONSTRAINT recording_tree_recording_data_id_fkey FOREIGN KEY (recording_data_id) REFERENCES recording_data(recording_data_id);
+
+
+--
+-- Name: relationship_attribute_attribute_type_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY relationship_attribute
+    ADD CONSTRAINT relationship_attribute_attribute_type_id_fkey FOREIGN KEY (attribute_type_id) REFERENCES relationship_attribute_type(attribute_type_id);
+
+
+--
+-- Name: relationship_attribute_relationship_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY relationship_attribute
+    ADD CONSTRAINT relationship_attribute_relationship_id_fkey FOREIGN KEY (relationship_id) REFERENCES relationship(relationship_id);
+
+
+--
+-- Name: relationship_relationship_type_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY relationship
+    ADD CONSTRAINT relationship_relationship_type_id_fkey FOREIGN KEY (relationship_type_id) REFERENCES relationship_type(relationship_type_id);
 
 
 --
