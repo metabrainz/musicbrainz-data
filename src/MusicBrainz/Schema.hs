@@ -14,7 +14,6 @@ module MusicBrainz.Schema () where
 import Blaze.ByteString.Builder.Char8 (fromString)
 import Control.Applicative
 import Control.Lens
-import Data.Tagged
 import Data.Typeable (Typeable)
 import Database.PostgreSQL.Simple.FromField (FromField(..), ResultError(..), returnError, typename)
 import Database.PostgreSQL.Simple.FromRow (FromRow(..), field)
@@ -78,6 +77,14 @@ instance FromField (Ref Language) where
 
 instance FromField (Ref Recording) where
   fromField f v = RecordingRef <$> fromField f v
+
+
+instance FromField (Ref RelationshipAttribute) where
+  fromField f v = RelationshipAttributeRef <$> fromField f v
+
+
+instance FromField (Ref RelationshipType) where
+  fromField f v = RelationshipTypeRef <$> fromField f v
 
 
 instance FromField (Ref Release) where
@@ -192,6 +199,10 @@ instance FromRow Recording where
   fromRow = Recording <$> field <*> field <*> field <*> field
 
 
+instance FromRow RelationshipType where
+  fromRow = RelationshipType <$> field
+
+
 instance FromRow Release where
   fromRow = Release <$> field <*> field <*> field <*> field <*> fromRow
                     <*> field <*> field <*> field <*> field <*> field
@@ -212,12 +223,6 @@ instance FromRow ReleaseStatus where
 instance FromRow Script where
   fromRow = Script <$> field <*> field <*> field
 
-
--- All relationships go through 'tagged' in order to provide the type system a
--- hint of the relationship this row represents.
-
-instance FromRow (Tagged Artist Relationship) where
-  fromRow = Tagged . ArtistRelationship <$> field
 
 --------------------------------------------------------------------------------
 instance ToField EditStatus where
@@ -274,6 +279,10 @@ instance ToField (Ref Language) where
 
 instance ToField (Ref Recording) where
   toField (RecordingRef id') = toField id'
+
+
+instance ToField (Ref RelationshipType) where
+  toField (RelationshipTypeRef id') = toField id'
 
 
 instance ToField (Ref Release) where
@@ -398,6 +407,10 @@ instance ToRow Language where
                        ]
 
 
+instance ToRow RelationshipType where
+  toRow RelationshipType{..} = [ toField relName ]
+
+
 instance ToRow Release where
   toRow Release{..} = [ toField releaseName
                       , toField releaseComment
@@ -419,6 +432,14 @@ instance ToRow Recording where
                         , toField recordingArtistCredit
                         , toField recordingDuration
                         ]
+
+
+instance ToRow Relationship where
+  toRow Relationship{..} = [ toField relType ]
+                           ++ toRow relBeginDate
+                           ++ toRow relEndDate
+                           ++
+                           [ toField relEnded ]
 
 
 instance ToRow ReleaseGroup where

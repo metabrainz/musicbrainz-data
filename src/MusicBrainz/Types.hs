@@ -31,7 +31,10 @@ module MusicBrainz.Types
     , Script(..)
 
       -- ** Relationships
+    , LinkedRelationship(..)
     , Relationship(..)
+    , RelationshipType(..)
+    , RelationshipAttribute(..)
 
       -- * Various types of data used in entity attributes
     , MBID(..), mbid
@@ -79,6 +82,8 @@ data Ref a where
     LabelTypeRef :: Int -> Ref LabelType
     LanguageRef :: Int -> Ref Language
     RecordingRef :: (MBID Recording) -> Ref Recording
+    RelationshipAttributeRef :: Int -> Ref RelationshipAttribute
+    RelationshipTypeRef :: Int -> Ref RelationshipType
     ReleaseRef :: (MBID Release) -> Ref Release
     ReleaseGroupRef :: (MBID ReleaseGroup) -> Ref ReleaseGroup
     ReleaseGroupTypeRef :: Int -> Ref (ReleaseGroupType a)
@@ -103,6 +108,7 @@ instance Ord (Ref a) where
   compare (LabelTypeRef a) (LabelTypeRef b) = a `compare` b
   compare (LanguageRef a) (LanguageRef b) = a `compare` b
   compare (RecordingRef a) (RecordingRef b) = a `compare` b
+  compare (RelationshipTypeRef a) (RelationshipTypeRef b) = a `compare` b
   compare (ReleaseRef a) (ReleaseRef b) = a `compare` b
   compare (ReleaseGroupRef a) (ReleaseGroupRef b) = a `compare` b
   compare (ReleaseGroupTypeRef a) (ReleaseGroupTypeRef b) = a `compare` b
@@ -395,7 +401,7 @@ specific entity (of type @a@). -}
 data Tree a where
   ArtistTree :: {
     artistData :: Artist
-  , artistRelationships :: Set.Set Relationship
+  , artistRelationships :: Set.Set LinkedRelationship
   , artistAliases :: Set.Set Alias
   , artistIpiCodes :: Set.Set IPI
   , artistAnnotation :: Text
@@ -479,5 +485,29 @@ data EditNote = EditNote
 
 
 --------------------------------------------------------------------------------
-data Relationship = ArtistRelationship (Ref Artist)
+data LinkedRelationship =
+  ArtistRelationship
+    { relTarget :: Ref Artist
+    , relData :: Relationship
+    }
+  deriving (Eq, Ord, Show)
+
+
+data Relationship = Relationship
+    { relType :: Ref RelationshipType
+    , relAttributes :: Set.Set (Ref RelationshipAttribute)
+    , relBeginDate :: PartialDate
+    , relEndDate :: PartialDate
+    , relEnded :: Bool
+    }
+  deriving (Eq, Ord, Show)
+
+
+data RelationshipType = RelationshipType
+    { relName :: Text }
+  deriving (Eq, Ord, Show)
+
+
+data RelationshipAttribute = RelationshipAttribute
+    { relAttributeName :: Text }
   deriving (Eq, Ord, Show)

@@ -19,15 +19,15 @@ module MusicBrainz.Data.Artist
 import Prelude hiding (mapM_)
 
 import Control.Applicative
-import Control.Lens hiding (query)
+import Control.Lens hiding (by, query)
 import Control.Monad (void, when)
 import Control.Monad.IO.Class (MonadIO)
 import Data.Foldable (mapM_, forM_)
-import Data.Proxy
 import Data.Text (Text)
-import Database.PostgreSQL.Simple (Only(..), (:.)(..))
+import Database.PostgreSQL.Simple (Only(..), (:.)(..), In(..))
 import Database.PostgreSQL.Simple.SqlQQ
 
+import qualified Data.Map as Map
 import qualified Data.Set as Set
 
 import MusicBrainz
@@ -49,18 +49,60 @@ viewTree r = ArtistTree <$> fmap coreData (viewRevision r)
 
 
 --------------------------------------------------------------------------------
-viewRelationships :: (Functor m, MonadIO m) => Ref (Revision Artist) -> MusicBrainzT m (Set.Set Relationship)
-viewRelationships r = Set.fromList . concat <$> sequence [ toArtist ]
+viewRelationships :: (Functor m, MonadIO m) => Ref (Revision Artist) -> MusicBrainzT m (Set.Set LinkedRelationship)
+viewRelationships r = do
+  artistRels <- toArtist
+  inflatedRels <- inflateRelationships (map snd $ artistRels)
+  return $ Set.fromList $ map (construct ArtistRelationship inflatedRels) artistRels
+
   where
+    construct f inflatedRels (targetId, relationshipId) =
+      f targetId (inflatedRels Map.! relationshipId)
+
+    toArtist :: (Functor m, MonadIO m) => MusicBrainzT m [(Ref Artist, Int)]
     toArtist =
-      let detag x = proxy x (Proxy :: Proxy Artist)
-      in map detag <$> query [sql|
-          SELECT target_id
-          FROM artist_revision
-          JOIN artist_tree USING (artist_tree_id)
-          JOIN l_artist_artist ON (source_id = artist_tree_id)
-          WHERE revision_id = ?
-        |] (Only r)
+      query [sql|
+        SELECT target_id, relationship_id
+        FROM artist_revision
+        JOIN artist_tree USING (artist_tree_id)
+        JOIN l_artist_artist ON (source_id = artist_tree_id)
+        WHERE revision_id = ?
+      |] (Only r)
+
+    inflateRelationships :: (Functor m, MonadIO m) => [Int] -> MusicBrainzT m (Map.Map Int Relationship)
+    inflateRelationships relationshipIds = do
+      attrs <- Map.fromListWith (Set.union) . over (mapped._2) Set.singleton
+        <$> allAttributes
+
+      relRows <- query [sql|
+          SELECT relationship_id, relationship_type_id,
+            begin_date_year, begin_date_month, begin_date_day,
+            end_date_year, end_date_month, end_date_day,
+            ended
+          FROM relationship
+          WHERE relationship_id IN ?
+        |] (Only $ In relationshipIds)
+
+      return $ Map.fromList $ map (constructRelationship attrs) relRows
+
+      where
+        allAttributes :: MonadIO m => MusicBrainzT m [(Int, Ref RelationshipAttribute)]
+        allAttributes = query [sql|
+          SELECT relationship_id, attribute_type_id
+          FROM relationship_attribute
+          WHERE relationship_id IN ?
+        |] (Only $ In relationshipIds)
+
+        constructRelationship attrMap
+          (relId, typeId, by, bm, bd, ey, em, ed, ended) =
+            let relationship = Relationship
+                  { relType = typeId
+                  , relAttributes = Map.findWithDefault Set.empty relId attrMap
+                  , relBeginDate = PartialDate by bm bd
+                  , relEndDate = PartialDate ey em ed
+                  , relEnded = ended
+                  }
+            in (relId, relationship)
 
 
 --------------------------------------------------------------------------------
@@ -95,6 +137,7 @@ viewAnnotation r = fromOnly . head <$> query
         FROM artist_tree
         JOIN artist_revision USING (artist_tree_id)
         WHERE revision_id = ? |] (Only r)
+
 
 --------------------------------------------------------------------------------
 instance Editable Artist where
@@ -216,13 +259,12 @@ update editor baseRev artist = do
 
   when (not $ Set.null additions && Set.null deletions) $ do
     self <- viewRevision baseRev
-    let returnRelationship = ArtistRelationship (coreRef self)
 
     forM_ additions $
-      reflectRelationshipChange (Set.insert returnRelationship)
+      reflectRelationshipChange self Set.insert
 
     forM_ deletions $
-      reflectRelationshipChange (Set.delete returnRelationship)
+      reflectRelationshipChange self Set.delete
 
   return revisionId
 
@@ -234,9 +276,10 @@ update editor baseRev artist = do
       addChild revisionId base
       return revisionId
 
-    reflectRelationshipChange f (ArtistRelationship targetId) = do
+    reflectRelationshipChange endpoint f (ArtistRelationship targetId rel) = do
+      let returnRelationship = ArtistRelationship (coreRef endpoint) rel
       target <- findLatest targetId
-      targetTree <- over relationships f <$> viewTree (coreRevision target)
+      targetTree <- over relationships (f returnRelationship) <$> viewTree (coreRevision target)
       runUpdate targetTree (coreRevision target)
 
 
@@ -287,7 +330,13 @@ artistTree artist = do
                   RETURNING artist_tree_id  |]
         (dataId, annotation)
 
-    addRelationship treeId (ArtistRelationship targetId) =
-      execute [sql| INSERT INTO l_artist_artist (source_id, target_id) VALUES (?, ?) |]
-        (treeId, targetId)
+    addRelationship treeId (ArtistRelationship targetId relInfo) = do
+      relationshipId <- selectValue $ query [sql|
+        INSERT INTO relationship (relationship_type_id,
+          begin_date_year, begin_date_month, begin_date_day,
+          end_date_year, end_date_month, end_date_day,
+          ended)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING relationship_id |] relInfo
+      execute [sql| INSERT INTO l_artist_artist (source_id, target_id, relationship_id) VALUES (?, ?, ?) |]
+        (treeId, targetId, relationshipId :: Int)
 

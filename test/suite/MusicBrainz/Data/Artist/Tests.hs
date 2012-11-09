@@ -17,6 +17,7 @@ import MusicBrainz.Data.Editor (register)
 import qualified MusicBrainz.Data.ArtistType as ArtistType
 import qualified MusicBrainz.Data.Country as Country
 import qualified MusicBrainz.Data.Gender as Gender
+import qualified MusicBrainz.Data.Relationship as Relationship
 
 tests :: [Test]
 tests = [ testCreateFindLatest
@@ -90,17 +91,18 @@ testUpdate = testCase "update does change artist" $ mbTest $ do
 testRelationships :: Test
 testRelationships = testCase "Relationships are bidirectional over addition and deletion" $ mbTest $ do
   editor <- entityRef <$> register acid2
+  rel <- expectedRel
 
   a <- create editor freddie
   b <- create editor (ArtistTree portishead Set.empty Set.empty Set.empty "")
 
   edit1 <- createEdit $
-    update editor (coreRevision a) freddie { artistRelationships = Set.singleton $ ArtistRelationship (coreRef b) }
+    update editor (coreRevision a) freddie { artistRelationships = Set.singleton $ ArtistRelationship (coreRef b) rel }
 
   apply edit1
 
-  relationshipsChanged a Set.empty (Set.singleton $ ArtistRelationship (coreRef b))
-  relationshipsChanged b Set.empty (Set.singleton $ ArtistRelationship (coreRef a))
+  relationshipsChanged a Set.empty (Set.singleton $ ArtistRelationship (coreRef b) rel)
+  relationshipsChanged b Set.empty (Set.singleton $ ArtistRelationship (coreRef a) rel)
 
   changedA <- findLatest (coreRef a)
   changedB <- findLatest (coreRef b)
@@ -111,10 +113,17 @@ testRelationships = testCase "Relationships are bidirectional over addition and 
 
   apply edit2
 
-  relationshipsChanged changedA (Set.singleton $ ArtistRelationship (coreRef b)) Set.empty
-  relationshipsChanged changedB (Set.singleton $ ArtistRelationship (coreRef a)) Set.empty
+  relationshipsChanged changedA (Set.singleton $ ArtistRelationship (coreRef b) rel) Set.empty
+  relationshipsChanged changedB (Set.singleton $ ArtistRelationship (coreRef a) rel) Set.empty
 
   where
+    expectedRel =
+      Relationship <$> fmap entityRef (Relationship.addRelationshipType $ RelationshipType "performer")
+                   <*> pure Set.empty
+                   <*> pure emptyDate
+                   <*> pure emptyDate
+                   <*> pure False
+
     relationshipsChanged for old new = do
       latest <- findLatest (coreRef for)
       oldRels <- viewRelationships (coreRevision for)
