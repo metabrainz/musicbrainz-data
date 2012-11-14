@@ -126,8 +126,8 @@ testRelationships = testCase "Relationships are bidirectional over addition and 
 
     relationshipsChanged for old new = do
       latest <- findLatest (coreRef for)
-      oldRels <- viewRelationships (coreRevision for)
-      newRels <- viewRelationships (coreRevision latest)
+      oldRels <- Relationship.viewRelationships (coreRevision for)
+      newRels <- Relationship.viewRelationships (coreRevision latest)
 
       liftIO $ do
         oldRels @?= old

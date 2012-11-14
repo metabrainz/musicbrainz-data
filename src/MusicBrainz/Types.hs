@@ -35,6 +35,7 @@ module MusicBrainz.Types
     , Relationship(..)
     , RelationshipType(..)
     , RelationshipAttribute(..)
+    , RelationshipTarget(..)
 
       -- * Various types of data used in entity attributes
     , MBID(..), mbid
@@ -524,3 +525,6 @@ data RelationshipType = RelationshipType
 data RelationshipAttribute = RelationshipAttribute
     { relAttributeName :: Text }
   deriving (Eq, Ord, Show)
+
+
+data RelationshipTarget = ToArtist

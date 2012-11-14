@@ -6,7 +6,6 @@ module MusicBrainz.Data.Artist
       viewRevision
     , revisionParents
     , viewTree
-    , viewRelationships
     , viewAliases
     , viewIpiCodes
     , viewAnnotation
@@ -24,14 +23,14 @@ import Control.Monad (void, when)
 import Control.Monad.IO.Class (MonadIO)
 import Data.Foldable (mapM_, forM_)
 import Data.Text (Text)
-import Database.PostgreSQL.Simple (Only(..), (:.)(..), In(..))
+import Database.PostgreSQL.Simple (Only(..), (:.)(..))
 import Database.PostgreSQL.Simple.SqlQQ
 
-import qualified Data.Map as Map
 import qualified Data.Set as Set
 
 import MusicBrainz
 import MusicBrainz.Data.FindLatest
+import MusicBrainz.Data.Relationship
 import MusicBrainz.Data.Revision
 import MusicBrainz.Edit
 import MusicBrainz.Lens
@@ -40,69 +39,25 @@ import MusicBrainz.Merge
 import qualified MusicBrainz.Data.Generic.Create as GenericCreate
 
 --------------------------------------------------------------------------------
+instance HoldsRelationships Artist where
+  fetchEndPoints r ToArtist = do
+    rels <- query [sql|
+      SELECT target_id, relationship_id
+      FROM artist_revision
+      JOIN artist_tree USING (artist_tree_id)
+      JOIN l_artist_artist ON (source_id = artist_tree_id)
+      WHERE revision_id = ?
+    |] (Only r)
+    return $ map (\(targetId, relationshipId) -> (ArtistRelationship targetId, relationshipId)) rels
+
+
+--------------------------------------------------------------------------------
 viewTree :: (Applicative m, MonadIO m) => Ref (Revision Artist) -> MusicBrainzT m (Tree Artist)
 viewTree r = ArtistTree <$> fmap coreData (viewRevision r)
                         <*> viewRelationships r
                         <*> viewAliases r
                         <*> viewIpiCodes r
                         <*> viewAnnotation r
-
-
---------------------------------------------------------------------------------
-viewRelationships :: (Functor m, MonadIO m) => Ref (Revision Artist) -> MusicBrainzT m (Set.Set LinkedRelationship)
-viewRelationships r = do
-  artistRels <- toArtist
-  inflatedRels <- inflateRelationships (map snd $ artistRels)
-  return $ Set.fromList $ map (construct ArtistRelationship inflatedRels) artistRels
-
-  where
-    construct f inflatedRels (targetId, relationshipId) =
-      f targetId (inflatedRels Map.! relationshipId)
-
-    toArtist :: (Functor m, MonadIO m) => MusicBrainzT m [(Ref Artist, Int)]
-    toArtist =
-      query [sql|
-        SELECT target_id, relationship_id
-        FROM artist_revision
-        JOIN artist_tree USING (artist_tree_id)
-        JOIN l_artist_artist ON (source_id = artist_tree_id)
-        WHERE revision_id = ?
-      |] (Only r)
-
-    inflateRelationships :: (Functor m, MonadIO m) => [Int] -> MusicBrainzT m (Map.Map Int Relationship)
-    inflateRelationships relationshipIds = do
-      attrs <- Map.fromListWith (Set.union) . over (mapped._2) Set.singleton
-        <$> allAttributes
-
-      relRows <- query [sql|
-          SELECT relationship_id, relationship_type_id,
-            begin_date_year, begin_date_month, begin_date_day,
-            end_date_year, end_date_month, end_date_day,
-            ended
-          FROM relationship
-          WHERE relationship_id IN ?
-        |] (Only $ In relationshipIds)
-
-      return $ Map.fromList $ map (constructRelationship attrs) relRows
-
-      where
-        allAttributes :: MonadIO m => MusicBrainzT m [(Int, Ref RelationshipAttribute)]
-        allAttributes = query [sql|
-          SELECT relationship_id, attribute_type_id
-          FROM relationship_attribute
-          WHERE relationship_id IN ?
-        |] (Only $ In relationshipIds)
-
-        constructRelationship attrMap
-          (relId, typeId, by, bm, bd, ey, em, ed, ended) =
-            let relationship = Relationship
-                  { relType = typeId
-                  , relAttributes = Map.findWithDefault Set.empty relId attrMap
-                  , relBeginDate = PartialDate by bm bd
-                  , relEndDate = PartialDate ey em ed
-                  , relEnded = ended
-                  }
-            in (relId, relationship)
 
 
 --------------------------------------------------------------------------------
