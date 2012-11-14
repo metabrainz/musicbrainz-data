@@ -528,3 +528,4 @@ data RelationshipAttribute = RelationshipAttribute
 
 
 data RelationshipTarget = ToArtist
+  deriving (Bounded, Enum)

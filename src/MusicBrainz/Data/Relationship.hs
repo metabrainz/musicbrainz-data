@@ -74,9 +74,10 @@ class HoldsRelationships a where
 viewRelationships :: (Functor m, HoldsRelationships a, MonadIO m)
   => Ref (Revision a) -> MusicBrainzT m (Set.Set LinkedRelationship)
 viewRelationships r = do
-  artistRels <- fetchEndPoints r ToArtist
-  inflatedRels <- inflateRelationships (map snd $ artistRels)
-  return $ Set.fromList $ map (construct inflatedRels) artistRels
+  allRels <- concat <$>
+    mapM (fetchEndPoints r) [minBound :: RelationshipTarget ..]
+  inflatedRels <- inflateRelationships (map snd allRels)
+  return $ Set.fromList $ map (construct inflatedRels) allRels
 
   where
     construct inflatedRels (f, relationshipId) =
