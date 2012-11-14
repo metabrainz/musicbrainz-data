@@ -62,6 +62,7 @@ import Control.Lens
 import Data.Text (Text)
 import Data.Typeable (Typeable)
 import Data.UUID
+import GHC.Enum (boundedEnumFrom)
 
 import qualified Data.Set as Set
 
@@ -456,6 +457,13 @@ instance Enum EditStatus where
   toEnum 2 = Closed
   toEnum n = error $ show n ++ " cannot be converted to EditStatus"
 
+  enumFrom = boundedEnumFrom
+
+instance Bounded EditStatus where
+  minBound = Open
+  maxBound = Closed
+
+
 --------------------------------------------------------------------------------
 {-| The possible types of votes that editors can cast on an edit. -}
 data Vote = Accept | Reject | Abstain
@@ -472,6 +480,11 @@ instance Enum Vote where
   toEnum 0 = Abstain
   toEnum n = error $ show n ++ " cannot be converted to Vote"
 
+  enumFrom = boundedEnumFrom
+
+instance Bounded Vote where
+  minBound = Reject
+  maxBound = Accept
 
 --------------------------------------------------------------------------------
 {-| An edit note is a comment that can be left by editors on edit notes, to
