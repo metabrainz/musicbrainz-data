@@ -158,9 +158,8 @@ instance FindLatest Artist where
 
 
 --------------------------------------------------------------------------------
-{-| View an artist at an exact 'Revision'. -}
-viewRevision :: (Functor m, MonadIO m) => Ref (Revision Artist) -> MusicBrainzT m (CoreEntity Artist)
-viewRevision revision = head <$> query q (Only revision)
+instance ViewRevision Artist where
+  viewRevision revision = head <$> query q (Only revision)
     where q = [sql|
        SELECT artist_id, revision_id,
         name.name, sort_name.name, comment,
