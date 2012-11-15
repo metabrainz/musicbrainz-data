@@ -24,6 +24,7 @@ Library
     uuid >= 1.2.7 && < 1.3
   exposed-modules:
     MusicBrainz
+    MusicBrainz.Data.Alias
     MusicBrainz.Data.Artist
     MusicBrainz.Data.ArtistCredit
     MusicBrainz.Data.ArtistType

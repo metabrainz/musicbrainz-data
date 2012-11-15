@@ -9,6 +9,7 @@ import Test.MusicBrainz
 import Test.MusicBrainz.Repository (uk, acid2, male, person, portishead)
 
 import MusicBrainz
+import MusicBrainz.Data.Alias
 import MusicBrainz.Data.Artist
 import MusicBrainz.Data.Create
 import MusicBrainz.Data.Edit

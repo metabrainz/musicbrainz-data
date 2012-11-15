@@ -3,9 +3,7 @@
 {-| Functions for interacting with MusicBrainz artists in the database. -}
 module MusicBrainz.Data.Artist
     ( -- * Working with revisions
-      viewRevision
-    , viewTree
-    , viewAliases
+      viewTree
     , viewIpiCodes
     , viewAnnotation
     ) where
@@ -31,6 +29,7 @@ import MusicBrainz.Data.FindLatest
 import MusicBrainz.Data.Merge
 import MusicBrainz.Data.Relationship
 import MusicBrainz.Data.Revision
+import MusicBrainz.Data.Tree
 import MusicBrainz.Data.Update
 import MusicBrainz.Edit
 import MusicBrainz.Lens
@@ -56,14 +55,12 @@ instance HoldsRelationships Artist where
 
 
 --------------------------------------------------------------------------------
-{-| View all data about a specific version of an 'Artist'. -}
-viewTree :: (Applicative m, MonadIO m)
-  => Ref (Revision Artist) -> MusicBrainzT m (Tree Artist)
-viewTree r = ArtistTree <$> fmap coreData (viewRevision r)
-                        <*> viewRelationships r
-                        <*> viewAliases r
-                        <*> viewIpiCodes r
-                        <*> viewAnnotation r
+instance ViewTree Artist where
+  viewTree r = ArtistTree <$> fmap coreData (viewRevision r)
+                          <*> viewRelationships r
+                          <*> viewAliases r
+                          <*> viewIpiCodes r
+                          <*> viewAnnotation r
 
 
 --------------------------------------------------------------------------------
