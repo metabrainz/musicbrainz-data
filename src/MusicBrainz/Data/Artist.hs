@@ -33,6 +33,7 @@ import qualified Data.Set as Set
 import MusicBrainz
 import MusicBrainz.Data.Create
 import MusicBrainz.Data.FindLatest
+import MusicBrainz.Data.Merge
 import MusicBrainz.Data.Relationship
 import MusicBrainz.Data.Revision
 import MusicBrainz.Edit
@@ -301,48 +302,45 @@ artistTree artist = do
 
 
 --------------------------------------------------------------------------------
-{-| Attempt to resolve an 'MBID Artist' to a specific 'Artist' 'Ref'. This
-will follow merges to find the correct artist this MBID now points to. -}
-resolveMbid :: (Functor m, MonadIO m) => MBID Artist
-  -> MusicBrainzT m (Maybe (Ref Artist))
-resolveMbid entityMbid =
-  listToMaybe . map fromOnly <$> query
-    [sql|
-      WITH RECURSIVE path (revision_id, artist_id, child_revision_id, created_at, is_master_revision_id)
-      AS (
-        SELECT
-          artist_revision.revision_id,
-          artist_revision.artist_id,
-          revision_parent.revision_id AS child_revision_id,
-          created_at,
-          TRUE as is_master_revision_id
-        FROM artist_revision
-        JOIN artist USING (artist_id)
-        JOIN revision USING (revision_id)
-        LEFT JOIN revision_parent ON (revision_parent.parent_revision_id = revision.revision_id)
-        WHERE artist_id = ? AND master_revision_id = artist_revision.revision_id
+instance Merge Artist where
+  resolveMbid entityMbid =
+    listToMaybe . map fromOnly <$> query
+      [sql|
+        WITH RECURSIVE path (revision_id, artist_id, child_revision_id, created_at, is_master_revision_id)
+        AS (
+          SELECT
+            artist_revision.revision_id,
+            artist_revision.artist_id,
+            revision_parent.revision_id AS child_revision_id,
+            created_at,
+            TRUE as is_master_revision_id
+          FROM artist_revision
+          JOIN artist USING (artist_id)
+          JOIN revision USING (revision_id)
+          LEFT JOIN revision_parent ON (revision_parent.parent_revision_id = revision.revision_id)
+          WHERE artist_id = ? AND master_revision_id = artist_revision.revision_id
 
-        UNION
+          UNION
 
-        SELECT
-          artist_revision.revision_id,
-          artist_revision.artist_id,
-          revision_parent.revision_id,
-          revision.created_at,
-          master_revision_id = artist_revision.revision_id AS is_master_revision_id
+          SELECT
+            artist_revision.revision_id,
+            artist_revision.artist_id,
+            revision_parent.revision_id,
+            revision.created_at,
+            master_revision_id = artist_revision.revision_id AS is_master_revision_id
+          FROM path
+          JOIN artist_revision ON (path.child_revision_id = artist_revision.revision_id)
+          JOIN revision ON (revision.revision_id = artist_revision.revision_id)
+          JOIN artist ON (artist.artist_id = artist_revision.artist_id)
+          LEFT JOIN revision_parent ON (revision_parent.parent_revision_id = artist_revision.revision_id)
+        )
+        SELECT artist_id
         FROM path
-        JOIN artist_revision ON (path.child_revision_id = artist_revision.revision_id)
-        JOIN revision ON (revision.revision_id = artist_revision.revision_id)
-        JOIN artist ON (artist.artist_id = artist_revision.artist_id)
-        LEFT JOIN revision_parent ON (revision_parent.parent_revision_id = artist_revision.revision_id)
-      )
-      SELECT artist_id
-      FROM path
-      WHERE is_master_revision_id
-      ORDER BY created_at, revision_id DESC
-      LIMIT 1
-    |]
-      (Only entityMbid)
+        WHERE is_master_revision_id
+        ORDER BY created_at, revision_id DESC
+        LIMIT 1
+      |]
+        (Only entityMbid)
 
 
 --------------------------------------------------------------------------------

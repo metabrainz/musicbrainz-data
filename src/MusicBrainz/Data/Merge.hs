@@ -1,5 +1,9 @@
 module MusicBrainz.Data.Merge
-    ( merge ) where
+    ( merge
+    , Merge(..)
+    ) where
+
+import Control.Monad.IO.Class (MonadIO)
 
 import MusicBrainz
 
@@ -7,10 +11,9 @@ import MusicBrainz.Data.FindLatest
 import MusicBrainz.Data.Revision
 import MusicBrainz.Edit
 
-
 --------------------------------------------------------------------------------
 {-| Merge an artist into another artist. -}
-merge :: (Editable a, FindLatest a, CloneRevision a)
+merge :: Merge a
   => Ref Editor -> Ref (Revision a) -> Ref a -> EditM (Ref (Revision a))
 merge editor baseRev targetId = do
   -- Find the latest revision to merge into
@@ -24,3 +27,11 @@ merge editor baseRev targetId = do
   addChild mergeInto (coreRevision latestTarget)
 
   return mergeInto
+
+
+--------------------------------------------------------------------------------
+class (Editable a, FindLatest a, CloneRevision a) => Merge a where
+  {-| Attempt to resolve an 'MBID Artist' to a specific 'Artist' 'Ref'. This
+  will follow merges to find the correct artist this MBID now points to. -}
+  resolveMbid :: (Functor m, MonadIO m)
+    => MBID a -> MusicBrainzT m (Maybe (Ref a))
