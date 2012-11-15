@@ -8,12 +8,6 @@ module MusicBrainz.Data.Artist
     , viewAliases
     , viewIpiCodes
     , viewAnnotation
-
-    -- * Artist MBID handling
-    , resolveMbid
-
-      -- * Editing artists
-    , update
     ) where
 
 import Prelude hiding (mapM_)
@@ -36,6 +30,7 @@ import MusicBrainz.Data.FindLatest
 import MusicBrainz.Data.Merge
 import MusicBrainz.Data.Relationship
 import MusicBrainz.Data.Revision
+import MusicBrainz.Data.Update
 import MusicBrainz.Edit
 import MusicBrainz.Lens
 import MusicBrainz.Merge
@@ -205,42 +200,40 @@ linkRevision artistId revisionId = void $
 
 
 --------------------------------------------------------------------------------
-{-| Update the information about an artist, yielding a new revision. -}
-update :: Ref Editor -> Ref (Revision Artist) -> Tree Artist
-       -> EditM (Ref (Revision Artist))
-update editor baseRev artist = do
-  -- Create the new revision for this artist
-  revisionId <- runUpdate artist baseRev
+instance Update Artist where
+  update editor baseRev artist = do
+    -- Create the new revision for this artist
+    revisionId <- runUpdate artist baseRev
 
-  -- Reflect relationship changes against other entities
-  oldRelationships <- viewRelationships baseRev
-  let additions = (artistRelationships artist) `Set.difference` oldRelationships
-  let deletions = oldRelationships `Set.difference` (artistRelationships artist)
+    -- Reflect relationship changes against other entities
+    oldRelationships <- viewRelationships baseRev
+    let additions = (artistRelationships artist) `Set.difference` oldRelationships
+    let deletions = oldRelationships `Set.difference` (artistRelationships artist)
 
-  when (not $ Set.null additions && Set.null deletions) $ do
-    self <- viewRevision baseRev
+    when (not $ Set.null additions && Set.null deletions) $ do
+      self <- viewRevision baseRev
 
-    forM_ additions $
-      reflectRelationshipChange self Set.insert
+      forM_ additions $
+        reflectRelationshipChange self Set.insert
 
-    forM_ deletions $
-      reflectRelationshipChange self Set.delete
+      forM_ deletions $
+        reflectRelationshipChange self Set.delete
 
-  return revisionId
+    return revisionId
 
-  where
-    runUpdate tree base = do
-      treeId <- artistTree tree
-      revisionId <- newRevision editor >>= newArtistRevision base treeId
-      includeRevision revisionId
-      addChild revisionId base
-      return revisionId
+    where
+      runUpdate tree base = do
+        treeId <- artistTree tree
+        revisionId <- newRevision editor >>= newArtistRevision base treeId
+        includeRevision revisionId
+        addChild revisionId base
+        return revisionId
 
-    reflectRelationshipChange endpoint f (ArtistRelationship targetId rel) = do
-      let returnRelationship = ArtistRelationship (coreRef endpoint) rel
-      target <- findLatest targetId
-      targetTree <- over relationships (f returnRelationship) <$> viewTree (coreRevision target)
-      runUpdate targetTree (coreRevision target)
+      reflectRelationshipChange endpoint f (ArtistRelationship targetId rel) = do
+        let returnRelationship = ArtistRelationship (coreRef endpoint) rel
+        target <- findLatest targetId
+        targetTree <- over relationships (f returnRelationship) <$> viewTree (coreRevision target)
+        runUpdate targetTree (coreRevision target)
 
 
 --------------------------------------------------------------------------------

@@ -16,6 +16,7 @@ import MusicBrainz.Data.Editor (register)
 import MusicBrainz.Data.FindLatest
 import MusicBrainz.Data.Merge
 import MusicBrainz.Data.Revision
+import MusicBrainz.Data.Update
 
 import qualified MusicBrainz.Data.ArtistType as ArtistType
 import qualified MusicBrainz.Data.Country as Country

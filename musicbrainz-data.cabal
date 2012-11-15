@@ -44,6 +44,7 @@ Library
     MusicBrainz.Data.ReleaseStatus
     MusicBrainz.Data.Revision
     MusicBrainz.Data.Script
+    MusicBrainz.Data.Update
     MusicBrainz.Edit
     MusicBrainz.Merge
     MusicBrainz.Schema
