@@ -26,6 +26,7 @@ import MusicBrainz
 import MusicBrainz.Data.Alias
 import MusicBrainz.Data.Create
 import MusicBrainz.Data.FindLatest
+import MusicBrainz.Data.IPI
 import MusicBrainz.Data.Merge
 import MusicBrainz.Data.Relationship
 import MusicBrainz.Data.Revision
@@ -79,15 +80,13 @@ instance HasAliases Artist where
 
 
 --------------------------------------------------------------------------------
-{-| View all IPI codes for a specific revision of an 'Artist'. -}
-viewIpiCodes :: (Functor m, MonadIO m)
-  => Ref (Revision Artist) -> MusicBrainzT m (Set.Set IPI)
-viewIpiCodes r = Set.fromList <$> query
-  [sql| SELECT ipi
-        FROM artist_ipi
-        JOIN artist_tree USING (artist_tree_id)
-        JOIN artist_revision USING (artist_tree_id)
-        WHERE revision_id = ? |] (Only r)
+instance HasIPICodes Artist where
+  viewIpiCodes r = Set.fromList <$> query
+    [sql| SELECT ipi
+          FROM artist_ipi
+          JOIN artist_tree USING (artist_tree_id)
+          JOIN artist_revision USING (artist_tree_id)
+          WHERE revision_id = ? |] (Only r)
 
 
 --------------------------------------------------------------------------------
