@@ -12,8 +12,9 @@ import MusicBrainz
 import MusicBrainz.Data.Artist
 import MusicBrainz.Data.Create
 import MusicBrainz.Data.Edit
-import MusicBrainz.Data.FindLatest
 import MusicBrainz.Data.Editor (register)
+import MusicBrainz.Data.FindLatest
+import MusicBrainz.Data.Revision
 
 import qualified MusicBrainz.Data.ArtistType as ArtistType
 import qualified MusicBrainz.Data.Country as Country

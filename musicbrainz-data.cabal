@@ -41,6 +41,7 @@ Library
     MusicBrainz.Data.ReleaseGroup
     MusicBrainz.Data.ReleasePackaging
     MusicBrainz.Data.ReleaseStatus
+    MusicBrainz.Data.Revision
     MusicBrainz.Data.Script
     MusicBrainz.Edit
     MusicBrainz.Merge
@@ -48,7 +49,6 @@ Library
     MusicBrainz.Types
   other-modules:
     MusicBrainz.Data.Generic.Create
-    MusicBrainz.Data.Revision
     MusicBrainz.Monad
   ghc-options: -Wall -fwarn-tabs -funbox-strict-fields -O2
                -fno-warn-orphans -fno-warn-unused-do-bind

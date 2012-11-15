@@ -4,7 +4,6 @@
 module MusicBrainz.Data.Artist
     ( -- * Working with revisions
       viewRevision
-    , revisionParents
     , viewTree
     , viewAliases
     , viewIpiCodes
@@ -181,15 +180,6 @@ viewRevision revision = head <$> query q (Only revision)
       JOIN artist_name name ON (artist_data.name = name.id)
       JOIN artist_name sort_name ON (artist_data.sort_name = sort_name.id)
       WHERE revision_id = ? |]
-
-
---------------------------------------------------------------------------------
-{-| Find references to the parent revisions of a given revision. -}
-revisionParents :: (Functor m, MonadIO m) => Ref (Revision Artist) -> MusicBrainzT m (Set.Set (Ref (Revision Artist)))
-revisionParents artistRev =
-  Set.fromList . map fromOnly <$> query q (Only artistRev)
-  where q = [sql| SELECT parent_revision_id FROM revision_parent
-                  WHERE revision_id = ? |]
 
 
 --------------------------------------------------------------------------------
