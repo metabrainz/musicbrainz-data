@@ -9,25 +9,41 @@
 {-| Definitions of all types used within MusicBrainz. -}
 module MusicBrainz.Types
     ( -- * MusicBrainz entities
-      Alias(..)
+      -- ** Core entities
+      -- | Core entities hold MusicBrainz IDs, have versioning, etc.
+
+      -- *** Artists
+      Artist(..)
+    , ArtistType(..)
+
+      -- *** Labels
+    , Label(..)
+    , LabelType(..)
+
+      -- *** Recordings
+    , Recording(..)
+
+      -- *** Releases
+    , Release(..)
+    , ReleasePackaging(..)
+    , ReleaseStatus(..)
+
+      -- *** Release Groups
+    , ReleaseGroup(..)
+    , ReleaseGroupType(..), Primary
+
+      -- ** Non-core entities
+      -- | These are entities that are used by core-entities, but are not
+      -- particularly interesting on their own.
+    , Alias(..)
     , AliasType(..)
-    , Artist(..)
     , ArtistCredit
     , ArtistCreditName(..)
-    , ArtistType(..)
     , Country(..)
     , Editor(..)
     , Gender(..)
     , IPI(..)
-    , Label(..)
-    , LabelType(..)
     , Language(..)
-    , Recording(..)
-    , Release(..)
-    , ReleaseGroup(..)
-    , ReleaseGroupType(..), Primary
-    , ReleasePackaging(..)
-    , ReleaseStatus(..)
     , Script(..)
 
       -- ** Relationships
@@ -37,7 +53,7 @@ module MusicBrainz.Types
     , RelationshipAttribute(..)
     , RelationshipTarget(..)
 
-      -- * Various types of data used in entity attributes
+      -- * Entity attributes
     , MBID(..), mbid
     , PartialDate(..)
     , emptyDate, isEmpty
