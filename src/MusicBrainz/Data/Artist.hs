@@ -14,7 +14,6 @@ module MusicBrainz.Data.Artist
 
       -- * Editing artists
     , update
-    , MusicBrainz.Data.Artist.merge
     ) where
 
 import Prelude hiding (mapM_)
@@ -244,34 +243,6 @@ update editor baseRev artist = do
 
 
 --------------------------------------------------------------------------------
-{-| Merge an artist into another artist. -}
-merge :: Ref Editor -> Ref (Revision Artist) -> Ref Artist
-      -> EditM (Ref (Revision Artist))
-merge editor baseRev targetId = do
-  -- Find the latest revision to merge into
-  latestTarget <- findLatest targetId
-  mergeInto <- cloneRevision latestTarget
-
-  -- Link this revision to both the old tree and the latest version,
-  -- and include it in the edit.
-  includeRevision mergeInto
-  addChild mergeInto baseRev
-  addChild mergeInto (coreRevision latestTarget)
-
-  return mergeInto
-
-  where
-    cloneRevision a = do
-      revId <- newRevision editor
-      selectValue $
-        query [sql|
-          INSERT INTO artist_revision (artist_id, revision_id, artist_tree_id)
-          VALUES (?, ?, (SELECT artist_tree_id FROM artist_revision WHERE revision_id = ?))
-          RETURNING revision_id
-        |] (coreRef a, revId, coreRevision a)
-
-
---------------------------------------------------------------------------------
 newArtistRevision :: (Functor m, MonadIO m)
                   => Ref (Revision Artist)
                   -> Ref (Tree Artist)
@@ -372,3 +343,15 @@ resolveMbid entityMbid =
       LIMIT 1
     |]
       (Only entityMbid)
+
+
+--------------------------------------------------------------------------------
+instance CloneRevision Artist where
+  cloneRevision a editor = do
+    revId <- newRevision editor
+    selectValue $
+      query [sql|
+        INSERT INTO artist_revision (artist_id, revision_id, artist_tree_id)
+        VALUES (?, ?, (SELECT artist_tree_id FROM artist_revision WHERE revision_id = ?))
+        RETURNING revision_id
+      |] (coreRef a, revId, coreRevision a)

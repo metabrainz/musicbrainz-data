@@ -6,6 +6,7 @@ module MusicBrainz.Data.Revision
     , addChild
     , mergeBase
     , revisionParents
+    , CloneRevision(..)
     ) where
 
 import Control.Applicative
@@ -70,3 +71,9 @@ revisionParents artistRev =
   Set.fromList . map fromOnly <$> query q (Only artistRev)
   where q = [sql| SELECT parent_revision_id FROM revision_parent
                   WHERE revision_id = ? |]
+
+
+--------------------------------------------------------------------------------
+class CloneRevision a where
+  cloneRevision :: (Functor m, MonadIO m)
+    => CoreEntity a -> Ref Editor -> MusicBrainzT m (Ref (Revision a))

@@ -35,6 +35,7 @@ Library
     MusicBrainz.Data.Gender
     MusicBrainz.Data.Label
     MusicBrainz.Data.Language
+    MusicBrainz.Data.Merge
     MusicBrainz.Data.Recording
     MusicBrainz.Data.Relationship
     MusicBrainz.Data.Release
