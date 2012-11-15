@@ -168,6 +168,7 @@ testAliases = testCase "Can add and remove aliases" $ mbTest $ do
                   }
 
 
+--------------------------------------------------------------------------------
 testIpiCodes :: Test
 testIpiCodes = testCase "Can add and remove artist IPI codes" $ mbTest $ do
   editor <- entityRef <$> register acid2

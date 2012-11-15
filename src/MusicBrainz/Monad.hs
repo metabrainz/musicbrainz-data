@@ -49,8 +49,13 @@ data Context = Context
 postgresql database, along with performing abritrary IO. -}
 type MusicBrainz = MusicBrainzT IO
 
+
+{-| The MusicBrainzT monad transformer is the \'bulk\' of the MusicBrainz monad,
+and this transformer allows you to use almost any monad as a base monad to
+add extra functionality. -}
 newtype MusicBrainzT m a = MusicBrainzT (ReaderT Context m a)
-  deriving (Monad, Functor, Applicative, MonadReader Context, MonadIO, MonadCatchIO, MonadTrans)
+  deriving ( Monad, Functor, Applicative, MonadReader Context, MonadIO
+           , MonadCatchIO, MonadTrans )
 
 
 {-| Execute MusicBrainz actions in the IO monad. This will open a connection

@@ -125,6 +125,7 @@ instance Ord (Ref a) where
 
 --------------------------------------------------------------------------------
 class RefMBID a where
+  {-| Unwrap a 'Ref' to get the underlying 'MBID'. -}
   refMbid :: Ref a -> MBID a
 
 instance RefMBID Artist where refMbid (ArtistRef a) = a
@@ -135,6 +136,9 @@ instance RefMBID ReleaseGroup where refMbid (ReleaseGroupRef a) = a
 
 
 --------------------------------------------------------------------------------
+{-| An alias is an alternative name for an entity, along with some information
+describing what that name represents, which locale it is for, and when it was
+in use. -}
 data Alias = Alias
     { aliasName :: Text
     , aliasSortName :: Text
@@ -147,6 +151,8 @@ data Alias = Alias
   deriving (Eq, Ord, Show)
 
 
+--------------------------------------------------------------------------------
+{-| A description of the type of an alias. -}
 data AliasType = AliasType
     { aliasTypeName :: Text }
   deriving (Eq, Show)
@@ -230,6 +236,8 @@ data Gender = Gender
 
 
 --------------------------------------------------------------------------------
+{-| An \'Interested Parties Information Code\' that can be attached to various
+entities. -}
 data IPI = IPI
     { ipiCode :: Text }
   deriving (Eq, Ord, Show)
@@ -375,7 +383,7 @@ newtype MBID a = MBID UUID
 
 {-| Inject a 'String' into an 'MBID', or extract a 'String' from an 'MBID'. To
 work with this projection, you should use '^?' (to inject with a chance of
-failure) and '^.'/'by' (to extract):
+failure) and '^.' / 'by' (to extract):
 
 > "10adbe5e-a2c0-4bf3-8249-2b4cbf6e6ca8" ^? mbid :: Maybe (MBID a)
 
@@ -440,6 +448,8 @@ data Tree a where
 deriving instance Eq (Tree a)
 deriving instance Show (Tree a)
 
+{-| A convenience accessor to the \'essential\' data inside a tree (the data
+which contains the entities, and so on.) -}
 treeData :: Tree a -> a
 treeData ArtistTree{..} = artistData
 treeData LabelTree{..} = labelData
@@ -511,6 +521,8 @@ data EditNote = EditNote
 
 
 --------------------------------------------------------------------------------
+{-| A 'LinkedRelationship' is an end-point 'Ref', along with the data
+describing the 'Relationship' itself. -}
 data LinkedRelationship =
   ArtistRelationship
     { relTarget :: Ref Artist
@@ -519,6 +531,8 @@ data LinkedRelationship =
   deriving (Eq, Ord, Show)
 
 
+--------------------------------------------------------------------------------
+{-| Metadata about a relationship between 2 entities. -}
 data Relationship = Relationship
     { relType :: Ref RelationshipType
     , relAttributes :: Set.Set (Ref RelationshipAttribute)
@@ -529,15 +543,22 @@ data Relationship = Relationship
   deriving (Eq, Ord, Show)
 
 
+--------------------------------------------------------------------------------
+{-| The type of a relationship between 2 entities. -}
 data RelationshipType = RelationshipType
     { relName :: Text }
   deriving (Eq, Ord, Show)
 
 
+--------------------------------------------------------------------------------
+{-| An attribute of a relationship (for example, indicating whether the
+relationship is additional). -}
 data RelationshipAttribute = RelationshipAttribute
     { relAttributeName :: Text }
   deriving (Eq, Ord, Show)
 
 
+--------------------------------------------------------------------------------
+{-| A description of all types that a relationship can be between. -}
 data RelationshipTarget = ToArtist
   deriving (Bounded, Enum)

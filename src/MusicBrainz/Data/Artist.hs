@@ -9,6 +9,8 @@ module MusicBrainz.Data.Artist
     , viewAliases
     , viewIpiCodes
     , viewAnnotation
+
+    -- * Artist MBID handling
     , resolveMbid
 
       -- * Editing artists
@@ -52,11 +54,16 @@ instance HoldsRelationships Artist where
       JOIN l_artist_artist ON (source_id = artist_tree_id)
       WHERE revision_id = ?
     |] (Only r)
-    return $ map (\(targetId, relationshipId) -> (ArtistRelationship targetId, relationshipId)) rels
+    return $ map constructPartialRel rels
+    where
+      constructPartialRel (targetId, relationshipId) =
+        (ArtistRelationship targetId, relationshipId)
 
 
 --------------------------------------------------------------------------------
-viewTree :: (Applicative m, MonadIO m) => Ref (Revision Artist) -> MusicBrainzT m (Tree Artist)
+{-| View all data about a specific version of an 'Artist'. -}
+viewTree :: (Applicative m, MonadIO m)
+  => Ref (Revision Artist) -> MusicBrainzT m (Tree Artist)
 viewTree r = ArtistTree <$> fmap coreData (viewRevision r)
                         <*> viewRelationships r
                         <*> viewAliases r
@@ -65,7 +72,9 @@ viewTree r = ArtistTree <$> fmap coreData (viewRevision r)
 
 
 --------------------------------------------------------------------------------
-viewAliases :: (Functor m, MonadIO m) => Ref (Revision Artist) -> MusicBrainzT m (Set.Set Alias)
+{-| View all aliases for a specific revision of an 'Artist'. -}
+viewAliases :: (Functor m, MonadIO m)
+  => Ref (Revision Artist) -> MusicBrainzT m (Set.Set Alias)
 viewAliases r = Set.fromList <$> query
   [sql| SELECT name.name, sort_name.name,
           begin_date_year, begin_date_month, begin_date_day,
@@ -80,7 +89,9 @@ viewAliases r = Set.fromList <$> query
 
 
 --------------------------------------------------------------------------------
-viewIpiCodes :: (Functor m, MonadIO m) => Ref (Revision Artist) -> MusicBrainzT m (Set.Set IPI)
+{-| View all IPI codes for a specific revision of an 'Artist'. -}
+viewIpiCodes :: (Functor m, MonadIO m)
+  => Ref (Revision Artist) -> MusicBrainzT m (Set.Set IPI)
 viewIpiCodes r = Set.fromList <$> query
   [sql| SELECT ipi
         FROM artist_ipi
@@ -90,7 +101,9 @@ viewIpiCodes r = Set.fromList <$> query
 
 
 --------------------------------------------------------------------------------
-viewAnnotation :: (Functor m, MonadIO m) => Ref (Revision Artist) -> MusicBrainzT m Text
+{-| View the annotation for a specific revision of an 'Artist'. -}
+viewAnnotation :: (Functor m, MonadIO m)
+  => Ref (Revision Artist) -> MusicBrainzT m Text
 viewAnnotation r = fromOnly . head <$> query
   [sql| SELECT annotation
         FROM artist_tree
@@ -329,6 +342,8 @@ artistTree artist = do
 
 
 --------------------------------------------------------------------------------
+{-| Attempt to resolve an 'MBID Artist' to a specific 'Artist' 'Ref'. This
+will follow merges to find the correct artist this MBID now points to. -}
 resolveMbid :: (Functor m, MonadIO m) => MBID Artist
   -> MusicBrainzT m (Maybe (Ref Artist))
 resolveMbid entityMbid =

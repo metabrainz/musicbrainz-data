@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
+{-| Functions for working relationships of any general type. -}
 module MusicBrainz.Data.Relationship
     ( addRelationshipType
 
@@ -73,6 +74,8 @@ class HoldsRelationships a where
 
 
 --------------------------------------------------------------------------------
+{-| Find all relationships of a specific 'Revision' of an entity that can
+have relationships. -}
 viewRelationships :: (Functor m, HoldsRelationships a, MonadIO m)
   => Ref (Revision a) -> MusicBrainzT m (Set.Set LinkedRelationship)
 viewRelationships r = do

@@ -77,6 +77,8 @@ voteOnEdit editorId editId vote = void $ execute
 
 
 --------------------------------------------------------------------------------
+{-| Create an edit, and run an 'EditM' action to create the various components
+of the edit (that is, link revisions to the edit). -}
 createEdit :: EditM a -> MusicBrainz (Ref Edit)
 createEdit actions = do
   editId <- openEdit

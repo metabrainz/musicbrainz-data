@@ -58,5 +58,9 @@ type EditM = MusicBrainzT (WriterT [Change] IO)
 
 
 --------------------------------------------------------------------------------
+{-| Include a specific 'Revision' as part of an edit.
+
+This is a fairly low-level operation, and you should be careful that you only
+include revisions that haven't already been merged! -}
 includeRevision :: Editable a => Ref (Revision a) -> EditM ()
 includeRevision = lift . tell . return . Change

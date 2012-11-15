@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
+{-| Fuctions for manipulating revisions. -}
 module MusicBrainz.Data.Revision
     ( newRevision, addChild, mergeBase ) where
 
@@ -11,6 +12,7 @@ import Database.PostgreSQL.Simple.SqlQQ
 import MusicBrainz
 
 --------------------------------------------------------------------------------
+{-| Create a new \'system\' revision, that is not yet bound to any entity. -}
 newRevision :: (Functor m, MonadIO m) => Ref Editor -> MusicBrainzT m (Ref (Revision a))
 newRevision editor = selectValue $
   query [sql| INSERT INTO revision (editor_id) VALUES (?) RETURNING revision_id |]
@@ -18,6 +20,7 @@ newRevision editor = selectValue $
 
 
 --------------------------------------------------------------------------------
+{-| Add one 'Revision' as a child of another (parent) 'Revision'. -}
 addChild :: (Functor m, MonadIO m) => Ref (Revision a) -> Ref (Revision a) -> MusicBrainzT m ()
 addChild childRevision parentRevision =
   void $ execute
