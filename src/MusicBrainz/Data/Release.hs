@@ -2,14 +2,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-| Functions for interacting with 'Release's in the MusicBrainz database. -}
 module MusicBrainz.Data.Release
-    ( create ) where
+    ( ) where
 
 import Control.Applicative
 import Control.Monad
+import Control.Monad.IO.Class
 import Database.PostgreSQL.Simple (Only(..))
 import Database.PostgreSQL.Simple.SqlQQ (sql)
 
 import MusicBrainz
+import MusicBrainz.Data.Create
 import MusicBrainz.Data.FindLatest
 
 import qualified MusicBrainz.Data.Generic.Create as GenericCreate
@@ -30,30 +32,29 @@ instance FindLatest Release where
         AND revision_id = master_revision_id  |]
 
 --------------------------------------------------------------------------------
-{-| Create an entirely new release, returning the final 'CoreEntity' as it is
-in the database. -}
-create :: Ref Editor -> Tree Release -> MusicBrainz (CoreEntity Release)
-create = GenericCreate.create GenericCreate.Specification
-    { GenericCreate.getTree = releaseTree
-    , GenericCreate.reserveEntity = GenericCreate.reserveEntityTable "release"
-    , GenericCreate.newEntityRevision = newReleaseRevision
-    , GenericCreate.linkRevision = linkRevision
-    }
-  where
-    newReleaseRevision releaseId releaseTreeId revisionId = selectValue $
-      query [sql| INSERT INTO release_revision (release_id, revision_id, release_tree_id)
-                  VALUES (?, ?, ?) RETURNING revision_id |]
-        (releaseId, revisionId, releaseTreeId)
+instance Create Release where
+  create = GenericCreate.create GenericCreate.Specification
+      { GenericCreate.getTree = releaseTree
+      , GenericCreate.reserveEntity = GenericCreate.reserveEntityTable "release"
+      , GenericCreate.newEntityRevision = newReleaseRevision
+      , GenericCreate.linkRevision = linkRevision
+      }
+    where
+      newReleaseRevision releaseId releaseTreeId revisionId = selectValue $
+        query [sql| INSERT INTO release_revision (release_id, revision_id, release_tree_id)
+                    VALUES (?, ?, ?) RETURNING revision_id |]
+          (releaseId, revisionId, releaseTreeId)
 
-    linkRevision releaseId revisionId = void $
-      execute [sql| UPDATE release SET master_revision_id = ? WHERE release_id = ? |] (revisionId, releaseId)
+      linkRevision releaseId revisionId = void $
+        execute [sql| UPDATE release SET master_revision_id = ? WHERE release_id = ? |] (revisionId, releaseId)
 
 
 --------------------------------------------------------------------------------
-releaseTree :: Tree Release -> MusicBrainz (Ref (Tree Release))
+releaseTree :: (Functor m, MonadIO m)
+  => Tree Release -> MusicBrainzT m (Ref (Tree Release))
 releaseTree release = findOrInsertReleaseData >>= findOrInsertReleaseTree
   where
-    findOrInsertReleaseData :: MusicBrainz Int
+    findOrInsertReleaseData :: (Functor m, MonadIO m) => MusicBrainzT m Int
     findOrInsertReleaseData = selectValue $
       query [sql| SELECT find_or_insert_release_data(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) |]
         (treeData release)

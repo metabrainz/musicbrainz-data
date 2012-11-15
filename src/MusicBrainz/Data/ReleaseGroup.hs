@@ -2,14 +2,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-| Functions for interacting with 'ReleaseGroup's in the MusicBrainz database. -}
 module MusicBrainz.Data.ReleaseGroup
-    ( create ) where
+    ( ) where
 
 import Control.Applicative
 import Control.Monad (void)
+import Control.Monad.IO.Class (MonadIO)
 import Database.PostgreSQL.Simple (Only(..))
 import Database.PostgreSQL.Simple.SqlQQ (sql)
 
 import MusicBrainz
+import MusicBrainz.Data.Create
 import MusicBrainz.Data.FindLatest
 
 import qualified MusicBrainz.Data.Generic.Create as GenericCreate
@@ -28,30 +30,28 @@ instance FindLatest ReleaseGroup where
         AND revision_id = master_revision_id  |]
 
 --------------------------------------------------------------------------------
-{-| Create an entirely new release group, returning the final 'CoreEntity' as it
-is in the database. -}
-create :: Ref Editor -> Tree ReleaseGroup -> MusicBrainz (CoreEntity ReleaseGroup)
-create = GenericCreate.create GenericCreate.Specification
-    { GenericCreate.getTree = findOrInsertRgTree
-    , GenericCreate.reserveEntity = GenericCreate.reserveEntityTable "release_group"
-    , GenericCreate.newEntityRevision = newRgRevision
-    , GenericCreate.linkRevision = linkRevision
-    }
-  where
-    findOrInsertRgData :: Tree ReleaseGroup -> MusicBrainz Int
-    findOrInsertRgData rg = selectValue $
-      query [sql| SELECT find_or_insert_release_group_data(?, ?, ?, ?) |]
-        (treeData rg)
+instance Create ReleaseGroup where
+  create = GenericCreate.create GenericCreate.Specification
+      { GenericCreate.getTree = findOrInsertRgTree
+      , GenericCreate.reserveEntity = GenericCreate.reserveEntityTable "release_group"
+      , GenericCreate.newEntityRevision = newRgRevision
+      , GenericCreate.linkRevision = linkRevision
+      }
+    where
+      findOrInsertRgData :: (Functor m, MonadIO m) => Tree ReleaseGroup -> MusicBrainzT m Int
+      findOrInsertRgData rg = selectValue $
+        query [sql| SELECT find_or_insert_release_group_data(?, ?, ?, ?) |]
+          (treeData rg)
 
-    findOrInsertRgTree rg = do
-      dataId <- findOrInsertRgData rg
-      selectValue $
-        query [sql| SELECT find_or_insert_release_group_tree(?) |]
-          (Only dataId)
+      findOrInsertRgTree rg = do
+        dataId <- findOrInsertRgData rg
+        selectValue $
+          query [sql| SELECT find_or_insert_release_group_tree(?) |]
+            (Only dataId)
 
-    newRgRevision rgId rgTreeId revisionId = selectValue $
-      query [sql| INSERT INTO release_group_revision (release_group_id, revision_id, release_group_tree_id) VALUES (?, ?, ?) RETURNING revision_id |]
-        (rgId, revisionId, rgTreeId)
+      newRgRevision rgId rgTreeId revisionId = selectValue $
+        query [sql| INSERT INTO release_group_revision (release_group_id, revision_id, release_group_tree_id) VALUES (?, ?, ?) RETURNING revision_id |]
+          (rgId, revisionId, rgTreeId)
 
-    linkRevision rgId revisionId = void $
-      execute [sql| UPDATE release_group SET master_revision_id = ? WHERE release_group_id = ? |] (revisionId, rgId)
+      linkRevision rgId revisionId = void $
+        execute [sql| UPDATE release_group SET master_revision_id = ? WHERE release_group_id = ? |] (revisionId, rgId)

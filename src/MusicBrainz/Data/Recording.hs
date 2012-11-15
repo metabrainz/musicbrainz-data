@@ -2,18 +2,21 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-| Functions for interacting with 'Recording's in the MusicBrainz database. -}
 module MusicBrainz.Data.Recording
-    ( create ) where
+    ( ) where
 
 import Control.Applicative
 import Control.Monad
+import Control.Monad.IO.Class
 import Database.PostgreSQL.Simple (Only(..))
 import Database.PostgreSQL.Simple.SqlQQ (sql)
 
 import MusicBrainz
+import MusicBrainz.Data.Create
 import MusicBrainz.Data.FindLatest
 
 import qualified MusicBrainz.Data.Generic.Create as GenericCreate
 
+--------------------------------------------------------------------------------
 instance FindLatest Recording where
   findLatest recordingId = head <$> query q (Only recordingId)
     where q = [sql|
@@ -29,30 +32,29 @@ instance FindLatest Recording where
 
 
 --------------------------------------------------------------------------------
-{-| Create an entirely new recording, returning the final 'CoreEntity' as it is
-in the database. -}
-create :: Ref Editor -> Tree Recording -> MusicBrainz (CoreEntity Recording)
-create = GenericCreate.create GenericCreate.Specification
-    { GenericCreate.getTree = recordingTree
-    , GenericCreate.reserveEntity = GenericCreate.reserveEntityTable "recording"
-    , GenericCreate.newEntityRevision = newRecordingRevision
-    , GenericCreate.linkRevision = linkRevision
-    }
-  where
-    newRecordingRevision recordingId recordingTreeId revisionId = selectValue $
-      query [sql| INSERT INTO recording_revision (recording_id, revision_id, recording_tree_id)
-                  VALUES (?, ?, ?) RETURNING revision_id |]
-        (recordingId, revisionId, recordingTreeId)
+instance Create Recording where
+  create = GenericCreate.create GenericCreate.Specification
+      { GenericCreate.getTree = recordingTree
+      , GenericCreate.reserveEntity = GenericCreate.reserveEntityTable "recording"
+      , GenericCreate.newEntityRevision = newRecordingRevision
+      , GenericCreate.linkRevision = linkRevision
+      }
+    where
+      newRecordingRevision recordingId recordingTreeId revisionId = selectValue $
+        query [sql| INSERT INTO recording_revision (recording_id, revision_id, recording_tree_id)
+                    VALUES (?, ?, ?) RETURNING revision_id |]
+          (recordingId, revisionId, recordingTreeId)
 
-    linkRevision recordingId revisionId = void $
-      execute [sql| UPDATE recording SET master_revision_id = ? WHERE recording_id = ? |] (revisionId, recordingId)
+      linkRevision recordingId revisionId = void $
+        execute [sql| UPDATE recording SET master_revision_id = ? WHERE recording_id = ? |] (revisionId, recordingId)
 
 
 --------------------------------------------------------------------------------
-recordingTree :: Tree Recording -> MusicBrainz (Ref (Tree Recording))
+recordingTree :: (Functor m, MonadIO m)
+  => Tree Recording -> MusicBrainzT m (Ref (Tree Recording))
 recordingTree recording = findOrInsertRecordingData >>= findOrInsertRecordingTree
   where
-    findOrInsertRecordingData :: MusicBrainz Int
+    findOrInsertRecordingData :: (Functor m, MonadIO m) => MusicBrainzT m Int
     findOrInsertRecordingData = selectValue $
       query [sql| SELECT find_or_insert_recording_data(?, ?, ?, ?) |]
         (treeData recording)

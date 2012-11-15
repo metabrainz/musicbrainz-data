@@ -2,15 +2,16 @@
 {-# LANGUAGE QuasiQuotes #-}
 {-| Functions for interacting with MusicBrainz labels in the database. -}
 module MusicBrainz.Data.Label
-    ( create
-    ) where
+    ( ) where
 
 import Control.Applicative
 import Control.Monad
+import Control.Monad.IO.Class (MonadIO)
 import Database.PostgreSQL.Simple (Only(..))
 import Database.PostgreSQL.Simple.SqlQQ
 
 import MusicBrainz
+import MusicBrainz.Data.Create
 import MusicBrainz.Data.FindLatest
 
 import qualified MusicBrainz.Data.Generic.Create as GenericCreate
@@ -34,28 +35,28 @@ instance FindLatest Label where
 
 
 --------------------------------------------------------------------------------
-{-| Create an entirely new 'Label', returning the final 'CoreEntity' as it is
-in the database. -}
-create :: Ref Editor -> Tree Label -> MusicBrainz (CoreEntity Label)
-create = GenericCreate.create GenericCreate.Specification
-    { GenericCreate.getTree = labelTree
-    , GenericCreate.reserveEntity = GenericCreate.reserveEntityTable "label"
-    , GenericCreate.newEntityRevision = newLabelRevision
-    , GenericCreate.linkRevision = linkRevision
-    }
-  where
-    newLabelRevision labelId labelTreeId revisionId = selectValue $
-      query [sql| INSERT INTO label_revision (label_id, revision_id, label_tree_id)
-                  VALUES (?, ?, ?) RETURNING revision_id |]
-        (labelId, revisionId, labelTreeId)
+instance Create Label where
+  create = GenericCreate.create GenericCreate.Specification
+      { GenericCreate.getTree = labelTree
+      , GenericCreate.reserveEntity = GenericCreate.reserveEntityTable "label"
+      , GenericCreate.newEntityRevision = newLabelRevision
+      , GenericCreate.linkRevision = linkRevision
+      }
+    where
+      newLabelRevision labelId labelTreeId revisionId = selectValue $
+        query [sql| INSERT INTO label_revision (label_id, revision_id, label_tree_id)
+                    VALUES (?, ?, ?) RETURNING revision_id |]
+          (labelId, revisionId, labelTreeId)
 
-    linkRevision labelId revisionId = void $
-      execute [sql| UPDATE label SET master_revision_id = ? WHERE label_id = ? |] (revisionId, labelId)
+      linkRevision labelId revisionId = void $
+        execute [sql| UPDATE label SET master_revision_id = ? WHERE label_id = ? |] (revisionId, labelId)
 
-labelTree :: Tree Label -> MusicBrainz (Ref (Tree Label))
+
+--------------------------------------------------------------------------------
+labelTree :: (Functor m, MonadIO m) => Tree Label -> MusicBrainzT m (Ref (Tree Label))
 labelTree label = findOrInsertLabelData >>= findOrInsertLabelTree
   where
-    findOrInsertLabelData :: MusicBrainz Int
+    findOrInsertLabelData :: (Functor m, MonadIO m) => MusicBrainzT m Int
     findOrInsertLabelData = selectValue $
       query [sql| SELECT find_or_insert_label_data(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) |]
         (treeData label)

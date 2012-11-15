@@ -2,25 +2,19 @@
 module MusicBrainz.Data.Label.Tests ( tests ) where
 
 import Test.MusicBrainz
-import Test.MusicBrainz.Repository (acid2)
 
 import MusicBrainz
-import MusicBrainz.Data.Editor (register)
-import MusicBrainz.Data.FindLatest
-import MusicBrainz.Data.Label (create)
+import MusicBrainz.Data.Label ()
+
+import qualified MusicBrainz.Data.ClassTests as ClassTests
 
 tests :: [Test]
 tests = [ testCreateFindLatest
         ]
 
 testCreateFindLatest :: Test
-testCreateFindLatest = testCase "findLatest when label exists" $ mbTest $ do
-  editor <- register acid2
-
-  created <- create (entityRef editor) (LabelTree expected)
-  found <- findLatest (coreRef created)
-
-  liftIO $ found @?= created
+testCreateFindLatest = testCase "create >>= findLatest == create" $ mbTest $ do
+  ClassTests.testCreateFindLatest (LabelTree expected)
   where
     expected = Label { labelName = "Revolution Records"
                      , labelSortName = "Records, Revolution"

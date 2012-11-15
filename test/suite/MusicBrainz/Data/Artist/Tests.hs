@@ -10,6 +10,7 @@ import Test.MusicBrainz.Repository (uk, acid2, male, person, portishead)
 
 import MusicBrainz
 import MusicBrainz.Data.Artist
+import MusicBrainz.Data.Create
 import MusicBrainz.Data.Edit
 import MusicBrainz.Data.FindLatest
 import MusicBrainz.Data.Editor (register)
@@ -18,6 +19,8 @@ import qualified MusicBrainz.Data.ArtistType as ArtistType
 import qualified MusicBrainz.Data.Country as Country
 import qualified MusicBrainz.Data.Gender as Gender
 import qualified MusicBrainz.Data.Relationship as Relationship
+
+import qualified MusicBrainz.Data.ClassTests as ClassTests
 
 --------------------------------------------------------------------------------
 tests :: [Test]
@@ -32,36 +35,33 @@ tests = [ testCreateFindLatest
 
 --------------------------------------------------------------------------------
 testCreateFindLatest :: Test
-testCreateFindLatest = testCase "findLatest when artist exists" $ mbTest $ do
-  editor <- register acid2
+testCreateFindLatest = testCase "create >>= findLatest == create" $ mbTest $ do
+  tree' <- tree <$> (entityRef <$> Country.addCountry uk)
+                <*> (entityRef <$> Gender.addGender male)
+                <*> (entityRef <$> ArtistType.addArtistType person)
+  ClassTests.testCreateFindLatest tree'
 
-  country <- entityRef <$> Country.addCountry uk
-  maleRef <- entityRef <$> Gender.addGender male
-  personRef <- entityRef <$> ArtistType.addArtistType person
-
-  created <- create (entityRef editor) ArtistTree { artistData = expected country maleRef personRef
-                                                  , artistAliases = Set.empty
-                                                  , artistIpiCodes = Set.empty
-                                                  , artistRelationships = Set.empty
-                                                  , artistAnnotation = ""
-                                                  }
-  found <- findLatest (coreRef created)
-
-  liftIO $ found @?= created
   where
-    expected country gender type' = Artist
-      { artistName = "Freddie Mercury"
-      , artistSortName = "Mercury, Freddie"
-      , artistComment = "Of queen"
-      , artistBeginDate =
-          PartialDate (Just 1946) (Just 9) (Just 5)
-      , artistEndDate =
-          PartialDate (Just 1991) (Just 11) (Just 24)
-      , artistEnded = True
-      , artistGender = Just $ gender
-      , artistCountry = Just $ country
-      , artistType = Just $ type'
-      }
+    tree country maleRef personRef =
+      ArtistTree { artistData = Artist
+                     { artistName = "Freddie Mercury"
+                     , artistSortName = "Mercury, Freddie"
+                     , artistComment = "Of queen"
+                     , artistBeginDate =
+                         PartialDate (Just 1946) (Just 9) (Just 5)
+                     , artistEndDate =
+                         PartialDate (Just 1991) (Just 11) (Just 24)
+                     , artistEnded = True
+                     , artistGender = Just maleRef
+                     , artistCountry = Just country
+                     , artistType = Just personRef
+                     }
+                 , artistAliases = Set.empty
+                 , artistIpiCodes = Set.empty
+                 , artistRelationships = Set.empty
+                 , artistAnnotation = ""
+                 }
+
 
 --------------------------------------------------------------------------------
 testUpdate :: Test

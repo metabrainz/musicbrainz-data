@@ -8,14 +8,14 @@ import Test.MusicBrainz.Data (singleArtistAc)
 import Test.MusicBrainz.Repository (portishead, dummy, uk, acid2)
 
 import MusicBrainz
+import MusicBrainz.Data.Create
 import MusicBrainz.Data.Editor (register)
 import MusicBrainz.Data.FindLatest
 import MusicBrainz.Data.Release ()
+import MusicBrainz.Data.ReleaseGroup ()
 
 import qualified MusicBrainz.Data.Country as Country
 import qualified MusicBrainz.Data.Language as Language
-import qualified MusicBrainz.Data.Release as Release
-import qualified MusicBrainz.Data.ReleaseGroup as ReleaseGroup
 import qualified MusicBrainz.Data.ReleasePackaging as ReleasePackaging
 import qualified MusicBrainz.Data.ReleaseStatus as ReleaseStatus
 import qualified MusicBrainz.Data.Script as Script
@@ -28,7 +28,7 @@ testCreateFindLatest :: Test
 testCreateFindLatest = testCase "findLatest when release exists" $ mbTest $ do
   editor <- entityRef <$> register acid2
   portisheadAc <- singleArtistAc editor portishead
-  portisheadRg <- ReleaseGroup.create editor (ReleaseGroupTree $ dummy portisheadAc)
+  portisheadRg <- create editor (ReleaseGroupTree $ dummy portisheadAc)
   country <- Country.addCountry uk
   script <- Script.addScript Script { scriptName = "United Kingdom"
                                     , scriptIsoCode = "gb"
@@ -46,7 +46,7 @@ testCreateFindLatest = testCase "findLatest when release exists" $ mbTest $ do
   status <- ReleaseStatus.addReleaseStatus ReleaseStatus
     { releaseStatusName = "Official" }
 
-  created <- Release.create editor $ ReleaseTree $
+  created <- create editor $ ReleaseTree $
     expected (coreRef portisheadRg) portisheadAc
       (entityRef country) (entityRef script) (entityRef language)
       (entityRef packaging) (entityRef status)

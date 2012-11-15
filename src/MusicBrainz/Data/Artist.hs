@@ -14,7 +14,6 @@ module MusicBrainz.Data.Artist
     , resolveMbid
 
       -- * Editing artists
-    , create
     , update
     , MusicBrainz.Data.Artist.merge
     ) where
@@ -34,6 +33,7 @@ import Database.PostgreSQL.Simple.SqlQQ
 import qualified Data.Set as Set
 
 import MusicBrainz
+import MusicBrainz.Data.Create
 import MusicBrainz.Data.FindLatest
 import MusicBrainz.Data.Relationship
 import MusicBrainz.Data.Revision
@@ -193,20 +193,18 @@ revisionParents artistRev =
 
 
 --------------------------------------------------------------------------------
-{-| Create an entirely new artist, returning the final 'CoreEntity' as it is
-in the database. -}
-create :: (Functor m, MonadIO m) => Ref Editor -> Tree Artist -> MusicBrainzT m (CoreEntity Artist)
-create = GenericCreate.create GenericCreate.Specification
-    { GenericCreate.getTree = artistTree
-    , GenericCreate.reserveEntity = GenericCreate.reserveEntityTable "artist"
-    , GenericCreate.newEntityRevision = newArtistRevision'
-    , GenericCreate.linkRevision = linkRevision
-    }
-  where
-    newArtistRevision' artistId artistTreeId revisionId = selectValue $
-      query [sql| INSERT INTO artist_revision (artist_id, revision_id, artist_tree_id)
-                  VALUES (?, ?, ?) RETURNING revision_id |]
-        (artistId, revisionId, artistTreeId)
+instance Create Artist where
+  create = GenericCreate.create GenericCreate.Specification
+      { GenericCreate.getTree = artistTree
+      , GenericCreate.reserveEntity = GenericCreate.reserveEntityTable "artist"
+      , GenericCreate.newEntityRevision = newArtistRevision'
+      , GenericCreate.linkRevision = linkRevision
+      }
+    where
+      newArtistRevision' artistId artistTreeId revisionId = selectValue $
+        query [sql| INSERT INTO artist_revision (artist_id, revision_id, artist_tree_id)
+                    VALUES (?, ?, ?) RETURNING revision_id |]
+          (artistId, revisionId, artistTreeId)
 
 
 --------------------------------------------------------------------------------
