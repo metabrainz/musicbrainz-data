@@ -9,14 +9,17 @@ import Test.MusicBrainz
 import Test.MusicBrainz.Repository (uk, acid2, male, person, portishead)
 
 import MusicBrainz
+import MusicBrainz.Data.Annotation
 import MusicBrainz.Data.Alias
-import MusicBrainz.Data.Artist
+import MusicBrainz.Data.Artist ()
 import MusicBrainz.Data.Create
 import MusicBrainz.Data.Edit
 import MusicBrainz.Data.Editor (register)
 import MusicBrainz.Data.FindLatest
+import MusicBrainz.Data.IPI
 import MusicBrainz.Data.Merge
 import MusicBrainz.Data.Revision
+import MusicBrainz.Data.Tree
 import MusicBrainz.Data.Update
 
 import qualified MusicBrainz.Data.ArtistType as ArtistType

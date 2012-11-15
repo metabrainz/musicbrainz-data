@@ -1,12 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-| Functions for interacting with MusicBrainz artists in the database. -}
-module MusicBrainz.Data.Artist
-    ( -- * Working with revisions
-      viewTree
-    , viewIpiCodes
-    , viewAnnotation
-    ) where
+module MusicBrainz.Data.Artist () where
 
 import Prelude hiding (mapM_)
 
@@ -16,7 +11,6 @@ import Control.Monad (void, when)
 import Control.Monad.IO.Class (MonadIO)
 import Data.Foldable (mapM_, forM_)
 import Data.Maybe (listToMaybe)
-import Data.Text (Text)
 import Database.PostgreSQL.Simple (Only(..), (:.)(..))
 import Database.PostgreSQL.Simple.SqlQQ
 
@@ -24,6 +18,7 @@ import qualified Data.Set as Set
 
 import MusicBrainz
 import MusicBrainz.Data.Alias
+import MusicBrainz.Data.Annotation
 import MusicBrainz.Data.Create
 import MusicBrainz.Data.FindLatest
 import MusicBrainz.Data.IPI
@@ -91,13 +86,12 @@ instance HasIPICodes Artist where
 
 --------------------------------------------------------------------------------
 {-| View the annotation for a specific revision of an 'Artist'. -}
-viewAnnotation :: (Functor m, MonadIO m)
-  => Ref (Revision Artist) -> MusicBrainzT m Text
-viewAnnotation r = fromOnly . head <$> query
-  [sql| SELECT annotation
-        FROM artist_tree
-        JOIN artist_revision USING (artist_tree_id)
-        WHERE revision_id = ? |] (Only r)
+instance HasAnnotation Artist where
+  viewAnnotation r = fromOnly . head <$> query
+    [sql| SELECT annotation
+          FROM artist_tree
+          JOIN artist_revision USING (artist_tree_id)
+          WHERE revision_id = ? |] (Only r)
 
 
 --------------------------------------------------------------------------------

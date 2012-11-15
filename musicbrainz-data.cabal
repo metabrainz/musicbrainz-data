@@ -25,6 +25,7 @@ Library
   exposed-modules:
     MusicBrainz
     MusicBrainz.Data.Alias
+    MusicBrainz.Data.Annotation
     MusicBrainz.Data.Artist
     MusicBrainz.Data.ArtistCredit
     MusicBrainz.Data.ArtistType
@@ -34,6 +35,7 @@ Library
     MusicBrainz.Data.Editor
     MusicBrainz.Data.FindLatest
     MusicBrainz.Data.Gender
+    MusicBrainz.Data.IPI
     MusicBrainz.Data.Label
     MusicBrainz.Data.Language
     MusicBrainz.Data.Merge
@@ -45,6 +47,7 @@ Library
     MusicBrainz.Data.ReleaseStatus
     MusicBrainz.Data.Revision
     MusicBrainz.Data.Script
+    MusicBrainz.Data.Tree
     MusicBrainz.Data.Update
     MusicBrainz.Edit
     MusicBrainz.Merge
