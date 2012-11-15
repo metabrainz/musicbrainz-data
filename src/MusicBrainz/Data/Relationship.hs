@@ -65,10 +65,12 @@ inflateRelationships relationshipIds = do
         in (relId, relationship)
 
 
+--------------------------------------------------------------------------------
 class HoldsRelationships a where
   fetchEndPoints :: (Functor m, MonadIO m)
     => Ref (Revision a) -> RelationshipTarget
     -> MusicBrainzT m [(Relationship -> LinkedRelationship, Int)]
+
 
 --------------------------------------------------------------------------------
 viewRelationships :: (Functor m, HoldsRelationships a, MonadIO m)

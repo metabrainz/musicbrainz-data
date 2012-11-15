@@ -9,10 +9,12 @@ module MusicBrainz.Data.Artist
     , viewAliases
     , viewIpiCodes
     , viewAnnotation
+    , resolveMbid
 
       -- * Editing artists
     , create
     , update
+    , MusicBrainz.Data.Artist.merge
     ) where
 
 import Prelude hiding (mapM_)
@@ -22,6 +24,7 @@ import Control.Lens hiding (by, query)
 import Control.Monad (void, when)
 import Control.Monad.IO.Class (MonadIO)
 import Data.Foldable (mapM_, forM_)
+import Data.Maybe (listToMaybe)
 import Data.Text (Text)
 import Database.PostgreSQL.Simple (Only(..), (:.)(..))
 import Database.PostgreSQL.Simple.SqlQQ
@@ -37,6 +40,7 @@ import MusicBrainz.Lens
 import MusicBrainz.Merge
 
 import qualified MusicBrainz.Data.Generic.Create as GenericCreate
+import qualified MusicBrainz.Merge as Merge
 
 --------------------------------------------------------------------------------
 instance HoldsRelationships Artist where
@@ -113,7 +117,7 @@ instance Editable Artist where
         currentTree <- viewTree (coreRevision current)
         ancestorTree <- viewTree (coreRevision ancestor)
 
-        case runMerge newTree currentTree ancestorTree merge of
+        case runMerge newTree currentTree ancestorTree Merge.merge of
           Nothing -> error "Unable to merge: conflict"
           Just merged -> do
             editorId <- selectValue $ query
@@ -239,6 +243,34 @@ update editor baseRev artist = do
 
 
 --------------------------------------------------------------------------------
+{-| Merge an artist into another artist. -}
+merge :: Ref Editor -> Ref (Revision Artist) -> Ref Artist
+      -> EditM (Ref (Revision Artist))
+merge editor baseRev targetId = do
+  -- Find the latest revision to merge into
+  latestTarget <- findLatest targetId
+  mergeInto <- cloneRevision latestTarget
+
+  -- Link this revision to both the old tree and the latest version,
+  -- and include it in the edit.
+  includeRevision mergeInto
+  addChild mergeInto baseRev
+  addChild mergeInto (coreRevision latestTarget)
+
+  return mergeInto
+
+  where
+    cloneRevision a = do
+      revId <- newRevision editor
+      selectValue $
+        query [sql|
+          INSERT INTO artist_revision (artist_id, revision_id, artist_tree_id)
+          VALUES (?, ?, (SELECT artist_tree_id FROM artist_revision WHERE revision_id = ?))
+          RETURNING revision_id
+        |] (coreRef a, revId, coreRevision a)
+
+
+--------------------------------------------------------------------------------
 newArtistRevision :: (Functor m, MonadIO m)
                   => Ref (Revision Artist)
                   -> Ref (Tree Artist)
@@ -295,3 +327,45 @@ artistTree artist = do
       execute [sql| INSERT INTO l_artist_artist (source_id, target_id, relationship_id) VALUES (?, ?, ?) |]
         (treeId, targetId, relationshipId :: Int)
 
+
+--------------------------------------------------------------------------------
+resolveMbid :: (Functor m, MonadIO m) => MBID Artist
+  -> MusicBrainzT m (Maybe (Ref Artist))
+resolveMbid entityMbid =
+  listToMaybe . map fromOnly <$> query
+    [sql|
+      WITH RECURSIVE path (revision_id, artist_id, child_revision_id, created_at, is_master_revision_id)
+      AS (
+        SELECT
+          artist_revision.revision_id,
+          artist_revision.artist_id,
+          revision_parent.revision_id AS child_revision_id,
+          created_at,
+          TRUE as is_master_revision_id
+        FROM artist_revision
+        JOIN artist USING (artist_id)
+        JOIN revision USING (revision_id)
+        LEFT JOIN revision_parent ON (revision_parent.parent_revision_id = revision.revision_id)
+        WHERE artist_id = ? AND master_revision_id = artist_revision.revision_id
+
+        UNION
+
+        SELECT
+          artist_revision.revision_id,
+          artist_revision.artist_id,
+          revision_parent.revision_id,
+          revision.created_at,
+          master_revision_id = artist_revision.revision_id AS is_master_revision_id
+        FROM path
+        JOIN artist_revision ON (path.child_revision_id = artist_revision.revision_id)
+        JOIN revision ON (revision.revision_id = artist_revision.revision_id)
+        JOIN artist ON (artist.artist_id = artist_revision.artist_id)
+        LEFT JOIN revision_parent ON (revision_parent.parent_revision_id = artist_revision.revision_id)
+      )
+      SELECT artist_id
+      FROM path
+      WHERE is_master_revision_id
+      ORDER BY created_at, revision_id DESC
+      LIMIT 1
+    |]
+      (Only entityMbid)

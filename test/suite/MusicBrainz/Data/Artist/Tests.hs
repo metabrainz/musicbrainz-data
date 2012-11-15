@@ -19,6 +19,7 @@ import qualified MusicBrainz.Data.Country as Country
 import qualified MusicBrainz.Data.Gender as Gender
 import qualified MusicBrainz.Data.Relationship as Relationship
 
+--------------------------------------------------------------------------------
 tests :: [Test]
 tests = [ testCreateFindLatest
         , testUpdate
@@ -26,8 +27,10 @@ tests = [ testCreateFindLatest
         , testAliases
         , testIpiCodes
         , testAnnotation
+        , testMerge
         ]
 
+--------------------------------------------------------------------------------
 testCreateFindLatest :: Test
 testCreateFindLatest = testCase "findLatest when artist exists" $ mbTest $ do
   editor <- register acid2
@@ -60,6 +63,7 @@ testCreateFindLatest = testCase "findLatest when artist exists" $ mbTest $ do
       , artistType = Just $ type'
       }
 
+--------------------------------------------------------------------------------
 testUpdate :: Test
 testUpdate = testCase "update does change artist" $ mbTest $ do
   editor <- entityRef <$> register acid2
@@ -88,6 +92,7 @@ testUpdate = testCase "update does change artist" $ mbTest $ do
                        }
 
 
+--------------------------------------------------------------------------------
 testRelationships :: Test
 testRelationships = testCase "Relationships are bidirectional over addition and deletion" $ mbTest $ do
   editor <- entityRef <$> register acid2
@@ -134,6 +139,7 @@ testRelationships = testCase "Relationships are bidirectional over addition and 
         newRels @?= new
 
 
+--------------------------------------------------------------------------------
 testAliases :: Test
 testAliases = testCase "Can add and remove aliases" $ mbTest $ do
   editor <- entityRef <$> register acid2
@@ -183,6 +189,7 @@ testIpiCodes = testCase "Can add and remove artist IPI codes" $ mbTest $ do
     ipi = IPI "12345678912"
 
 
+--------------------------------------------------------------------------------
 testAnnotation :: Test
 testAnnotation = testCase "Can add and remove artist annotations" $ mbTest $ do
   editor <- entityRef <$> register acid2
@@ -204,6 +211,24 @@ testAnnotation = testCase "Can add and remove artist annotations" $ mbTest $ do
     expected = "This is an artist annotation"
 
 
+--------------------------------------------------------------------------------
+testMerge :: Test
+testMerge = testCase "Can merge 2 distinct artists" $ mbTest $ do
+  editor <- entityRef <$> register acid2
+
+  a <- create editor freddie
+  b <- create editor (ArtistTree portishead Set.empty Set.empty Set.empty "")
+
+  edit <- createEdit $
+    merge editor (coreRevision a) (coreRef b)
+
+  apply edit
+
+  aResolved <- resolveMbid (refMbid $ coreRef a)
+  liftIO $ aResolved @?= Just (coreRef b)
+
+
+--------------------------------------------------------------------------------
 freddie :: Tree Artist
 freddie = ArtistTree
   { artistData =  Artist

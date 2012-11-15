@@ -57,6 +57,7 @@ module MusicBrainz.Types
       -- * Entity/reference handling
     , Entity(..)
     , Ref(..)
+    , refMbid
     ) where
 
 import Control.Lens
@@ -120,6 +121,17 @@ instance Ord (Ref a) where
   compare (RevisionRef a) (RevisionRef b) = a `compare` b
   compare (TreeRef a) (TreeRef b) = a `compare` b
   compare _ _ = error "Impossible condition: comparing references of different types"
+
+
+--------------------------------------------------------------------------------
+class RefMBID a where
+  refMbid :: Ref a -> MBID a
+
+instance RefMBID Artist where refMbid (ArtistRef a) = a
+instance RefMBID Label where refMbid (LabelRef a) = a
+instance RefMBID Recording where refMbid (RecordingRef a) = a
+instance RefMBID Release where refMbid (ReleaseRef a) = a
+instance RefMBID ReleaseGroup where refMbid (ReleaseGroupRef a) = a
 
 
 --------------------------------------------------------------------------------

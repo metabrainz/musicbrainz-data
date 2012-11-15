@@ -18,7 +18,7 @@ module MusicBrainz.Monad
 
       -- * Convenience database functions
     , defaultConnectInfo, ConnectInfo(..)
-    , query, query_, execute, returning, executeMany
+    , query, query_, execute, execute_, returning, executeMany
     , selectValue
     , withTransaction
     , begin, commit, rollback
@@ -96,6 +96,12 @@ query_ sql = withMBConn $ \conn -> PG.query_ conn sql
 {-| Run a query that returns no data, using the active database connection. -}
 execute :: (MonadIO m, ToRow p) => Query -> p -> MusicBrainzT m Int64
 execute sql params = withMBConn $ \conn -> PG.execute conn sql params
+
+
+{-| Run a query that returns no data and takes no parameters, using the active
+database connection. -}
+execute_ :: MonadIO m => Query -> MusicBrainzT m Int64
+execute_ sql = withMBConn $ \conn -> PG.execute_ conn sql
 
 
 {-| Run a query over multiple rows, returning results, using the active
