@@ -9,10 +9,8 @@ import Test.MusicBrainz.Data (singleArtistAc)
 import Test.MusicBrainz.Repository (portishead, acid2)
 
 import MusicBrainz
-import MusicBrainz.Data.Create
+import MusicBrainz.Data
 import MusicBrainz.Data.Editor (register)
-import MusicBrainz.Data.FindLatest
-import MusicBrainz.Data.Recording ()
 
 tests :: [Test]
 tests = [ testCreateFindLatest

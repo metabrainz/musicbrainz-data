@@ -5,8 +5,7 @@ import qualified Data.Set as Set
 
 import           MusicBrainz
 
-import MusicBrainz.Data.Artist ()
-import MusicBrainz.Data.Create
+import MusicBrainz.Data
 import qualified MusicBrainz.Data.ArtistCredit as ArtistCredit
 
 singleArtistAc :: Ref Editor -> Artist -> MusicBrainz (Ref ArtistCredit)

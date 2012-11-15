@@ -8,11 +8,8 @@ import Test.MusicBrainz.Data (singleArtistAc)
 import Test.MusicBrainz.Repository (portishead, dummy, uk, acid2)
 
 import MusicBrainz
-import MusicBrainz.Data.Create
+import MusicBrainz.Data
 import MusicBrainz.Data.Editor (register)
-import MusicBrainz.Data.FindLatest
-import MusicBrainz.Data.Release ()
-import MusicBrainz.Data.ReleaseGroup ()
 
 import qualified MusicBrainz.Data.Country as Country
 import qualified MusicBrainz.Data.Language as Language

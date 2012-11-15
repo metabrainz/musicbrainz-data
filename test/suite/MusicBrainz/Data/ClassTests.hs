@@ -5,8 +5,7 @@ import Test.MusicBrainz
 import Test.MusicBrainz.Repository (acid2)
 
 import MusicBrainz
-import MusicBrainz.Data.Create
-import MusicBrainz.Data.FindLatest
+import MusicBrainz.Data
 import MusicBrainz.Data.Editor (register)
 
 testCreateFindLatest :: (Eq a, Show a, FindLatest a, Create a)

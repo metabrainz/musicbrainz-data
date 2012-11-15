@@ -4,7 +4,6 @@ module MusicBrainz.Data.Label.Tests ( tests ) where
 import Test.MusicBrainz
 
 import MusicBrainz
-import MusicBrainz.Data.Label ()
 
 import qualified MusicBrainz.Data.ClassTests as ClassTests
 
