@@ -1,6 +1,10 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
-{-| Functions for interacting with MusicBrainz labels in the database. -}
+{-| Functions for interacting with MusicBrainz labels in the database.
+
+The majority of operations on labels are common for all core entities, so you
+should see the documentation on the 'Label' type and notice all the type class
+instances. -}
 module MusicBrainz.Data.Label
     ( ) where
 

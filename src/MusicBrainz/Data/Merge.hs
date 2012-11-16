@@ -8,11 +8,11 @@ import Control.Monad.IO.Class (MonadIO)
 import MusicBrainz
 
 import MusicBrainz.Data.FindLatest
-import MusicBrainz.Data.Revision
 import MusicBrainz.Edit
+import MusicBrainz.Data.Revision.Internal
 
 --------------------------------------------------------------------------------
-{-| Merge an artist into another artist. -}
+{-| Merge one entity into another. -}
 merge :: Merge a
   => Ref Editor -> Ref (Revision a) -> Ref a -> EditM (Ref (Revision a))
 merge editor baseRev targetId = do
@@ -30,8 +30,11 @@ merge editor baseRev targetId = do
 
 
 --------------------------------------------------------------------------------
+{-| The merge type class allows 2 entities (with different references) to be
+merged into one. -}
 class (Editable a, FindLatest a, CloneRevision a) => Merge a where
-  {-| Attempt to resolve an 'MBID Artist' to a specific 'Artist' 'Ref'. This
-  will follow merges to find the correct artist this MBID now points to. -}
+  {-| Attempt to resolve an 'MBID' @a@ to a specific @a@ 'Ref'. This
+  will follow merges to find the correct entity this MBID now points to, and
+  thus the reference /may be different/ to the original MBID passed in. -}
   resolveMbid :: (Functor m, MonadIO m)
     => MBID a -> MusicBrainzT m (Maybe (Ref a))

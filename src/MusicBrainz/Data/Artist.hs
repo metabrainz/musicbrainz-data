@@ -1,6 +1,10 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
-{-| Functions for interacting with MusicBrainz artists in the database. -}
+{-| Functions for interacting with MusicBrainz artists in the database.
+
+The majority of operations on artists are common for all core entities, so you
+should see the documentation on the 'Artist' type and notice all the type class
+instances. -}
 module MusicBrainz.Data.Artist () where
 
 import Prelude hiding (mapM_)
@@ -24,7 +28,9 @@ import MusicBrainz.Data.FindLatest
 import MusicBrainz.Data.IPI
 import MusicBrainz.Data.Merge
 import MusicBrainz.Data.Relationship
+import MusicBrainz.Data.Relationship.Internal
 import MusicBrainz.Data.Revision
+import MusicBrainz.Data.Revision.Internal
 import MusicBrainz.Data.Tree
 import MusicBrainz.Data.Update
 import MusicBrainz.Edit

@@ -6,7 +6,7 @@ module MusicBrainz.Data.Relationship
 
     -- * Viewing relationships
     , viewRelationships
-    , HoldsRelationships(..)
+    , HoldsRelationships
     ) where
 
 import Control.Applicative
@@ -19,6 +19,7 @@ import qualified Data.Map as Map
 import qualified Data.Set as Set
 
 import MusicBrainz
+import MusicBrainz.Data.Relationship.Internal
 
 --------------------------------------------------------------------------------
 {-| Add a new 'RelationshipType' to the list of known relationship types in
@@ -64,13 +65,6 @@ inflateRelationships relationshipIds = do
               , relEnded = ended
               }
         in (relId, relationship)
-
-
---------------------------------------------------------------------------------
-class HoldsRelationships a where
-  fetchEndPoints :: (Functor m, MonadIO m)
-    => Ref (Revision a) -> RelationshipTarget
-    -> MusicBrainzT m [(Relationship -> LinkedRelationship, Int)]
 
 
 --------------------------------------------------------------------------------

@@ -14,7 +14,7 @@ import Database.PostgreSQL.Simple.FromField (FromField)
 
 import MusicBrainz
 
-import MusicBrainz.Data.Revision (newRevision)
+import MusicBrainz.Data.Revision.Internal (newRevision)
 
 data Specification m a = Specification
     { getTree :: Tree a -> MusicBrainzT m (Ref (Tree a))

@@ -1,6 +1,10 @@
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-| Functions for interacting with 'Release's in the MusicBrainz database. -}
+{-| Functions for interacting with 'Release's in the MusicBrainz database.
+
+The majority of operations on releases are common for all core entities, so you
+should see the documentation on the 'Release' type and notice all the type class
+instances. -}
 module MusicBrainz.Data.Release
     ( ) where
 

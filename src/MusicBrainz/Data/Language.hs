@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
-{-| Functions to work with 'Country's. -}
+{-| Functions to work with 'Language's. -}
 module MusicBrainz.Data.Language ( addLanguage ) where
 
 import Control.Applicative

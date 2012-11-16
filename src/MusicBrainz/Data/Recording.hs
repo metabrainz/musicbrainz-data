@@ -1,6 +1,10 @@
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-| Functions for interacting with 'Recording's in the MusicBrainz database. -}
+{-| Functions for interacting with 'Recording's in the MusicBrainz database.
+
+The majority of operations on recordings are common for all core entities, so you
+should see the documentation on the 'Recording' type and notice all the type class
+instances. -}
 module MusicBrainz.Data.Recording
     ( ) where
 
