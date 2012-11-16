@@ -4,6 +4,7 @@ module MusicBrainz.Data.Relationship.Internal
 import Control.Monad.IO.Class (MonadIO)
 
 import MusicBrainz
+import MusicBrainz.Types.Internal
 
 --------------------------------------------------------------------------------
 {-| This type class is implemented for any entities that may have

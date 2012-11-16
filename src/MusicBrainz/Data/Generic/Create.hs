@@ -13,9 +13,11 @@ import Data.Typeable (Typeable)
 import Database.PostgreSQL.Simple.FromField (FromField)
 
 import MusicBrainz
+import MusicBrainz.Types.Internal
 
 import MusicBrainz.Data.Revision.Internal (newRevision)
 
+--------------------------------------------------------------------------------
 data Specification m a = Specification
     { getTree :: Tree a -> MusicBrainzT m (Ref (Tree a))
     , reserveEntity :: MusicBrainzT m (Ref a)
@@ -23,6 +25,8 @@ data Specification m a = Specification
     , linkRevision :: Ref a -> Ref (Revision a) -> MusicBrainzT m ()
     }
 
+
+--------------------------------------------------------------------------------
 create :: (Functor m, Monad m, MonadIO m) => Specification m a -> Ref Editor -> Tree a -> MusicBrainzT m (CoreEntity a)
 create Specification{..} editor entity = do
   treeId <- getTree entity
@@ -34,6 +38,8 @@ create Specification{..} editor entity = do
                     , coreData = treeData entity
                     }
 
+
+--------------------------------------------------------------------------------
 reserveEntityTable :: (Functor m, MonadIO m, Typeable a, FromField (Ref a)) => String -> MusicBrainzT m (Ref a)
 reserveEntityTable table = selectValue $ query_ $
   fromString ("INSERT INTO " ++ table ++ " (master_revision_id) VALUES (-1) RETURNING " ++ table  ++ "_id")

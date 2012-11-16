@@ -7,7 +7,6 @@ module MusicBrainz.Edit
     ( Edit(..)
     , Change(..)
     , Editable(..)
-    , Ref(..)
     , EditNote(..)
     , EditStatus(..)
     , Vote(..)

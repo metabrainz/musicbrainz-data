@@ -36,6 +36,7 @@ import MusicBrainz.Data.Update
 import MusicBrainz.Edit
 import MusicBrainz.Lens
 import MusicBrainz.Merge
+import MusicBrainz.Types.Internal
 
 import qualified MusicBrainz.Data.Generic.Create as GenericCreate
 import qualified MusicBrainz.Merge as Merge

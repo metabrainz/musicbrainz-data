@@ -21,6 +21,7 @@ import Database.PostgreSQL.Simple.SqlQQ (sql)
 import MusicBrainz
 import MusicBrainz.Data.Artist ()
 import MusicBrainz.Edit
+import MusicBrainz.Types.Internal
 
 --------------------------------------------------------------------------------
 {-| Apply an edit by merging all revisions in the edit upstream. -}

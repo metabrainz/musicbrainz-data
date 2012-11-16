@@ -21,7 +21,7 @@ import Database.PostgreSQL.Simple.ToField (ToField(..), Action(..), inQuotes)
 import Database.PostgreSQL.Simple.ToRow (ToRow(..))
 
 import MusicBrainz.Edit
-import MusicBrainz.Types
+import MusicBrainz.Types.Internal
 
 import qualified Data.ByteString.Char8 as LBS
 import qualified Data.UUID as UUID
