@@ -13,7 +13,7 @@ import MusicBrainz.Data.Revision.Internal
 
 --------------------------------------------------------------------------------
 {-| Merge one entity into another. -}
-merge :: Merge a
+merge :: (Merge a, NewEntityRevision a)
   => Ref Editor -> Ref (Revision a) -> Ref a -> EditM (Ref (Revision a))
 merge editor baseRev targetId = do
   -- Find the latest revision to merge into

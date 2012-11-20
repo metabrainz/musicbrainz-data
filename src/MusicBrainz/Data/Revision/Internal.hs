@@ -1,8 +1,9 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
 module MusicBrainz.Data.Revision.Internal
-    ( newRevision
+    ( newUnlinkedRevision
     , addChild
+    , newChildRevision
     , CloneRevision(..)
     ) where
 
@@ -12,11 +13,13 @@ import Database.PostgreSQL.Simple (Only(..))
 import Database.PostgreSQL.Simple.SqlQQ (sql)
 
 import MusicBrainz
+import MusicBrainz.Edit
 
 --------------------------------------------------------------------------------
 {-| Create a new \'system\' revision, that is not yet bound to any entity. -}
-newRevision :: (Functor m, MonadIO m) => Ref Editor -> MusicBrainzT m (Ref (Revision a))
-newRevision editor = selectValue $
+newUnlinkedRevision :: (Functor m, MonadIO m)
+  => Ref Editor -> MusicBrainzT m (Ref (Revision a))
+newUnlinkedRevision editor = selectValue $
   query [sql| INSERT INTO revision (editor_id) VALUES (?) RETURNING revision_id |]
     (Only editor)
 
@@ -34,3 +37,15 @@ addChild childRevision parentRevision =
 class CloneRevision a where
   cloneRevision :: (Functor m, MonadIO m)
     => CoreEntity a -> Ref Editor -> MusicBrainzT m (Ref (Revision a))
+
+
+--------------------------------------------------------------------------------
+newChildRevision :: (Functor m, MonadIO m, ViewRevision a, NewEntityRevision a)
+  => Ref Editor -> Ref (Revision a) -> Ref (Tree a)
+  -> MusicBrainzT m (Ref (Revision a))
+newChildRevision editorId baseRevisionId treeId = do
+  entity <- viewRevision baseRevisionId
+  revisionId <- newUnlinkedRevision editorId
+  newEntityRevision revisionId (coreRef entity) treeId
+  addChild revisionId baseRevisionId
+  return revisionId

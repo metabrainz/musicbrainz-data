@@ -34,3 +34,5 @@ import MusicBrainz.Data.Merge
 import MusicBrainz.Data.Revision
 import MusicBrainz.Data.Tree
 import MusicBrainz.Data.Update
+
+import MusicBrainz.Edit

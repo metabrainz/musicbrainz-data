@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-| Functions to work with MusicBrainz edits. -}
@@ -15,25 +16,31 @@ import Control.Applicative
 import Control.Monad
 import Control.Monad.Trans
 import Control.Monad.Trans.Writer
+import Data.Traversable (traverse)
 import Database.PostgreSQL.Simple (Only(..), (:.)(..))
 import Database.PostgreSQL.Simple.SqlQQ (sql)
 
 import MusicBrainz
 import MusicBrainz.Data.Artist ()
+import MusicBrainz.Data.FindLatest (findLatest, FindLatest)
+import MusicBrainz.Data.Revision (mergeBase)
+import MusicBrainz.Data.Revision.Internal (addChild, newChildRevision)
+import MusicBrainz.Data.Tree (viewTree, ViewTree)
 import MusicBrainz.Edit
+import MusicBrainz.Merge
 import MusicBrainz.Types.Internal
 
 --------------------------------------------------------------------------------
 {-| Apply an edit by merging all revisions in the edit upstream. -}
 apply :: Ref Edit -> MusicBrainz ()
 apply editId = do
-  getChanges >>= mapM_ merge
+  getChanges >>= mapM_ mergeUpstream
   closeEdit
   where
     getChanges = map toChange <$> query [sql|
       SELECT 'artist'::text, revision_id FROM edit_artist WHERE edit_id = ?
     |] (Only editId)
-    merge (Change r) = mergeRevisionUpstream r
+    mergeUpstream (Change r) = mergeRevisionUpstream r
 
     toChange :: (String, Int) -> Change
     toChange (kind, revisionId) =
@@ -87,3 +94,33 @@ createEdit actions = do
   mapM_ (linkChange editId) changes
   return editId
   where linkChange editId (Change r) = linkRevisionToEdit editId r
+
+
+--------------------------------------------------------------------------------
+mergeRevisionUpstream :: (Applicative m, MonadIO m, FindLatest a, Mergeable (Tree a), NewEntityRevision a, RealiseTree a, MasterRevision a, ViewRevision a, ViewTree a)
+  => Ref (Revision a) -> MusicBrainzT m ()
+mergeRevisionUpstream new = do
+  newVer <- viewRevision new
+  let artistId = coreRef newVer
+
+  current <- findLatest artistId
+  ancestor' <- mergeBase new (coreRevision current) >>= traverse viewRevision
+  case ancestor' of
+    Nothing -> error "Unable to merge: no common ancestor"
+    Just ancestor -> do
+      newTree <- viewTree new
+      currentTree <- viewTree (coreRevision current)
+      ancestorTree <- viewTree (coreRevision ancestor)
+
+      case runMerge newTree currentTree ancestorTree merge of
+        Nothing -> error "Unable to merge: conflict"
+        Just merged -> do
+          editorId <- selectValue $ query
+            [sql| SELECT editor_id FROM revision WHERE revision_id = ? |]
+              (Only $ coreRevision current)
+
+          treeId <- realiseTree merged
+          revisionId <- newChildRevision editorId (coreRevision current) treeId
+          addChild revisionId new
+
+          setMasterRevision artistId revisionId

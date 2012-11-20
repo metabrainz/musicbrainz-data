@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE TypeFamilies #-}
@@ -12,11 +13,18 @@ module MusicBrainz.Edit
     , Vote(..)
     , EditM
     , includeRevision
+    , NewEntityRevision(..)
+    , RealiseTree(..)
+    , MasterRevision(..)
+    , ViewRevision(..)
     ) where
 
 import Control.Monad.Trans
 import Control.Monad.Trans.Writer
 
+import MusicBrainz.Data.FindLatest
+import MusicBrainz.Data.Tree (ViewTree)
+import MusicBrainz.Merge
 import MusicBrainz.Monad
 import MusicBrainz.Types
 
@@ -43,12 +51,9 @@ data Change = forall a. Editable a => Change (Ref (Revision a))
 --------------------------------------------------------------------------------
 {-| The 'Editable' class has instances which have versioning and thus can be
 included in edits. -}
-class Editable a where
+class (FindLatest a, MasterRevision a, Mergeable (Tree a), NewEntityRevision a, RealiseTree a, ViewRevision a, ViewTree a) => Editable a where
   {-| Add a revision into an edit. -}
   linkRevisionToEdit :: Ref Edit -> Ref (Revision a) -> MusicBrainz ()
-
-  {-| Merge a revision on top of the current master revision. -}
-  mergeRevisionUpstream :: Ref (Revision a) -> MusicBrainz ()
 
 
 --------------------------------------------------------------------------------
@@ -61,5 +66,31 @@ type EditM = MusicBrainzT (WriterT [Change] IO)
 
 This is a fairly low-level operation, and you should be careful that you only
 include revisions that haven't already been merged! -}
-includeRevision :: Editable a => Ref (Revision a) -> EditM ()
+includeRevision :: (Editable a)
+  => Ref (Revision a) -> EditM ()
 includeRevision = lift . tell . return . Change
+
+
+--------------------------------------------------------------------------------
+class NewEntityRevision a where
+  newEntityRevision :: (Functor m, MonadIO m)
+    => Ref (Revision a) -> Ref a -> Ref (Tree a) -> MusicBrainzT m ()
+
+
+--------------------------------------------------------------------------------
+class RealiseTree a where
+  realiseTree :: (Functor m, MonadIO m)
+    => Tree a -> MusicBrainzT m (Ref (Tree a))
+
+
+--------------------------------------------------------------------------------
+class MasterRevision a where
+  setMasterRevision :: (Functor m, MonadIO m)
+    => Ref a -> Ref (Revision a) -> MusicBrainzT m ()
+
+
+--------------------------------------------------------------------------------
+{-| View a specific revision, along with the basic 'treeData'. -}
+class ViewRevision a where
+  viewRevision :: (Functor m, MonadIO m)
+    => Ref (Revision a) -> MusicBrainzT m (CoreEntity a)

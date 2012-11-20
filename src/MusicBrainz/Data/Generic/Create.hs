@@ -14,25 +14,24 @@ import Database.PostgreSQL.Simple.FromField (FromField)
 
 import MusicBrainz
 import MusicBrainz.Types.Internal
-
-import MusicBrainz.Data.Revision.Internal (newRevision)
+import MusicBrainz.Data.Revision.Internal
+import MusicBrainz.Edit
 
 --------------------------------------------------------------------------------
 data Specification m a = Specification
-    { getTree :: Tree a -> MusicBrainzT m (Ref (Tree a))
-    , reserveEntity :: MusicBrainzT m (Ref a)
-    , newEntityRevision :: Ref a -> Ref (Tree a) -> Ref (Revision a) -> MusicBrainzT m (Ref (Revision a))
-    , linkRevision :: Ref a -> Ref (Revision a) -> MusicBrainzT m ()
+    { reserveEntity :: MusicBrainzT m (Ref a)
     }
 
 
 --------------------------------------------------------------------------------
-create :: (Functor m, Monad m, MonadIO m) => Specification m a -> Ref Editor -> Tree a -> MusicBrainzT m (CoreEntity a)
+create :: (Functor m, Monad m, MonadIO m, MasterRevision a, NewEntityRevision a, RealiseTree a)
+  => Specification m a -> Ref Editor -> Tree a -> MusicBrainzT m (CoreEntity a)
 create Specification{..} editor entity = do
-  treeId <- getTree entity
+  treeId <- realiseTree entity
   entityId <- reserveEntity
-  revisionId <- newRevision editor >>= newEntityRevision entityId treeId
-  linkRevision entityId revisionId
+  revisionId <- newUnlinkedRevision editor
+  newEntityRevision revisionId entityId treeId
+  setMasterRevision entityId revisionId
   return CoreEntity { coreRef = entityId
                     , coreRevision = revisionId
                     , coreData = treeData entity

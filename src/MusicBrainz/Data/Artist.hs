@@ -29,17 +29,16 @@ import MusicBrainz.Data.IPI
 import MusicBrainz.Data.Merge
 import MusicBrainz.Data.Relationship
 import MusicBrainz.Data.Relationship.Internal
-import MusicBrainz.Data.Revision
 import MusicBrainz.Data.Revision.Internal
 import MusicBrainz.Data.Tree
 import MusicBrainz.Data.Update
 import MusicBrainz.Edit
 import MusicBrainz.Lens
-import MusicBrainz.Merge
 import MusicBrainz.Types.Internal
 
 import qualified MusicBrainz.Data.Generic.Create as GenericCreate
-import qualified MusicBrainz.Merge as Merge
+import qualified MusicBrainz.Data.Generic.Edit as GenericEdit
+import qualified MusicBrainz.Data.Generic.Revision as GenericRevision
 
 --------------------------------------------------------------------------------
 instance HoldsRelationships Artist where
@@ -103,36 +102,12 @@ instance HasAnnotation Artist where
 
 --------------------------------------------------------------------------------
 instance Editable Artist where
-  linkRevisionToEdit editId revisionId = void $ execute
-    [sql| INSERT INTO edit_artist (edit_id, revision_id) VALUES (?, ?) |]
-      (editId, revisionId)
+  linkRevisionToEdit = GenericEdit.linkRevisionToEdit "edit_artist"
 
-  mergeRevisionUpstream new = do
-    newVer <- viewRevision new
-    let artistId = coreRef newVer
 
-    current <- findLatest artistId
-    ancestor' <- mergeBase new (coreRevision current) >>= traverse viewRevision
-    case ancestor' of
-      Nothing -> error "Unable to merge: no common ancestor"
-      Just ancestor -> do
-        newTree <- viewTree new
-        currentTree <- viewTree (coreRevision current)
-        ancestorTree <- viewTree (coreRevision ancestor)
-
-        case runMerge newTree currentTree ancestorTree Merge.merge of
-          Nothing -> error "Unable to merge: conflict"
-          Just merged -> do
-            editorId <- selectValue $ query
-              [sql| SELECT editor_id FROM revision WHERE revision_id = ? |]
-                (Only $ coreRevision current)
-
-            treeId <- artistTree merged
-            revisionId <- newRevision editorId >>=
-                          newArtistRevision (coreRevision current) treeId
-            addChild revisionId new
-            addChild revisionId (coreRevision current)
-            linkRevision artistId revisionId
+--------------------------------------------------------------------------------
+instance MasterRevision Artist where
+  setMasterRevision = GenericRevision.setMasterRevision "artist"
 
 
 --------------------------------------------------------------------------------
@@ -175,23 +150,8 @@ instance ViewRevision Artist where
 --------------------------------------------------------------------------------
 instance Create Artist where
   create = GenericCreate.create GenericCreate.Specification
-      { GenericCreate.getTree = artistTree
-      , GenericCreate.reserveEntity = GenericCreate.reserveEntityTable "artist"
-      , GenericCreate.newEntityRevision = newArtistRevision'
-      , GenericCreate.linkRevision = linkRevision
+      { GenericCreate.reserveEntity = GenericCreate.reserveEntityTable "artist"
       }
-    where
-      newArtistRevision' artistId artistTreeId revisionId = selectValue $
-        query [sql| INSERT INTO artist_revision (artist_id, revision_id, artist_tree_id)
-                    VALUES (?, ?, ?) RETURNING revision_id |]
-          (artistId, revisionId, artistTreeId)
-
-
---------------------------------------------------------------------------------
-linkRevision :: (Functor m, MonadIO m) => Ref Artist -> Ref (Revision Artist) -> MusicBrainzT m ()
-linkRevision artistId revisionId = void $
-  execute [sql| UPDATE artist SET master_revision_id = ?
-                WHERE artist_id = ? |] (revisionId, artistId)
 
 
 --------------------------------------------------------------------------------
@@ -218,10 +178,9 @@ instance Update Artist where
 
     where
       runUpdate tree base = do
-        treeId <- artistTree tree
-        revisionId <- newRevision editor >>= newArtistRevision base treeId
+        treeId <- realiseTree tree
+        revisionId <- newChildRevision editor base treeId
         includeRevision revisionId
-        addChild revisionId base
         return revisionId
 
       reflectRelationshipChange endpoint f (ArtistRelationship targetId rel) = do
@@ -232,61 +191,56 @@ instance Update Artist where
 
 
 --------------------------------------------------------------------------------
-newArtistRevision :: (Functor m, MonadIO m)
-                  => Ref (Revision Artist)
-                  -> Ref (Tree Artist)
-                  -> Ref (Revision Artist)
-                  -> MusicBrainzT m (Ref (Revision Artist))
-newArtistRevision parentRevision artistTreeId revisionId = selectValue $
-  query [sql| INSERT INTO artist_revision (artist_id, revision_id, artist_tree_id)
-              VALUES ( (SELECT artist_id FROM artist_revision WHERE revision_id = ?)
-                     , ?, ?) RETURNING revision_id |]
-    (parentRevision, revisionId, artistTreeId)
+instance NewEntityRevision Artist where
+  newEntityRevision revisionId artistId artistTreeId = void $
+    execute [sql| INSERT INTO artist_revision (artist_id, revision_id, artist_tree_id)
+                  VALUES (?, ?, ?) |]
+    (artistId, revisionId, artistTreeId)
 
 
 --------------------------------------------------------------------------------
-artistTree :: (Functor m, Monad m, MonadIO m) => Tree Artist -> MusicBrainzT m (Ref (Tree Artist))
-artistTree artist = do
-  dataId <- insertArtistData (artistData artist)
-  treeId <- insertArtistTree (artistAnnotation artist) dataId
+instance RealiseTree Artist where
+  realiseTree artist = do
+    dataId <- insertArtistData (artistData artist)
+    treeId <- insertArtistTree (artistAnnotation artist) dataId
 
-  mapM_ (addRelationship treeId) $ artistRelationships artist
+    mapM_ (addRelationship treeId) $ artistRelationships artist
 
-  forM_ (Set.toList $ artistAliases artist) $ \alias -> do
-    execute [sql|
-      INSERT INTO artist_alias (artist_tree_id, name, sort_name,
-        begin_date_year, begin_date_month, begin_date_day,
-        end_date_year, end_date_month, end_date_day,
-        ended, artist_alias_type_id, locale)
-      VALUES (?, (SELECT find_or_insert_artist_name(?)),
-        (SELECT find_or_insert_artist_name(?)), ?, ?, ?, ?, ?, ?, ?, ?, ?) |]
-      (Only treeId :. alias)
-
-  executeMany [sql| INSERT INTO artist_ipi (artist_tree_id, ipi) VALUES (?, ?) |]
-    $ map (Only treeId :.) (Set.toList $ artistIpiCodes artist)
-
-  return treeId
-  where
-    insertArtistData :: (Functor m, MonadIO m) => Artist -> MusicBrainzT m Int
-    insertArtistData data' = selectValue $
-      query [sql| SELECT find_or_insert_artist_data(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) |]
-        data'
-
-    insertArtistTree annotation dataId = selectValue $
-      query [sql| INSERT INTO artist_tree (artist_data_id, annotation)
-                  VALUES (?, ?)
-                  RETURNING artist_tree_id  |]
-        (dataId, annotation)
-
-    addRelationship treeId (ArtistRelationship targetId relInfo) = do
-      relationshipId <- selectValue $ query [sql|
-        INSERT INTO relationship (relationship_type_id,
+    forM_ (Set.toList $ artistAliases artist) $ \alias -> do
+      execute [sql|
+        INSERT INTO artist_alias (artist_tree_id, name, sort_name,
           begin_date_year, begin_date_month, begin_date_day,
           end_date_year, end_date_month, end_date_day,
-          ended)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING relationship_id |] relInfo
-      execute [sql| INSERT INTO l_artist_artist (source_id, target_id, relationship_id) VALUES (?, ?, ?) |]
-        (treeId, targetId, relationshipId :: Int)
+          ended, artist_alias_type_id, locale)
+        VALUES (?, (SELECT find_or_insert_artist_name(?)),
+          (SELECT find_or_insert_artist_name(?)), ?, ?, ?, ?, ?, ?, ?, ?, ?) |]
+        (Only treeId :. alias)
+
+    executeMany [sql| INSERT INTO artist_ipi (artist_tree_id, ipi) VALUES (?, ?) |]
+      $ map (Only treeId :.) (Set.toList $ artistIpiCodes artist)
+
+    return treeId
+    where
+      insertArtistData :: (Functor m, MonadIO m) => Artist -> MusicBrainzT m Int
+      insertArtistData data' = selectValue $
+        query [sql| SELECT find_or_insert_artist_data(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) |]
+          data'
+
+      insertArtistTree annotation dataId = selectValue $
+        query [sql| INSERT INTO artist_tree (artist_data_id, annotation)
+                    VALUES (?, ?)
+                    RETURNING artist_tree_id  |]
+          (dataId, annotation)
+
+      addRelationship treeId (ArtistRelationship targetId relInfo) = do
+        relationshipId <- selectValue $ query [sql|
+          INSERT INTO relationship (relationship_type_id,
+            begin_date_year, begin_date_month, begin_date_day,
+            end_date_year, end_date_month, end_date_day,
+            ended)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING relationship_id |] relInfo
+        execute [sql| INSERT INTO l_artist_artist (source_id, target_id, relationship_id) VALUES (?, ?, ?) |]
+          (treeId, targetId, relationshipId :: Int)
 
 
 --------------------------------------------------------------------------------
@@ -334,7 +288,7 @@ instance Merge Artist where
 --------------------------------------------------------------------------------
 instance CloneRevision Artist where
   cloneRevision a editor = do
-    revId <- newRevision editor
+    revId <- newUnlinkedRevision editor
     selectValue $
       query [sql|
         INSERT INTO artist_revision (artist_id, revision_id, artist_tree_id)

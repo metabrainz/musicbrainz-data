@@ -17,8 +17,10 @@ import Database.PostgreSQL.Simple.SqlQQ (sql)
 import MusicBrainz
 import MusicBrainz.Data.Create
 import MusicBrainz.Data.FindLatest
+import MusicBrainz.Edit
 
 import qualified MusicBrainz.Data.Generic.Create as GenericCreate
+import qualified MusicBrainz.Data.Generic.Revision as GenericRevision
 
 instance FindLatest ReleaseGroup where
   findLatest releaseGroupId = head <$> query q (Only releaseGroupId)
@@ -36,26 +38,31 @@ instance FindLatest ReleaseGroup where
 --------------------------------------------------------------------------------
 instance Create ReleaseGroup where
   create = GenericCreate.create GenericCreate.Specification
-      { GenericCreate.getTree = findOrInsertRgTree
-      , GenericCreate.reserveEntity = GenericCreate.reserveEntityTable "release_group"
-      , GenericCreate.newEntityRevision = newRgRevision
-      , GenericCreate.linkRevision = linkRevision
+      { GenericCreate.reserveEntity = GenericCreate.reserveEntityTable "release_group"
       }
+
+
+--------------------------------------------------------------------------------
+instance RealiseTree ReleaseGroup where
+  realiseTree rg = do
+    dataId <- findOrInsertRgData
+    selectValue $
+      query [sql| SELECT find_or_insert_release_group_tree(?) |]
+        (Only dataId)
     where
-      findOrInsertRgData :: (Functor m, MonadIO m) => Tree ReleaseGroup -> MusicBrainzT m Int
-      findOrInsertRgData rg = selectValue $
+      findOrInsertRgData :: (Functor m, MonadIO m) => MusicBrainzT m Int
+      findOrInsertRgData = selectValue $
         query [sql| SELECT find_or_insert_release_group_data(?, ?, ?, ?) |]
           (treeData rg)
 
-      findOrInsertRgTree rg = do
-        dataId <- findOrInsertRgData rg
-        selectValue $
-          query [sql| SELECT find_or_insert_release_group_tree(?) |]
-            (Only dataId)
 
-      newRgRevision rgId rgTreeId revisionId = selectValue $
-        query [sql| INSERT INTO release_group_revision (release_group_id, revision_id, release_group_tree_id) VALUES (?, ?, ?) RETURNING revision_id |]
-          (rgId, revisionId, rgTreeId)
+--------------------------------------------------------------------------------
+instance NewEntityRevision ReleaseGroup where
+  newEntityRevision revisionId rgId rgTreeId = void $
+    execute [sql| INSERT INTO release_group_revision (release_group_id, revision_id, release_group_tree_id) VALUES (?, ?, ?) |]
+      (rgId, revisionId, rgTreeId)
 
-      linkRevision rgId revisionId = void $
-        execute [sql| UPDATE release_group SET master_revision_id = ? WHERE release_group_id = ? |] (revisionId, rgId)
+
+--------------------------------------------------------------------------------
+instance MasterRevision ReleaseGroup where
+  setMasterRevision = GenericRevision.setMasterRevision "release_group"

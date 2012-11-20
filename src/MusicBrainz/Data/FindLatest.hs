@@ -5,7 +5,8 @@ module MusicBrainz.Data.FindLatest
 
 import Control.Monad.IO.Class
 
-import MusicBrainz
+import MusicBrainz.Monad
+import MusicBrainz.Types
 
 --------------------------------------------------------------------------------
 {-| Attempt to find the latest revision of an entity (type @a@), by a given

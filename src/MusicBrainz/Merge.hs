@@ -10,7 +10,7 @@ import Data.Functor.Compose
 
 import qualified Data.Set as Set
 
-import MusicBrainz
+import MusicBrainz.Types
 
 --------------------------------------------------------------------------------
 data MergeScope a = MergeScope { new :: a, current :: a, ancestor :: a }

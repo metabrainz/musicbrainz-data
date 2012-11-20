@@ -17,8 +17,10 @@ import Database.PostgreSQL.Simple.SqlQQ (sql)
 import MusicBrainz
 import MusicBrainz.Data.Create
 import MusicBrainz.Data.FindLatest
+import MusicBrainz.Edit
 
 import qualified MusicBrainz.Data.Generic.Create as GenericCreate
+import qualified MusicBrainz.Data.Generic.Revision as GenericRevision
 
 instance FindLatest Release where
   findLatest releaseId = head <$> query q (Only releaseId)
@@ -38,32 +40,33 @@ instance FindLatest Release where
 --------------------------------------------------------------------------------
 instance Create Release where
   create = GenericCreate.create GenericCreate.Specification
-      { GenericCreate.getTree = releaseTree
-      , GenericCreate.reserveEntity = GenericCreate.reserveEntityTable "release"
-      , GenericCreate.newEntityRevision = newReleaseRevision
-      , GenericCreate.linkRevision = linkRevision
+      { GenericCreate.reserveEntity = GenericCreate.reserveEntityTable "release"
       }
-    where
-      newReleaseRevision releaseId releaseTreeId revisionId = selectValue $
-        query [sql| INSERT INTO release_revision (release_id, revision_id, release_tree_id)
-                    VALUES (?, ?, ?) RETURNING revision_id |]
-          (releaseId, revisionId, releaseTreeId)
-
-      linkRevision releaseId revisionId = void $
-        execute [sql| UPDATE release SET master_revision_id = ? WHERE release_id = ? |] (revisionId, releaseId)
 
 
 --------------------------------------------------------------------------------
-releaseTree :: (Functor m, MonadIO m)
-  => Tree Release -> MusicBrainzT m (Ref (Tree Release))
-releaseTree release = findOrInsertReleaseData >>= findOrInsertReleaseTree
-  where
-    findOrInsertReleaseData :: (Functor m, MonadIO m) => MusicBrainzT m Int
-    findOrInsertReleaseData = selectValue $
-      query [sql| SELECT find_or_insert_release_data(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) |]
-        (treeData release)
+instance NewEntityRevision Release where
+  newEntityRevision revisionId releaseId releaseTreeId = void $
+    execute [sql| INSERT INTO release_revision (release_id, revision_id, release_tree_id)
+                  VALUES (?, ?, ?) |]
+      (releaseId, revisionId, releaseTreeId)
 
-    findOrInsertReleaseTree dataId = selectValue $
-      query [sql| SELECT find_or_insert_release_tree(?, ?) |]
-        (dataId, releaseReleaseGroup $ treeData release)
+
+--------------------------------------------------------------------------------
+instance MasterRevision Release where
+  setMasterRevision = GenericRevision.setMasterRevision "release"
+
+
+--------------------------------------------------------------------------------
+instance RealiseTree Release where
+  realiseTree release = findOrInsertReleaseData >>= findOrInsertReleaseTree
+    where
+      findOrInsertReleaseData :: (Functor m, MonadIO m) => MusicBrainzT m Int
+      findOrInsertReleaseData = selectValue $
+        query [sql| SELECT find_or_insert_release_data(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) |]
+          (treeData release)
+
+      findOrInsertReleaseTree dataId = selectValue $
+        query [sql| SELECT find_or_insert_release_tree(?, ?) |]
+          (dataId, releaseReleaseGroup $ treeData release)
 

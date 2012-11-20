@@ -56,6 +56,8 @@ Library
     MusicBrainz.Types
   other-modules:
     MusicBrainz.Data.Generic.Create
+    MusicBrainz.Data.Generic.Edit
+    MusicBrainz.Data.Generic.Revision
     MusicBrainz.Data.Relationship.Internal
     MusicBrainz.Data.Revision.Internal
     MusicBrainz.Monad

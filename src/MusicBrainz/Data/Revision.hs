@@ -4,7 +4,6 @@
 module MusicBrainz.Data.Revision
     ( mergeBase
     , revisionParents
-    , ViewRevision(..)
     ) where
 
 import Control.Applicative
@@ -41,13 +40,6 @@ mergeBase a b = selectValue $ query
         JOIN revision_path b USING (parent_revision_id)
         ORDER BY a.distance, b.distance
         LIMIT 1 |] (Only $ In [a, b])
-
-
---------------------------------------------------------------------------------
-{-| View a specific revision, along with the basic 'treeData'. -}
-class ViewRevision a where
-  viewRevision :: (Functor m, MonadIO m)
-    => Ref (Revision a) -> MusicBrainzT m (CoreEntity a)
 
 
 --------------------------------------------------------------------------------
