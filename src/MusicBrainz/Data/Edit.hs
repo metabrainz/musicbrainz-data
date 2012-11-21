@@ -23,6 +23,7 @@ import Database.PostgreSQL.Simple.SqlQQ (sql)
 import MusicBrainz
 import MusicBrainz.Data.Artist ()
 import MusicBrainz.Data.FindLatest (findLatest, FindLatest)
+import MusicBrainz.Data.Label ()
 import MusicBrainz.Data.Revision (mergeBase)
 import MusicBrainz.Data.Revision.Internal (addChild, newChildRevision)
 import MusicBrainz.Data.Tree (viewTree, ViewTree)
@@ -39,13 +40,16 @@ apply editId = do
   where
     getChanges = map toChange <$> query [sql|
       SELECT 'artist'::text, revision_id FROM edit_artist WHERE edit_id = ?
-    |] (Only editId)
+      UNION ALL
+      SELECT 'label'::text, revision_id FROM edit_label WHERE edit_id = ?
+    |] (editId, editId)
     mergeUpstream (Change r) = mergeRevisionUpstream r
 
     toChange :: (String, Int) -> Change
     toChange (kind, revisionId) =
       case kind of
         "artist" -> Change (RevisionRef revisionId :: Ref (Revision Artist))
+        "label" -> Change (RevisionRef revisionId :: Ref (Revision Label))
         _ -> error $ "Attempt to load an edit with revision of unknown kind '" ++ kind ++ "'"
 
     closeEdit = void $ execute

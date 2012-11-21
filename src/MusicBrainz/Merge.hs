@@ -84,6 +84,24 @@ instance Mergeable (Tree Artist) where
                <*> artistCountry `mergedVia` mergeEq
 
 
+instance Mergeable (Tree Label) where
+  merge =
+    LabelTree <$> labelData `mergedVia` mergeLabelData
+              <*> labelAliases `mergedVia` merge
+              <*> labelIpiCodes `mergedVia` merge
+              <*> labelAnnotation `mergedVia` mergeEq
+    where
+      mergeLabelData =
+        Label <$> labelName `mergedVia` mergeEq
+              <*> labelSortName `mergedVia` mergeEq
+              <*> labelComment `mergedVia` mergeEq
+              <*> labelBeginDate `mergedVia` mergeEq
+              <*> labelEndDate `mergedVia` mergeEq
+              <*> labelEnded `mergedVia` mergeEq
+              <*> labelType `mergedVia` mergeEq
+              <*> labelCode `mergedVia` mergeEq
+
+
 instance Ord a => Mergeable (Set.Set a) where
   merge = Merge $ Compose go
     where

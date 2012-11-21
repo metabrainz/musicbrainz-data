@@ -13,6 +13,7 @@ class TreeRelationships a where
   {-| A 'Lens' into all relationships for any 'Tree'. -}
   relationships :: SimpleLens (Tree a) (Set.Set LinkedRelationship)
 
+
 instance TreeRelationships Artist where
   relationships = lens getter setter
     where
