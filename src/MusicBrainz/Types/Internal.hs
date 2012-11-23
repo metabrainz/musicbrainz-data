@@ -73,7 +73,7 @@ module MusicBrainz.Types.Internal
       -- * Entity/reference handling
     , Entity(..)
     , Ref(..)
-    , refMbid
+    , RefMBID(..)
     ) where
 
 import Control.Lens
@@ -447,6 +447,9 @@ data Tree a where
 
   LabelTree :: {
     labelData :: Label
+  , labelAliases :: Set.Set Alias
+  , labelIpiCodes :: Set.Set IPI
+  , labelAnnotation :: Text
   } -> Tree Label
 
   RecordingTree :: {

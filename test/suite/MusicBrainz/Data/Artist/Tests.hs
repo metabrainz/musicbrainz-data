@@ -64,24 +64,7 @@ testCreateFindLatest = testCase "create >>= findLatest == create" $ mbTest $ do
 --------------------------------------------------------------------------------
 testUpdate :: Test
 testUpdate = testCase "update does change artist" $ mbTest $ do
-  editor <- entityRef <$> register acid2
-
-  created <- create editor freddie
-  let artistId = coreRef created
-
-  editId <- createEdit $
-    update editor (coreRevision created) expected
-
-  apply editId
-
-  found <- findLatest artistId
-  latestTree <- viewTree (coreRevision found)
-  liftIO $ latestTree @?= expected
-
-  parents <- revisionParents (coreRevision found)
-  liftIO $
-    coreRevision created `Set.member` parents @? "Is parented to starting revision"
-
+  ClassTests.testUpdate freddie expected
   where
     expected = freddie { artistData = (artistData freddie)
                            { artistName = "LAX is boring"

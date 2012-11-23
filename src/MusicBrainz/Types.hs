@@ -64,7 +64,7 @@ module MusicBrainz.Types
       -- * Entity/reference handling
     , Entity, entityRef, entityData
     , Ref
-    , refMbid
+    , RefMBID(..)
     ) where
 
 import MusicBrainz.Types.Internal

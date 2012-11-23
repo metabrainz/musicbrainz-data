@@ -9,17 +9,28 @@ module MusicBrainz.Data.Label
     ( ) where
 
 import Control.Applicative
-import Control.Monad
 import Control.Monad.IO.Class (MonadIO)
 import Database.PostgreSQL.Simple (Only(..))
 import Database.PostgreSQL.Simple.SqlQQ
 
 import MusicBrainz
+import MusicBrainz.Data.Alias
+import MusicBrainz.Data.Annotation
 import MusicBrainz.Data.Create
-import MusicBrainz.Data.Edit
 import MusicBrainz.Data.FindLatest
+import MusicBrainz.Data.IPI
+import MusicBrainz.Data.Merge
+import MusicBrainz.Data.Revision.Internal
+import MusicBrainz.Data.Tree
+import MusicBrainz.Data.Update
+import MusicBrainz.Edit
 
+import qualified MusicBrainz.Data.Generic.Alias as GenericAlias
+import qualified MusicBrainz.Data.Generic.Annotation as GenericAnnotation
 import qualified MusicBrainz.Data.Generic.Create as GenericCreate
+import qualified MusicBrainz.Data.Generic.Edit as GenericEdit
+import qualified MusicBrainz.Data.Generic.IPI as GenericIPI
+import qualified MusicBrainz.Data.Generic.Merge as GenericMerge
 import qualified MusicBrainz.Data.Generic.Revision as GenericRevision
 
 --------------------------------------------------------------------------------
@@ -50,10 +61,7 @@ instance Create Label where
 
 --------------------------------------------------------------------------------
 instance NewEntityRevision Label where
-  newEntityRevision revisionId labelId labelTreeId = void $
-    execute [sql| INSERT INTO label_revision (label_id, revision_id, label_tree_id)
-                  VALUES (?, ?, ?) |]
-      (labelId, revisionId, labelTreeId)
+  newEntityRevision = GenericRevision.newEntityRevision "label"
 
 
 --------------------------------------------------------------------------------
@@ -63,13 +71,87 @@ instance MasterRevision Label where
 
 --------------------------------------------------------------------------------
 instance RealiseTree Label where
-  realiseTree label = findOrInsertLabelData >>= findOrInsertLabelTree
+  realiseTree label = do
+    dataId <- insertLabelData (labelData label)
+    treeId <- insertLabelTree (labelAnnotation label) dataId
+    return treeId
     where
-      findOrInsertLabelData :: (Functor m, MonadIO m) => MusicBrainzT m Int
-      findOrInsertLabelData = selectValue $
+      insertLabelData :: (Functor m, MonadIO m) => Label -> MusicBrainzT m Int
+      insertLabelData data' = selectValue $
         query [sql| SELECT find_or_insert_label_data(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) |]
-          (treeData label)
+          data'
 
-      findOrInsertLabelTree dataId = selectValue $
-        query [sql| SELECT find_or_insert_label_tree(?) |]
-          (Only dataId)
+      insertLabelTree annotation dataId = selectValue $
+        query [sql| INSERT INTO label_tree (label_data_id, annotation)
+                    VALUES (?, ?)
+                    RETURNING label_tree_id  |]
+          (dataId, annotation)
+
+
+--------------------------------------------------------------------------------
+instance ViewRevision Label where
+  viewRevision revisionId = head <$> query q (Only revisionId)
+    where q = [sql|
+       SELECT label_id, revision_id,
+        name.name, sort_name.name, comment,
+        begin_date_year, begin_date_month, begin_date_day,
+        end_date_year, end_date_month, end_date_day,
+        ended, label_type_id, label_code
+      FROM label
+      JOIN label_revision USING (label_id)
+      JOIN label_tree USING (label_tree_id)
+      JOIN label_data USING (label_data_id)
+      JOIN label_name name ON (label_data.name = name.id)
+      JOIN label_name sort_name ON (label_data.sort_name = sort_name.id)
+      WHERE revision_id = ? |]
+
+
+--------------------------------------------------------------------------------
+instance ViewTree Label where
+  viewTree r = LabelTree <$> fmap coreData (viewRevision r)
+                         <*> viewAliases r
+                         <*> viewIpiCodes r
+                         <*> viewAnnotation r
+
+
+--------------------------------------------------------------------------------
+instance Editable Label where
+  linkRevisionToEdit = GenericEdit.linkRevisionToEdit "edit_label"
+
+
+--------------------------------------------------------------------------------
+instance ViewAliases Label where
+  viewAliases = GenericAlias.viewAliases "label"
+
+
+--------------------------------------------------------------------------------
+instance ViewAnnotation Label where
+  viewAnnotation = GenericAnnotation.viewAnnotation "label"
+
+
+--------------------------------------------------------------------------------
+instance ViewIPICodes Label where
+  viewIpiCodes = GenericIPI.viewIpiCodes "label"
+
+
+--------------------------------------------------------------------------------
+instance CloneRevision Label where
+  cloneRevision = GenericRevision.cloneRevision "label"
+
+
+--------------------------------------------------------------------------------
+instance Update Label where
+  update editor baseRev label = do
+    revisionId <- runUpdate label baseRev
+    return revisionId
+    where
+      runUpdate tree base = do
+        treeId <- realiseTree tree
+        revisionId <- newChildRevision editor base treeId
+        includeRevision revisionId
+        return revisionId
+
+
+--------------------------------------------------------------------------------
+instance Merge Label where
+  resolveMbid = GenericMerge.resolveMbid "label"

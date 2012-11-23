@@ -11,10 +11,9 @@ import Prelude hiding (mapM_)
 
 import Control.Applicative
 import Control.Lens hiding (by, query)
-import Control.Monad (void, when)
+import Control.Monad (when)
 import Control.Monad.IO.Class (MonadIO)
 import Data.Foldable (mapM_, forM_)
-import Data.Maybe (listToMaybe)
 import Database.PostgreSQL.Simple (Only(..), (:.)(..))
 import Database.PostgreSQL.Simple.SqlQQ
 
@@ -36,8 +35,12 @@ import MusicBrainz.Edit
 import MusicBrainz.Lens
 import MusicBrainz.Types.Internal
 
+import qualified MusicBrainz.Data.Generic.Alias as GenericAlias
+import qualified MusicBrainz.Data.Generic.Annotation as GenericAnnotation
 import qualified MusicBrainz.Data.Generic.Create as GenericCreate
 import qualified MusicBrainz.Data.Generic.Edit as GenericEdit
+import qualified MusicBrainz.Data.Generic.IPI as GenericIPI
+import qualified MusicBrainz.Data.Generic.Merge as GenericMerge
 import qualified MusicBrainz.Data.Generic.Revision as GenericRevision
 
 --------------------------------------------------------------------------------
@@ -66,38 +69,19 @@ instance ViewTree Artist where
 
 
 --------------------------------------------------------------------------------
-instance HasAliases Artist where
-  viewAliases r = Set.fromList <$> query
-    [sql| SELECT name.name, sort_name.name,
-            begin_date_year, begin_date_month, begin_date_day,
-            end_date_year, end_date_month, end_date_day,
-            ended, artist_alias_type_id, locale
-          FROM artist_alias
-          JOIN artist_name name ON (artist_alias.name = name.id)
-          JOIN artist_name sort_name ON (artist_alias.sort_name = sort_name.id)
-          JOIN artist_tree USING (artist_tree_id)
-          JOIN artist_revision USING (artist_tree_id)
-          WHERE revision_id = ? |] (Only r)
+instance ViewAliases Artist where
+  viewAliases = GenericAlias.viewAliases "artist"
 
 
 --------------------------------------------------------------------------------
-instance HasIPICodes Artist where
-  viewIpiCodes r = Set.fromList <$> query
-    [sql| SELECT ipi
-          FROM artist_ipi
-          JOIN artist_tree USING (artist_tree_id)
-          JOIN artist_revision USING (artist_tree_id)
-          WHERE revision_id = ? |] (Only r)
+instance ViewIPICodes Artist where
+  viewIpiCodes = GenericIPI.viewIpiCodes "artist"
 
 
 --------------------------------------------------------------------------------
 {-| View the annotation for a specific revision of an 'Artist'. -}
-instance HasAnnotation Artist where
-  viewAnnotation r = fromOnly . head <$> query
-    [sql| SELECT annotation
-          FROM artist_tree
-          JOIN artist_revision USING (artist_tree_id)
-          WHERE revision_id = ? |] (Only r)
+instance ViewAnnotation Artist where
+  viewAnnotation = GenericAnnotation.viewAnnotation "artist"
 
 
 --------------------------------------------------------------------------------
@@ -192,10 +176,7 @@ instance Update Artist where
 
 --------------------------------------------------------------------------------
 instance NewEntityRevision Artist where
-  newEntityRevision revisionId artistId artistTreeId = void $
-    execute [sql| INSERT INTO artist_revision (artist_id, revision_id, artist_tree_id)
-                  VALUES (?, ?, ?) |]
-    (artistId, revisionId, artistTreeId)
+  newEntityRevision = GenericRevision.newEntityRevision "artist"
 
 
 --------------------------------------------------------------------------------
@@ -245,53 +226,9 @@ instance RealiseTree Artist where
 
 --------------------------------------------------------------------------------
 instance Merge Artist where
-  resolveMbid entityMbid =
-    listToMaybe . map fromOnly <$> query
-      [sql|
-        WITH RECURSIVE path (revision_id, artist_id, child_revision_id, created_at, is_master_revision_id)
-        AS (
-          SELECT
-            artist_revision.revision_id,
-            artist_revision.artist_id,
-            revision_parent.revision_id AS child_revision_id,
-            created_at,
-            TRUE as is_master_revision_id
-          FROM artist_revision
-          JOIN artist USING (artist_id)
-          JOIN revision USING (revision_id)
-          LEFT JOIN revision_parent ON (revision_parent.parent_revision_id = revision.revision_id)
-          WHERE artist_id = ? AND master_revision_id = artist_revision.revision_id
-
-          UNION
-
-          SELECT
-            artist_revision.revision_id,
-            artist_revision.artist_id,
-            revision_parent.revision_id,
-            revision.created_at,
-            master_revision_id = artist_revision.revision_id AS is_master_revision_id
-          FROM path
-          JOIN artist_revision ON (path.child_revision_id = artist_revision.revision_id)
-          JOIN revision ON (revision.revision_id = artist_revision.revision_id)
-          JOIN artist ON (artist.artist_id = artist_revision.artist_id)
-          LEFT JOIN revision_parent ON (revision_parent.parent_revision_id = artist_revision.revision_id)
-        )
-        SELECT artist_id
-        FROM path
-        WHERE is_master_revision_id
-        ORDER BY created_at, revision_id DESC
-        LIMIT 1
-      |]
-        (Only entityMbid)
+  resolveMbid = GenericMerge.resolveMbid "artist"
 
 
 --------------------------------------------------------------------------------
 instance CloneRevision Artist where
-  cloneRevision a editor = do
-    revId <- newUnlinkedRevision editor
-    selectValue $
-      query [sql|
-        INSERT INTO artist_revision (artist_id, revision_id, artist_tree_id)
-        VALUES (?, ?, (SELECT artist_tree_id FROM artist_revision WHERE revision_id = ?))
-        RETURNING revision_id
-      |] (coreRef a, revId, coreRevision a)
+  cloneRevision = GenericRevision.cloneRevision "artist"

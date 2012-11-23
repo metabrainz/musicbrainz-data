@@ -4,10 +4,10 @@ module MusicBrainz.Data
     , ViewRevision(..)
 
       -- * Working with trees
+    , ViewAliases(..)
+    , ViewAnnotation(..)
+    , ViewIPICodes(..)
     , ViewTree(..)
-    , HasAliases(..)
-    , HasAnnotation(..)
-    , HasIPICodes(..)
 
       -- * Editing data
     , Create(..)
