@@ -5,7 +5,7 @@ module MusicBrainz.Data.Recording.Tests
 import Control.Applicative
 
 import Test.MusicBrainz
-import Test.MusicBrainz.Data (singleArtistAc)
+import Test.MusicBrainz.Data
 import Test.MusicBrainz.Repository (portishead, acid2)
 
 import MusicBrainz
@@ -21,7 +21,7 @@ testCreateFindLatest = testCase "findLatest when recording exists" $ mbTest $ do
   editor <- entityRef <$> register acid2
   ac <- singleArtistAc editor portishead
 
-  created <- create editor (RecordingTree $ expected ac)
+  created <- create editor $ minimalTree (expected ac)
   found <- findLatest (coreRef created)
 
   liftIO $ found @?= created

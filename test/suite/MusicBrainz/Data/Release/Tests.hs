@@ -4,7 +4,7 @@ module MusicBrainz.Data.Release.Tests
 
 import Control.Applicative
 import Test.MusicBrainz
-import Test.MusicBrainz.Data (singleArtistAc)
+import Test.MusicBrainz.Data
 import Test.MusicBrainz.Repository (portishead, dummy, uk, acid2)
 
 import MusicBrainz
@@ -25,7 +25,7 @@ testCreateFindLatest :: Test
 testCreateFindLatest = testCase "findLatest when release exists" $ mbTest $ do
   editor <- entityRef <$> register acid2
   portisheadAc <- singleArtistAc editor portishead
-  portisheadRg <- create editor (ReleaseGroupTree $ dummy portisheadAc)
+  portisheadRg <- create editor (minimalTree (dummy portisheadAc))
   country <- Country.addCountry uk
   script <- Script.addScript Script { scriptName = "United Kingdom"
                                     , scriptIsoCode = "gb"
@@ -43,7 +43,7 @@ testCreateFindLatest = testCase "findLatest when release exists" $ mbTest $ do
   status <- ReleaseStatus.addReleaseStatus ReleaseStatus
     { releaseStatusName = "Official" }
 
-  created <- create editor $ ReleaseTree $
+  created <- create editor $ minimalTree $
     expected (coreRef portisheadRg) portisheadAc
       (entityRef country) (entityRef script) (entityRef language)
       (entityRef packaging) (entityRef status)

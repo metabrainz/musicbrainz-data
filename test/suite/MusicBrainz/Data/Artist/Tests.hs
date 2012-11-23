@@ -6,6 +6,7 @@ import Control.Applicative
 import qualified Data.Set as Set
 
 import Test.MusicBrainz
+import Test.MusicBrainz.Data
 import Test.MusicBrainz.Repository (uk, acid2, male, person, portishead)
 
 import MusicBrainz
@@ -80,7 +81,7 @@ testRelationships = testCase "Relationships are bidirectional over addition and 
   rel <- expectedRel
 
   a <- create editor freddie
-  b <- create editor (ArtistTree portishead Set.empty Set.empty Set.empty "")
+  b <- create editor (minimalTree portishead)
 
   edit1 <- createEdit $
     update editor (coreRevision a) freddie { artistRelationships = Set.singleton $ ArtistRelationship (coreRef b) rel }
@@ -95,7 +96,7 @@ testRelationships = testCase "Relationships are bidirectional over addition and 
 
   edit2 <- createEdit $
     update editor (coreRevision $ changedB)
-      (ArtistTree portishead Set.empty Set.empty Set.empty "")
+      (minimalTree portishead)
 
   apply edit2
 
@@ -185,7 +186,7 @@ testMerge = testCase "Can merge 2 distinct artists" $ mbTest $ do
   editor <- entityRef <$> register acid2
 
   a <- create editor freddie
-  b <- create editor (ArtistTree portishead Set.empty Set.empty Set.empty "")
+  b <- create editor (minimalTree portishead)
 
   edit <- createEdit $
     merge editor (coreRevision a) (coreRef b)

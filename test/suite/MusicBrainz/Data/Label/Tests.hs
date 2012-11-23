@@ -1,9 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 module MusicBrainz.Data.Label.Tests ( tests ) where
 
-import qualified Data.Set as Set
-
 import Test.MusicBrainz
+import Test.MusicBrainz.Data
 
 import MusicBrainz
 
@@ -64,13 +63,13 @@ testMerge = testCase "can merge two labels" $ mbTest $ do
 
 --------------------------------------------------------------------------------
 revolutionRecords :: Tree Label
-revolutionRecords = LabelTree ldat Set.empty Set.empty ""
-  where ldat = Label { labelName = "Revolution Records"
-                     , labelSortName = "Records, Revolution"
-                     , labelComment = ""
-                     , labelBeginDate = emptyDate
-                     , labelEndDate = emptyDate
-                     , labelEnded = False
-                     , labelType = Nothing
-                     , labelCode = Nothing
-                     }
+revolutionRecords = minimalTree $
+  Label { labelName = "Revolution Records"
+        , labelSortName = "Records, Revolution"
+        , labelComment = ""
+        , labelBeginDate = emptyDate
+        , labelEndDate = emptyDate
+        , labelEnded = False
+        , labelType = Nothing
+        , labelCode = Nothing
+        }

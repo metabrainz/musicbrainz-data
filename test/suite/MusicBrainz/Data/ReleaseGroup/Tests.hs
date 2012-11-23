@@ -21,6 +21,6 @@ testFindLatest = testCase "findLatest when release group exists" $ mbTest $ do
   editor <- entityRef <$> register acid2
   ac <- singleArtistAc editor portishead
 
-  created <- create editor (ReleaseGroupTree $ dummy ac)
+  created <- create editor $ minimalTree (dummy ac)
   found <- findLatest (coreRef created)
   liftIO $ found @?= created
