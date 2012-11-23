@@ -1,7 +1,12 @@
 module MusicBrainz.Data.ClassTests
-    ( testCreateFindLatest, testMerge, testUpdate ) where
+    ( testAliases
+    , testCreateFindLatest
+    , testMerge
+    , testUpdate
+    ) where
 
 import Control.Applicative
+import Control.Lens
 
 import qualified Data.Set as Set
 
@@ -9,6 +14,7 @@ import Test.MusicBrainz
 import Test.MusicBrainz.Repository (acid2)
 
 import MusicBrainz
+import MusicBrainz.Lens
 import MusicBrainz.Data
 import MusicBrainz.Data.Edit
 import MusicBrainz.Data.Editor (register)
@@ -62,3 +68,22 @@ testMerge treeA treeB = do
 
   aResolved <- resolveMbid (refMbid $ coreRef a)
   liftIO $ aResolved @?= Just (coreRef b)
+
+
+--------------------------------------------------------------------------------
+testAliases :: (Create a, FindLatest a, TreeAliases a, Update a, ViewAliases a) => Tree a -> Alias -> MusicBrainzT IO ()
+testAliases tree alias = do
+  editor <- entityRef <$> register acid2
+
+  artist <- create editor (aliases .~ Set.singleton alias $ tree)
+  aliasesPreUpdate <- viewAliases (coreRevision artist)
+  liftIO $ aliasesPreUpdate @?= Set.singleton alias
+
+  edit <- createEdit $
+    update editor (coreRevision artist) tree
+
+  apply edit
+
+  latest <- findLatest (coreRef artist)
+  aliasesPostUpdate <- viewAliases (coreRevision latest)
+  liftIO $ aliasesPostUpdate @?= Set.empty

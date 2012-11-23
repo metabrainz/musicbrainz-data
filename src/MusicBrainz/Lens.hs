@@ -19,3 +19,23 @@ instance TreeRelationships Artist where
     where
       getter = artistRelationships
       setter tree new = tree { artistRelationships = new }
+
+
+--------------------------------------------------------------------------------
+{-| Provide a single lens to view all aliases inside a 'Tree'. -}
+class TreeAliases a where
+  {-| A 'Lens' into all relationships for any 'Tree'. -}
+  aliases :: SimpleLens (Tree a) (Set.Set Alias)
+
+
+instance TreeAliases Artist where
+  aliases = lens getter setter
+    where
+      getter = artistAliases
+      setter tree new = tree { artistAliases = new }
+
+instance TreeAliases Label where
+  aliases = lens getter setter
+    where
+      getter = labelAliases
+      setter tree new = tree { labelAliases = new }

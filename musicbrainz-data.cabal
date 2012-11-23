@@ -51,6 +51,7 @@ Library
     MusicBrainz.Data.Tree
     MusicBrainz.Data.Update
     MusicBrainz.Edit
+    MusicBrainz.Lens
     MusicBrainz.Merge
     MusicBrainz.Schema
     MusicBrainz.Types

@@ -179,15 +179,7 @@ instance RealiseTree Artist where
 
     mapM_ (addRelationship treeId) $ artistRelationships artist
 
-    forM_ (Set.toList $ artistAliases artist) $ \alias -> do
-      execute [sql|
-        INSERT INTO artist_alias (artist_tree_id, name, sort_name,
-          begin_date_year, begin_date_month, begin_date_day,
-          end_date_year, end_date_month, end_date_day,
-          ended, artist_alias_type_id, locale)
-        VALUES (?, (SELECT find_or_insert_artist_name(?)),
-          (SELECT find_or_insert_artist_name(?)), ?, ?, ?, ?, ?, ?, ?, ?, ?) |]
-        (Only treeId :. alias)
+    Generic.realiseAliases "artist" treeId artist
 
     executeMany [sql| INSERT INTO artist_ipi (artist_tree_id, ipi) VALUES (?, ?) |]
       $ map (Only treeId :.) (Set.toList $ artistIpiCodes artist)

@@ -11,10 +11,26 @@ import qualified MusicBrainz.Data.ClassTests as ClassTests
 
 --------------------------------------------------------------------------------
 tests :: [Test]
-tests = [ testCreateFindLatest
+tests = [ testAliases
+        , testCreateFindLatest
         , testMerge
         , testUpdate
         ]
+
+
+--------------------------------------------------------------------------------
+testAliases :: Test
+testAliases = testCase "Can add and remove aliases" $ mbTest $ do
+  ClassTests.testAliases revolutionRecords alias
+  where
+    alias = Alias { aliasName = "Rev Recs"
+                  , aliasSortName = "Recs Rev"
+                  , aliasBeginDate = emptyDate
+                  , aliasEndDate = emptyDate
+                  , aliasEnded = False
+                  , aliasType = Nothing
+                  , aliasLocale = Nothing
+                  }
 
 
 --------------------------------------------------------------------------------

@@ -123,21 +123,7 @@ testRelationships = testCase "Relationships are bidirectional over addition and 
 --------------------------------------------------------------------------------
 testAliases :: Test
 testAliases = testCase "Can add and remove aliases" $ mbTest $ do
-  editor <- entityRef <$> register acid2
-
-  artist <- create editor freddie { artistAliases = Set.singleton alias }
-  aliasesPreUpdate <- viewAliases (coreRevision artist)
-  liftIO $ aliasesPreUpdate @?= Set.singleton alias
-
-  edit <- createEdit $
-    update editor (coreRevision artist) freddie
-
-  apply edit
-
-  latest <- findLatest (coreRef artist)
-  aliasesPostUpdate <- viewAliases (coreRevision latest)
-  liftIO $ aliasesPostUpdate @?= Set.empty
-
+  ClassTests.testAliases freddie alias
   where
     alias = Alias { aliasName = "Freddie"
                   , aliasSortName = "eidderF"

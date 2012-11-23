@@ -10,22 +10,26 @@ module MusicBrainz.Data.Generic
     , MusicBrainz.Data.Generic.newEntityRevision
     , resolveMbid
     , MusicBrainz.Data.Generic.setMasterRevision
+    , realiseAliases
     ) where
 
 import Control.Applicative
+import Control.Lens hiding (query)
 import Control.Monad (void)
 import Control.Monad.IO.Class
 import Data.Maybe (listToMaybe)
 import Data.String (fromString)
 import Data.Text (Text)
+import Data.Foldable (forM_)
 import Data.Typeable (Typeable)
-import Database.PostgreSQL.Simple (Only(..))
+import Database.PostgreSQL.Simple (Only(..), (:.)(..))
 import Database.PostgreSQL.Simple.FromField (FromField)
 import Database.PostgreSQL.Simple.ToField (ToField)
 
 import qualified Data.Set as Set
 
 import MusicBrainz
+import MusicBrainz.Lens
 import MusicBrainz.Data.Revision.Internal
 import MusicBrainz.Edit
 import MusicBrainz.Types.Internal
@@ -186,3 +190,17 @@ newEntityRevision entityName revisionId entityId entityTreeId = void $
         [ "INSERT INTO " ++ entityName ++ "_revision (" ++ entityName ++ "_id, revision_id, " ++ entityName ++ "_tree_id) "
         , "VALUES (?, ?, ?)"
         ]
+
+
+--------------------------------------------------------------------------------
+realiseAliases :: (Functor m, MonadIO m, TreeAliases a) => String -> Ref (Tree a) -> Tree a -> MusicBrainzT m ()
+realiseAliases eName treeId tree = forM_ (Set.toList $ tree^.aliases) $ \alias -> do
+  execute q (Only treeId :. alias)
+  where q = fromString $ unlines
+          [ "INSERT INTO " ++ eName ++ "_alias (" ++ eName ++ "_tree_id, name, sort_name, "
+          , "begin_date_year, begin_date_month, begin_date_day, "
+          , "end_date_year, end_date_month, end_date_day, "
+          , "ended, " ++ eName ++ "_alias_type_id, locale) "
+          , "VALUES (?, (SELECT find_or_insert_" ++ eName ++ "_name(?)), "
+          , "(SELECT find_or_insert_" ++ eName ++ "_name(?)), ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+          ]

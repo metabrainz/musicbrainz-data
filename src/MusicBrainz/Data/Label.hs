@@ -66,6 +66,7 @@ instance RealiseTree Label where
   realiseTree label = do
     dataId <- insertLabelData (labelData label)
     treeId <- insertLabelTree (labelAnnotation label) dataId
+    Generic.realiseAliases "label" treeId label
     return treeId
     where
       insertLabelData :: (Functor m, MonadIO m) => Label -> MusicBrainzT m Int
