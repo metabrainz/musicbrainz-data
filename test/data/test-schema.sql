@@ -285,34 +285,6 @@ $$;
 ALTER FUNCTION musicbrainz.find_or_insert_artist_name(in_name text) OWNER TO musicbrainz;
 
 --
--- Name: find_or_insert_artist_tree(integer); Type: FUNCTION; Schema: musicbrainz; Owner: musicbrainz
---
-
-CREATE FUNCTION find_or_insert_artist_tree(in_data_id integer) RETURNS integer
-    LANGUAGE plpgsql
-    AS $$
-  DECLARE
-    found_id INT;
-  BEGIN
-    SELECT artist_tree_id INTO found_id
-    FROM artist_tree WHERE artist_data_id = in_data_id;
-
-    IF FOUND
-    THEN
-      RETURN found_id;
-    ELSE
-      INSERT INTO artist_tree (artist_data_id)
-      VALUES (in_data_id)
-      RETURNING artist_tree_id INTO found_id;
-      RETURN found_id;
-    END IF;
-  END;
-$$;
-
-
-ALTER FUNCTION musicbrainz.find_or_insert_artist_tree(in_data_id integer) OWNER TO musicbrainz;
-
---
 -- Name: find_or_insert_label_data(text, text, text, integer, integer, integer, integer, integer, integer, boolean, integer, integer); Type: FUNCTION; Schema: musicbrainz; Owner: musicbrainz
 --
 
@@ -387,34 +359,6 @@ $$;
 
 
 ALTER FUNCTION musicbrainz.find_or_insert_label_name(in_name text) OWNER TO musicbrainz;
-
---
--- Name: find_or_insert_label_tree(integer); Type: FUNCTION; Schema: musicbrainz; Owner: musicbrainz
---
-
-CREATE FUNCTION find_or_insert_label_tree(in_data_id integer) RETURNS integer
-    LANGUAGE plpgsql
-    AS $$
-  DECLARE
-    found_id INT;
-  BEGIN
-    SELECT label_tree_id INTO found_id
-    FROM label_tree WHERE label_data_id = in_data_id;
-
-    IF FOUND
-    THEN
-      RETURN found_id;
-    ELSE
-      INSERT INTO label_tree (label_data_id)
-      VALUES (in_data_id)
-      RETURNING label_tree_id INTO found_id;
-      RETURN found_id;
-    END IF;
-  END;
-$$;
-
-
-ALTER FUNCTION musicbrainz.find_or_insert_label_tree(in_data_id integer) OWNER TO musicbrainz;
 
 --
 -- Name: find_or_insert_recording_data(text, text, integer, integer); Type: FUNCTION; Schema: musicbrainz; Owner: musicbrainz
@@ -1242,6 +1186,18 @@ ALTER SEQUENCE edit_edit_id_seq OWNED BY edit.edit_id;
 
 
 --
+-- Name: edit_label; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE edit_label (
+    edit_id integer NOT NULL,
+    revision_id integer NOT NULL
+);
+
+
+ALTER TABLE musicbrainz.edit_label OWNER TO musicbrainz;
+
+--
 -- Name: edit_note; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
 --
 
@@ -1459,9 +1415,14 @@ CREATE TABLE label_alias (
     sort_name integer NOT NULL,
     locale locale,
     label_alias_type_id integer,
-    begin_date partial_date,
-    end_date partial_date,
-    primary_for_locale boolean DEFAULT false NOT NULL
+    begin_date_year smallint,
+    begin_date_month smallint,
+    begin_date_day smallint,
+    end_date_year smallint,
+    end_date_month smallint,
+    end_date_day smallint,
+    primary_for_locale boolean DEFAULT false NOT NULL,
+    ended boolean DEFAULT false NOT NULL
 );
 
 
@@ -5186,6 +5147,22 @@ ALTER TABLE ONLY edit_artist
 
 ALTER TABLE ONLY edit_artist
     ADD CONSTRAINT edit_artist_revision_id_fkey FOREIGN KEY (revision_id) REFERENCES artist_revision(revision_id);
+
+
+--
+-- Name: edit_label_edit_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY edit_label
+    ADD CONSTRAINT edit_label_edit_id_fkey FOREIGN KEY (edit_id) REFERENCES edit(edit_id);
+
+
+--
+-- Name: edit_label_revision_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY edit_label
+    ADD CONSTRAINT edit_label_revision_id_fkey FOREIGN KEY (revision_id) REFERENCES label_revision(revision_id);
 
 
 --
