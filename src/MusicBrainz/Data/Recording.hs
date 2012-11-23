@@ -19,8 +19,7 @@ import MusicBrainz.Data.Create
 import MusicBrainz.Data.FindLatest
 import MusicBrainz.Edit
 
-import qualified MusicBrainz.Data.Generic.Create as GenericCreate
-import qualified MusicBrainz.Data.Generic.Revision as GenericRevision
+import qualified MusicBrainz.Data.Generic as Generic
 
 --------------------------------------------------------------------------------
 instance FindLatest Recording where
@@ -39,9 +38,7 @@ instance FindLatest Recording where
 
 --------------------------------------------------------------------------------
 instance Create Recording where
-  create = GenericCreate.create GenericCreate.Specification
-      { GenericCreate.reserveEntity = GenericCreate.reserveEntityTable "recording"
-      }
+  create = Generic.create "recording"
 
 
 --------------------------------------------------------------------------------
@@ -54,7 +51,7 @@ instance NewEntityRevision Recording where
 
 --------------------------------------------------------------------------------
 instance MasterRevision Recording where
-  setMasterRevision = GenericRevision.setMasterRevision "recording"
+  setMasterRevision = Generic.setMasterRevision "recording"
 
 
 --------------------------------------------------------------------------------

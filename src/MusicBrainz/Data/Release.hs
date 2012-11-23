@@ -19,8 +19,7 @@ import MusicBrainz.Data.Create
 import MusicBrainz.Data.FindLatest
 import MusicBrainz.Edit
 
-import qualified MusicBrainz.Data.Generic.Create as GenericCreate
-import qualified MusicBrainz.Data.Generic.Revision as GenericRevision
+import qualified MusicBrainz.Data.Generic as Generic
 
 instance FindLatest Release where
   findLatest releaseId = head <$> query q (Only releaseId)
@@ -39,9 +38,7 @@ instance FindLatest Release where
 
 --------------------------------------------------------------------------------
 instance Create Release where
-  create = GenericCreate.create GenericCreate.Specification
-      { GenericCreate.reserveEntity = GenericCreate.reserveEntityTable "release"
-      }
+  create = Generic.create "release"
 
 
 --------------------------------------------------------------------------------
@@ -54,7 +51,7 @@ instance NewEntityRevision Release where
 
 --------------------------------------------------------------------------------
 instance MasterRevision Release where
-  setMasterRevision = GenericRevision.setMasterRevision "release"
+  setMasterRevision = Generic.setMasterRevision "release"
 
 
 --------------------------------------------------------------------------------

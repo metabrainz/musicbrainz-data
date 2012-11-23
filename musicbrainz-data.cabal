@@ -55,13 +55,7 @@ Library
     MusicBrainz.Schema
     MusicBrainz.Types
   other-modules:
-    MusicBrainz.Data.Generic.Alias
-    MusicBrainz.Data.Generic.Annotation
-    MusicBrainz.Data.Generic.Create
-    MusicBrainz.Data.Generic.Edit
-    MusicBrainz.Data.Generic.IPI
-    MusicBrainz.Data.Generic.Merge
-    MusicBrainz.Data.Generic.Revision
+    MusicBrainz.Data.Generic
     MusicBrainz.Data.Relationship.Internal
     MusicBrainz.Data.Revision.Internal
     MusicBrainz.Monad

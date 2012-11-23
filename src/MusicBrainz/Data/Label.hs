@@ -25,13 +25,7 @@ import MusicBrainz.Data.Tree
 import MusicBrainz.Data.Update
 import MusicBrainz.Edit
 
-import qualified MusicBrainz.Data.Generic.Alias as GenericAlias
-import qualified MusicBrainz.Data.Generic.Annotation as GenericAnnotation
-import qualified MusicBrainz.Data.Generic.Create as GenericCreate
-import qualified MusicBrainz.Data.Generic.Edit as GenericEdit
-import qualified MusicBrainz.Data.Generic.IPI as GenericIPI
-import qualified MusicBrainz.Data.Generic.Merge as GenericMerge
-import qualified MusicBrainz.Data.Generic.Revision as GenericRevision
+import qualified MusicBrainz.Data.Generic as Generic
 
 --------------------------------------------------------------------------------
 instance FindLatest Label where
@@ -54,19 +48,17 @@ instance FindLatest Label where
 
 --------------------------------------------------------------------------------
 instance Create Label where
-  create = GenericCreate.create GenericCreate.Specification
-      { GenericCreate.reserveEntity = GenericCreate.reserveEntityTable "label"
-      }
+  create = Generic.create "label"
 
 
 --------------------------------------------------------------------------------
 instance NewEntityRevision Label where
-  newEntityRevision = GenericRevision.newEntityRevision "label"
+  newEntityRevision = Generic.newEntityRevision "label"
 
 
 --------------------------------------------------------------------------------
 instance MasterRevision Label where
-  setMasterRevision = GenericRevision.setMasterRevision "label"
+  setMasterRevision = Generic.setMasterRevision "label"
 
 
 --------------------------------------------------------------------------------
@@ -116,27 +108,27 @@ instance ViewTree Label where
 
 --------------------------------------------------------------------------------
 instance Editable Label where
-  linkRevisionToEdit = GenericEdit.linkRevisionToEdit "edit_label"
+  linkRevisionToEdit = Generic.linkRevisionToEdit "edit_label"
 
 
 --------------------------------------------------------------------------------
 instance ViewAliases Label where
-  viewAliases = GenericAlias.viewAliases "label"
+  viewAliases = Generic.viewAliases "label"
 
 
 --------------------------------------------------------------------------------
 instance ViewAnnotation Label where
-  viewAnnotation = GenericAnnotation.viewAnnotation "label"
+  viewAnnotation = Generic.viewAnnotation "label"
 
 
 --------------------------------------------------------------------------------
 instance ViewIPICodes Label where
-  viewIpiCodes = GenericIPI.viewIpiCodes "label"
+  viewIpiCodes = Generic.viewIpiCodes "label"
 
 
 --------------------------------------------------------------------------------
 instance CloneRevision Label where
-  cloneRevision = GenericRevision.cloneRevision "label"
+  cloneRevision = Generic.cloneRevision "label"
 
 
 --------------------------------------------------------------------------------
@@ -154,4 +146,4 @@ instance Update Label where
 
 --------------------------------------------------------------------------------
 instance Merge Label where
-  resolveMbid = GenericMerge.resolveMbid "label"
+  resolveMbid = Generic.resolveMbid "label"

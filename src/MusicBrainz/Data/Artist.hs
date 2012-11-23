@@ -35,13 +35,7 @@ import MusicBrainz.Edit
 import MusicBrainz.Lens
 import MusicBrainz.Types.Internal
 
-import qualified MusicBrainz.Data.Generic.Alias as GenericAlias
-import qualified MusicBrainz.Data.Generic.Annotation as GenericAnnotation
-import qualified MusicBrainz.Data.Generic.Create as GenericCreate
-import qualified MusicBrainz.Data.Generic.Edit as GenericEdit
-import qualified MusicBrainz.Data.Generic.IPI as GenericIPI
-import qualified MusicBrainz.Data.Generic.Merge as GenericMerge
-import qualified MusicBrainz.Data.Generic.Revision as GenericRevision
+import qualified MusicBrainz.Data.Generic as Generic
 
 --------------------------------------------------------------------------------
 instance HoldsRelationships Artist where
@@ -70,28 +64,28 @@ instance ViewTree Artist where
 
 --------------------------------------------------------------------------------
 instance ViewAliases Artist where
-  viewAliases = GenericAlias.viewAliases "artist"
+  viewAliases = Generic.viewAliases "artist"
 
 
 --------------------------------------------------------------------------------
 instance ViewIPICodes Artist where
-  viewIpiCodes = GenericIPI.viewIpiCodes "artist"
+  viewIpiCodes = Generic.viewIpiCodes "artist"
 
 
 --------------------------------------------------------------------------------
 {-| View the annotation for a specific revision of an 'Artist'. -}
 instance ViewAnnotation Artist where
-  viewAnnotation = GenericAnnotation.viewAnnotation "artist"
+  viewAnnotation = Generic.viewAnnotation "artist"
 
 
 --------------------------------------------------------------------------------
 instance Editable Artist where
-  linkRevisionToEdit = GenericEdit.linkRevisionToEdit "edit_artist"
+  linkRevisionToEdit = Generic.linkRevisionToEdit "edit_artist"
 
 
 --------------------------------------------------------------------------------
 instance MasterRevision Artist where
-  setMasterRevision = GenericRevision.setMasterRevision "artist"
+  setMasterRevision = Generic.setMasterRevision "artist"
 
 
 --------------------------------------------------------------------------------
@@ -133,9 +127,7 @@ instance ViewRevision Artist where
 
 --------------------------------------------------------------------------------
 instance Create Artist where
-  create = GenericCreate.create GenericCreate.Specification
-      { GenericCreate.reserveEntity = GenericCreate.reserveEntityTable "artist"
-      }
+  create = Generic.create "artist"
 
 
 --------------------------------------------------------------------------------
@@ -176,7 +168,7 @@ instance Update Artist where
 
 --------------------------------------------------------------------------------
 instance NewEntityRevision Artist where
-  newEntityRevision = GenericRevision.newEntityRevision "artist"
+  newEntityRevision = Generic.newEntityRevision "artist"
 
 
 --------------------------------------------------------------------------------
@@ -226,9 +218,9 @@ instance RealiseTree Artist where
 
 --------------------------------------------------------------------------------
 instance Merge Artist where
-  resolveMbid = GenericMerge.resolveMbid "artist"
+  resolveMbid = Generic.resolveMbid "artist"
 
 
 --------------------------------------------------------------------------------
 instance CloneRevision Artist where
-  cloneRevision = GenericRevision.cloneRevision "artist"
+  cloneRevision = Generic.cloneRevision "artist"
