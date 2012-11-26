@@ -4,6 +4,7 @@
 module MusicBrainz.Data.Country ( addCountry ) where
 
 import Control.Applicative
+import Data.Maybe (listToMaybe)
 import Database.PostgreSQL.Simple (Only(..))
 import Database.PostgreSQL.Simple.SqlQQ (sql)
 
@@ -20,5 +21,5 @@ addCountry country = head <$>
 
 --------------------------------------------------------------------------------
 instance ResolveReference Country where
-  resolveReference countryId = selectValue $
+  resolveReference countryId = listToMaybe . map fromOnly <$>
     query [sql| SELECT id FROM country WHERE id = ? |] (Only countryId)

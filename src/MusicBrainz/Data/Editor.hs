@@ -36,5 +36,5 @@ register editor = head <$> query
 
 --------------------------------------------------------------------------------
 instance ResolveReference Editor where
-  resolveReference editorId = selectValue $
+  resolveReference editorId = listToMaybe . map fromOnly <$>
     query [sql| SELECT editor_id FROM editor WHERE editor_id = ? |] (Only editorId)

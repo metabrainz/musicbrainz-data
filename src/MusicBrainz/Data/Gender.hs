@@ -4,6 +4,7 @@
 module MusicBrainz.Data.Gender ( addGender ) where
 
 import Control.Applicative
+import Data.Maybe (listToMaybe)
 import Database.PostgreSQL.Simple (Only(..))
 import Database.PostgreSQL.Simple.SqlQQ (sql)
 
@@ -20,5 +21,5 @@ addGender gender = head <$>
 
 --------------------------------------------------------------------------------
 instance ResolveReference Gender where
-  resolveReference genderId = selectValue $
+  resolveReference genderId = listToMaybe . map fromOnly <$>
     query [sql| SELECT id FROM gender WHERE id = ? |] (Only genderId)

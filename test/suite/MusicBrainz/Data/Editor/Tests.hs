@@ -8,7 +8,9 @@ import MusicBrainz.Data.Editor
 import Test.MusicBrainz
 
 tests :: [Test]
-tests = [ testRegister ]
+tests = [ testRegister
+        , testResolveUnknown
+        ]
 
 testRegister :: Test
 testRegister = testCase "Register and lookup an editor" $ mbTest $ do
@@ -16,3 +18,9 @@ testRegister = testCase "Register and lookup an editor" $ mbTest $ do
 
   Just editorRef <- resolveReference (dereference $ entityRef registered)
   liftIO $ editorRef @?= entityRef registered
+
+
+testResolveUnknown :: Test
+testResolveUnknown = testCase "Resolve a reference that doesn't exist" $ mbTest $ do
+  ref <- resolveReference (-1)
+  liftIO $ (ref:: Maybe (Ref Editor)) @?= Nothing

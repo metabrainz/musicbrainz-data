@@ -4,6 +4,7 @@
 module MusicBrainz.Data.ArtistType ( addArtistType ) where
 
 import Control.Applicative
+import Data.Maybe (listToMaybe)
 import Database.PostgreSQL.Simple (Only(..))
 import Database.PostgreSQL.Simple.SqlQQ (sql)
 
@@ -20,5 +21,5 @@ addArtistType artistType = head <$>
 
 --------------------------------------------------------------------------------
 instance ResolveReference ArtistType where
-  resolveReference artistTypeId = selectValue $
+  resolveReference artistTypeId = listToMaybe . map fromOnly <$>
     query [sql| SELECT id FROM artist_type WHERE id = ? |] (Only artistTypeId)
