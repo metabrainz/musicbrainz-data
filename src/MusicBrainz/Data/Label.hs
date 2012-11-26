@@ -146,5 +146,9 @@ instance Update Label where
 
 
 --------------------------------------------------------------------------------
-instance Merge Label where
-  resolveMbid = Generic.resolveMbid "label"
+instance ResolveReference Label where
+  resolveReference = Generic.resolveMbid "label"
+
+
+--------------------------------------------------------------------------------
+instance Merge Label

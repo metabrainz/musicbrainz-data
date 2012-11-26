@@ -209,10 +209,14 @@ instance RealiseTree Artist where
 
 
 --------------------------------------------------------------------------------
-instance Merge Artist where
-  resolveMbid = Generic.resolveMbid "artist"
+instance ResolveReference Artist where
+  resolveReference = Generic.resolveMbid "artist"
 
 
 --------------------------------------------------------------------------------
 instance CloneRevision Artist where
   cloneRevision = Generic.cloneRevision "artist"
+
+
+--------------------------------------------------------------------------------
+instance Merge Artist

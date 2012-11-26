@@ -1,6 +1,7 @@
 module MusicBrainz.Data
-    ( -- * Fetching core entities
+    ( -- * Fetching entities
       FindLatest(..)
+    , ResolveReference(..)
     , ViewRevision(..)
 
       -- * Working with trees
@@ -11,7 +12,7 @@ module MusicBrainz.Data
 
       -- * Editing data
     , Create(..)
-    , Merge(..)
+    , Merge
     , merge
     , Update(..)
 
@@ -20,10 +21,15 @@ module MusicBrainz.Data
    ) where
 
 import MusicBrainz.Data.Artist ()
+import MusicBrainz.Data.ArtistType ()
+import MusicBrainz.Data.Country ()
+import MusicBrainz.Data.Editor ()
+import MusicBrainz.Data.Gender ()
 import MusicBrainz.Data.Label ()
 import MusicBrainz.Data.Recording ()
 import MusicBrainz.Data.Release ()
 import MusicBrainz.Data.ReleaseGroup ()
+import MusicBrainz.Data.ReleaseGroupType ()
 
 import MusicBrainz.Data.Alias
 import MusicBrainz.Data.Annotation

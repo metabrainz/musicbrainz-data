@@ -14,7 +14,9 @@ import Data.Maybe (listToMaybe)
 import Data.Text (Text)
 import Database.PostgreSQL.Simple hiding (query)
 import Database.PostgreSQL.Simple.SqlQQ
+
 import MusicBrainz
+import MusicBrainz.Data.FindLatest
 
 --------------------------------------------------------------------------------
 {-| Look up an editor by their name. -}
@@ -30,3 +32,9 @@ register :: Editor -> MusicBrainz (Entity Editor)
 register editor = head <$> query
   [sql| INSERT INTO editor (name) VALUES (?)
         RETURNING editor_id, name |] editor
+
+
+--------------------------------------------------------------------------------
+instance ResolveReference Editor where
+  resolveReference editorId = selectValue $
+    query [sql| SELECT id FROM editor WHERE id = ? |] (Only editorId)

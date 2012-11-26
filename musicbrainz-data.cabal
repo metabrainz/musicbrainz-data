@@ -44,6 +44,7 @@ Library
     MusicBrainz.Data.Relationship
     MusicBrainz.Data.Release
     MusicBrainz.Data.ReleaseGroup
+    MusicBrainz.Data.ReleaseGroupType
     MusicBrainz.Data.ReleasePackaging
     MusicBrainz.Data.ReleaseStatus
     MusicBrainz.Data.Revision
