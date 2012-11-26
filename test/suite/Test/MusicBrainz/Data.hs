@@ -35,10 +35,10 @@ instance MinimalTree Label where
   minimalTree dat' = LabelTree dat' Set.empty Set.empty ""
 
 instance MinimalTree Recording where
-  minimalTree dat' = RecordingTree dat'
+  minimalTree dat' = RecordingTree dat' ""
 
 instance MinimalTree Release where
-  minimalTree dat' = ReleaseTree dat'
+  minimalTree dat' = ReleaseTree dat' ""
 
 instance MinimalTree ReleaseGroup where
-  minimalTree dat' = ReleaseGroupTree dat'
+  minimalTree dat' = ReleaseGroupTree dat' ""

@@ -11,6 +11,7 @@ import qualified MusicBrainz.Data.ClassTests as ClassTests
 --------------------------------------------------------------------------------
 tests :: [Test]
 tests = [ testAliases
+        , testAnnotation
         , testCreateFindLatest
         , testMerge
         , testUpdate
@@ -59,6 +60,12 @@ testMerge = testCase "can merge two labels" $ mbTest $ do
     changedData = (labelData revolutionRecords) { labelName = "Updated Name"
                                                 , labelSortName = "Updated!!!"
                                                 }
+
+
+--------------------------------------------------------------------------------
+testAnnotation :: Test
+testAnnotation = testCase "Can add and remove label annotations" $ mbTest $ do
+  ClassTests.testAnnotation (return . const revolutionRecords)
 
 
 --------------------------------------------------------------------------------

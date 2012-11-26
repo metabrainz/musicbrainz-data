@@ -191,11 +191,11 @@ instance RealiseTree Artist where
         query [sql| SELECT find_or_insert_artist_data(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) |]
           data'
 
-      insertArtistTree annotation dataId = selectValue $
+      insertArtistTree annotationBody dataId = selectValue $
         query [sql| INSERT INTO artist_tree (artist_data_id, annotation)
                     VALUES (?, ?)
                     RETURNING artist_tree_id  |]
-          (dataId, annotation)
+          (dataId, annotationBody)
 
       addRelationship treeId (ArtistRelationship targetId relInfo) = do
         relationshipId <- selectValue $ query [sql|

@@ -1,6 +1,8 @@
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeFamilies #-}
 module MusicBrainz.Data.ClassTests
     ( testAliases
+    , testAnnotation
     , testCreateFindLatest
     , testMerge
     , testUpdate
@@ -88,3 +90,27 @@ testAliases tree alias = do
   latest <- findLatest (coreRef artist)
   aliasesPostUpdate <- viewAliases (coreRevision latest)
   liftIO $ aliasesPostUpdate @?= Set.empty
+
+
+--------------------------------------------------------------------------------
+testAnnotation :: (Create a, FindLatest a, TreeAnnotation a, Update a, ViewAnnotation a)
+  => (Ref Editor -> MusicBrainz (Tree a)) -> MusicBrainz ()
+testAnnotation startTree = do
+  editor <- entityRef <$> register acid2
+
+  entityTree <- startTree editor
+  entity <- create editor (annotation .~ expected $ entityTree)
+  annPreUpdate <- viewAnnotation (coreRevision entity)
+  liftIO $ annPreUpdate @?= expected
+
+  edit <- createEdit $
+    update editor (coreRevision entity) entityTree
+
+  apply edit
+
+  latest <- findLatest (coreRef entity)
+  annPostUpdate <- viewAnnotation (coreRevision latest)
+  liftIO $ annPostUpdate @?= ""
+
+  where
+    expected = "This is the expected annotation"

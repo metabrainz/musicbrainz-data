@@ -7,6 +7,8 @@ import Test.MusicBrainz
 import Test.MusicBrainz.Data
 import Test.MusicBrainz.Repository (portishead, dummy, uk, acid2)
 
+import qualified MusicBrainz.Data.ClassTests as ClassTests
+
 import MusicBrainz
 import MusicBrainz.Data
 import MusicBrainz.Data.Editor (register)
@@ -17,13 +19,32 @@ import qualified MusicBrainz.Data.ReleasePackaging as ReleasePackaging
 import qualified MusicBrainz.Data.ReleaseStatus as ReleaseStatus
 import qualified MusicBrainz.Data.Script as Script
 
+--------------------------------------------------------------------------------
 tests :: [Test]
 tests = [ testCreateFindLatest
+        , testAnnotation
         ]
 
+
+--------------------------------------------------------------------------------
 testCreateFindLatest :: Test
 testCreateFindLatest = testCase "findLatest when release exists" $ mbTest $ do
   editor <- entityRef <$> register acid2
+  created <- dummyTree editor >>= create editor
+
+  found <- findLatest (coreRef created)
+  liftIO $ found @?= created
+
+
+--------------------------------------------------------------------------------
+testAnnotation :: Test
+testAnnotation = testCase "Can add and remove artist annotations" $ mbTest $ do
+  ClassTests.testAnnotation dummyTree
+
+
+--------------------------------------------------------------------------------
+dummyTree :: Ref Editor -> MusicBrainz (Tree Release)
+dummyTree editor = do
   portisheadAc <- singleArtistAc editor portishead
   portisheadRg <- create editor (minimalTree (dummy portisheadAc))
   country <- Country.addCountry uk
@@ -42,14 +63,10 @@ testCreateFindLatest = testCase "findLatest when release exists" $ mbTest $ do
     { releasePackagingName = "Jewel Case" }
   status <- ReleaseStatus.addReleaseStatus ReleaseStatus
     { releaseStatusName = "Official" }
-
-  created <- create editor $ minimalTree $
+  return $ minimalTree $
     expected (coreRef portisheadRg) portisheadAc
       (entityRef country) (entityRef script) (entityRef language)
       (entityRef packaging) (entityRef status)
-
-  found <- findLatest (coreRef created)
-  liftIO $ found @?= created
   where
     expected rg ac country script language packaging status =
       Release { releaseName = "Dummy"

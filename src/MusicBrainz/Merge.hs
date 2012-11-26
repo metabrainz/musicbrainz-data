@@ -102,6 +102,51 @@ instance Mergeable (Tree Label) where
               <*> labelCode `mergedVia` mergeEq
 
 
+instance Mergeable (Tree Recording) where
+  merge =
+    RecordingTree <$> recordingData `mergedVia` mergeRecordingData
+                  <*> recordingAnnotation `mergedVia` mergeEq
+    where
+      mergeRecordingData =
+        Recording
+              <$> recordingName `mergedVia` mergeEq
+              <*> recordingComment `mergedVia` mergeEq
+              <*> recordingArtistCredit `mergedVia` mergeEq
+              <*> recordingDuration `mergedVia` mergeEq
+
+
+instance Mergeable (Tree Release) where
+  merge =
+    ReleaseTree <$> releaseData `mergedVia` mergeReleaseData
+                <*> releaseAnnotation `mergedVia` mergeEq
+    where
+      mergeReleaseData =
+        Release
+              <$> releaseName `mergedVia` mergeEq
+              <*> releaseComment `mergedVia` mergeEq
+              <*> releaseArtistCredit `mergedVia` mergeEq
+              <*> releaseReleaseGroup `mergedVia` mergeEq
+              <*> releaseDate `mergedVia` mergeEq
+              <*> releaseCountry `mergedVia` mergeEq
+              <*> releaseScript `mergedVia` mergeEq
+              <*> releaseLanguage `mergedVia` mergeEq
+              <*> releasePackaging `mergedVia` mergeEq
+              <*> releaseStatus `mergedVia` mergeEq
+
+
+instance Mergeable (Tree ReleaseGroup) where
+  merge =
+    ReleaseGroupTree <$> releaseGroupData `mergedVia` mergeReleaseGroupData
+                     <*> releaseGroupAnnotation `mergedVia` mergeEq
+    where
+      mergeReleaseGroupData =
+        ReleaseGroup
+              <$> releaseGroupName `mergedVia` mergeEq
+              <*> releaseGroupComment `mergedVia` mergeEq
+              <*> releaseGroupArtistCredit `mergedVia` mergeEq
+              <*> releaseGroupPrimaryType `mergedVia` mergeEq
+
+
 instance Ord a => Mergeable (Set.Set a) where
   merge = Merge $ Compose go
     where

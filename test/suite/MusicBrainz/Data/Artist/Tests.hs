@@ -161,23 +161,7 @@ testIpiCodes = testCase "Can add and remove artist IPI codes" $ mbTest $ do
 --------------------------------------------------------------------------------
 testAnnotation :: Test
 testAnnotation = testCase "Can add and remove artist annotations" $ mbTest $ do
-  editor <- entityRef <$> register acid2
-
-  artist <- create editor freddie { artistAnnotation = expected }
-  annPreUpdate <- viewAnnotation (coreRevision artist)
-  liftIO $ annPreUpdate @?= expected
-
-  edit <- createEdit $
-    update editor (coreRevision artist) freddie
-
-  apply edit
-
-  latest <- findLatest (coreRef artist)
-  annPostUpdate <- viewAnnotation (coreRevision latest)
-  liftIO $ annPostUpdate @?= ""
-
-  where
-    expected = "This is an artist annotation"
+  ClassTests.testAnnotation (return . const freddie)
 
 
 --------------------------------------------------------------------------------

@@ -417,14 +417,17 @@ data Tree a where
 
   RecordingTree :: {
     recordingData :: Recording
+  , recordingAnnotation :: Text
   } -> Tree Recording
 
   ReleaseTree :: {
     releaseData :: Release
+  , releaseAnnotation :: Text
   } -> Tree Release
 
   ReleaseGroupTree :: {
     releaseGroupData :: ReleaseGroup
+  , releaseGroupAnnotation :: Text
   } -> Tree ReleaseGroup
 
 deriving instance Eq (Tree a)

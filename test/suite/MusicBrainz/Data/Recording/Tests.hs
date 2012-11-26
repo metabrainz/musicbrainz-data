@@ -8,26 +8,41 @@ import Test.MusicBrainz
 import Test.MusicBrainz.Data
 import Test.MusicBrainz.Repository (portishead, acid2)
 
+import qualified MusicBrainz.Data.ClassTests as ClassTests
+
 import MusicBrainz
 import MusicBrainz.Data
 import MusicBrainz.Data.Editor (register)
 
+--------------------------------------------------------------------------------
 tests :: [Test]
 tests = [ testCreateFindLatest
+        , testAnnotation
         ]
 
+
+--------------------------------------------------------------------------------
 testCreateFindLatest :: Test
 testCreateFindLatest = testCase "findLatest when recording exists" $ mbTest $ do
   editor <- entityRef <$> register acid2
-  ac <- singleArtistAc editor portishead
-
-  created <- create editor $ minimalTree (expected ac)
+  created <- mysterons editor >>= create editor
   found <- findLatest (coreRef created)
-
   liftIO $ found @?= created
-  where
-    expected ac = Recording { recordingName = "Mysterons"
-                            , recordingComment = ""
-                            , recordingArtistCredit = ac
-                            , recordingDuration = 64936
-                            }
+
+
+--------------------------------------------------------------------------------
+testAnnotation :: Test
+testAnnotation = testCase "Can add and remove artist annotations" $ mbTest $ do
+  ClassTests.testAnnotation mysterons
+
+
+--------------------------------------------------------------------------------
+mysterons :: Ref Editor -> MusicBrainz (Tree Recording)
+mysterons editor = do
+  ac <- singleArtistAc editor portishead
+  return $ minimalTree $
+    Recording { recordingName = "Mysterons"
+              , recordingComment = ""
+              , recordingArtistCredit = ac
+              , recordingDuration = 64936
+              }

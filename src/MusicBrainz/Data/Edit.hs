@@ -24,6 +24,9 @@ import MusicBrainz
 import MusicBrainz.Data.Artist ()
 import MusicBrainz.Data.FindLatest (findLatest, FindLatest)
 import MusicBrainz.Data.Label ()
+import MusicBrainz.Data.Recording ()
+import MusicBrainz.Data.Release ()
+import MusicBrainz.Data.ReleaseGroup ()
 import MusicBrainz.Data.Revision (mergeBase)
 import MusicBrainz.Data.Revision.Internal (addChild, newChildRevision)
 import MusicBrainz.Data.Tree (viewTree, ViewTree)
@@ -42,7 +45,13 @@ apply editId = do
       SELECT 'artist'::text, revision_id FROM edit_artist WHERE edit_id = ?
       UNION ALL
       SELECT 'label'::text, revision_id FROM edit_label WHERE edit_id = ?
-    |] (editId, editId)
+      UNION ALL
+      SELECT 'recording'::text, revision_id FROM edit_recording WHERE edit_id = ?
+      UNION ALL
+      SELECT 'release'::text, revision_id FROM edit_release WHERE edit_id = ?
+      UNION ALL
+      SELECT 'release_group'::text, revision_id FROM edit_release_group WHERE edit_id = ?
+    |] (editId, editId, editId, editId, editId)
     mergeUpstream (Change r) = mergeRevisionUpstream r
 
     toChange :: (String, Int) -> Change
@@ -50,6 +59,9 @@ apply editId = do
       case kind of
         "artist" -> Change (Ref revisionId :: Ref (Revision Artist))
         "label" -> Change (Ref revisionId :: Ref (Revision Label))
+        "recording" -> Change (Ref revisionId :: Ref (Revision Recording))
+        "release" -> Change (Ref revisionId :: Ref (Revision Release))
+        "release_group" -> Change (Ref revisionId :: Ref (Revision ReleaseGroup))
         _ -> error $ "Attempt to load an edit with revision of unknown kind '" ++ kind ++ "'"
 
     closeEdit = void $ execute

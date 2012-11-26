@@ -1233,6 +1233,42 @@ ALTER SEQUENCE edit_note_edit_note_id_seq OWNED BY edit_note.edit_note_id;
 
 
 --
+-- Name: edit_recording; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE edit_recording (
+    edit_id integer NOT NULL,
+    revision_id integer NOT NULL
+);
+
+
+ALTER TABLE musicbrainz.edit_recording OWNER TO musicbrainz;
+
+--
+-- Name: edit_release; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE edit_release (
+    edit_id integer NOT NULL,
+    revision_id integer NOT NULL
+);
+
+
+ALTER TABLE musicbrainz.edit_release OWNER TO musicbrainz;
+
+--
+-- Name: edit_release_group; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE edit_release_group (
+    edit_id integer NOT NULL,
+    revision_id integer NOT NULL
+);
+
+
+ALTER TABLE musicbrainz.edit_release_group OWNER TO musicbrainz;
+
+--
 -- Name: editor; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
 --
 
@@ -5179,6 +5215,54 @@ ALTER TABLE ONLY edit_note
 
 ALTER TABLE ONLY edit_note
     ADD CONSTRAINT edit_note_editor_id_fkey FOREIGN KEY (editor_id) REFERENCES editor(editor_id);
+
+
+--
+-- Name: edit_recording_edit_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY edit_recording
+    ADD CONSTRAINT edit_recording_edit_id_fkey FOREIGN KEY (edit_id) REFERENCES edit(edit_id);
+
+
+--
+-- Name: edit_recording_revision_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY edit_recording
+    ADD CONSTRAINT edit_recording_revision_id_fkey FOREIGN KEY (revision_id) REFERENCES recording_revision(revision_id);
+
+
+--
+-- Name: edit_release_edit_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY edit_release
+    ADD CONSTRAINT edit_release_edit_id_fkey FOREIGN KEY (edit_id) REFERENCES edit(edit_id);
+
+
+--
+-- Name: edit_release_group_edit_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY edit_release_group
+    ADD CONSTRAINT edit_release_group_edit_id_fkey FOREIGN KEY (edit_id) REFERENCES edit(edit_id);
+
+
+--
+-- Name: edit_release_group_revision_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY edit_release_group
+    ADD CONSTRAINT edit_release_group_revision_id_fkey FOREIGN KEY (revision_id) REFERENCES release_group_revision(revision_id);
+
+
+--
+-- Name: edit_release_revision_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY edit_release
+    ADD CONSTRAINT edit_release_revision_id_fkey FOREIGN KEY (revision_id) REFERENCES release_revision(revision_id);
 
 
 --
