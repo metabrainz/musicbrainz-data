@@ -193,7 +193,7 @@ testMerge = testCase "Can merge 2 distinct artists" $ mbTest $ do
 
   apply edit
 
-  aResolved <- resolveMbid (refMbid $ coreRef a)
+  aResolved <- resolveMbid (dereference $ coreRef a)
   liftIO $ aResolved @?= Just (coreRef b)
 
 

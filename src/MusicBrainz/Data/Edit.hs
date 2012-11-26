@@ -48,8 +48,8 @@ apply editId = do
     toChange :: (String, Int) -> Change
     toChange (kind, revisionId) =
       case kind of
-        "artist" -> Change (RevisionRef revisionId :: Ref (Revision Artist))
-        "label" -> Change (RevisionRef revisionId :: Ref (Revision Label))
+        "artist" -> Change (Ref revisionId :: Ref (Revision Artist))
+        "label" -> Change (Ref revisionId :: Ref (Revision Label))
         _ -> error $ "Attempt to load an edit with revision of unknown kind '" ++ kind ++ "'"
 
     closeEdit = void $ execute

@@ -28,87 +28,87 @@ import qualified Data.UUID as UUID
 
 --------------------------------------------------------------------------------
 instance FromField (Ref AliasType) where
-  fromField f v = AliasTypeRef <$> fromField f v
+  fromField f v = Ref <$> fromField f v
 
 
 instance FromField (Ref Artist) where
-  fromField f v = ArtistRef <$> fromField f v
+  fromField f v = Ref <$> fromField f v
 
 
 instance FromField (Ref ArtistCredit) where
-  fromField f v = ArtistCreditRef <$> fromField f v
+  fromField f v = Ref <$> fromField f v
 
 
 instance FromField (Ref ArtistType) where
-  fromField f v = ArtistTypeRef <$> fromField f v
+  fromField f v = Ref <$> fromField f v
 
 
 instance FromField (Ref Country) where
-  fromField f v = CountryRef <$> fromField f v
+  fromField f v = Ref <$> fromField f v
 
 
 instance FromField (Ref Edit) where
-  fromField f v = EditRef <$> fromField f v
+  fromField f v = Ref <$> fromField f v
 
 
 instance FromField (Ref EditNote) where
-  fromField f v = EditNoteRef <$> fromField f v
+  fromField f v = Ref <$> fromField f v
 
 
 instance FromField (Ref Editor) where
-  fromField f v = EditorRef <$> fromField f v
+  fromField f v = Ref <$> fromField f v
 
 
 instance FromField (Ref Gender) where
-  fromField f v = GenderRef <$> fromField f v
+  fromField f v = Ref <$> fromField f v
 
 
 instance FromField (Ref Label) where
-  fromField f v = LabelRef <$> fromField f v
+  fromField f v = Ref <$> fromField f v
 
 
 instance FromField (Ref LabelType) where
-  fromField f v = LabelTypeRef <$> fromField f v
+  fromField f v = Ref <$> fromField f v
 
 
 instance FromField (Ref Language) where
-  fromField f v = LanguageRef <$> fromField f v
+  fromField f v = Ref <$> fromField f v
 
 
 instance FromField (Ref Recording) where
-  fromField f v = RecordingRef <$> fromField f v
+  fromField f v = Ref <$> fromField f v
 
 
 instance FromField (Ref RelationshipAttribute) where
-  fromField f v = RelationshipAttributeRef <$> fromField f v
+  fromField f v = Ref <$> fromField f v
 
 
 instance FromField (Ref RelationshipType) where
-  fromField f v = RelationshipTypeRef <$> fromField f v
+  fromField f v = Ref <$> fromField f v
 
 
 instance FromField (Ref Release) where
-  fromField f v = ReleaseRef <$> fromField f v
+  fromField f v = Ref <$> fromField f v
 
 
 instance FromField (Ref ReleaseGroup) where
-  fromField f v = ReleaseGroupRef <$> fromField f v
+  fromField f v = Ref <$> fromField f v
 
 
 instance FromField (Ref (ReleaseGroupType a)) where
-  fromField f v = ReleaseGroupTypeRef <$> fromField f v
+  fromField f v = Ref <$> fromField f v
 
 
 instance FromField (Ref ReleasePackaging) where
-  fromField f v = ReleasePackagingRef <$> fromField f v
+  fromField f v = Ref <$> fromField f v
 
 
 instance FromField (Ref ReleaseStatus) where
-  fromField f v = ReleaseStatusRef <$> fromField f v
+  fromField f v = Ref <$> fromField f v
 
 
 instance FromField (Ref Script) where
-  fromField f v = ScriptRef <$> fromField f v
+  fromField f v = Ref <$> fromField f v
 
 
 instance Typeable a => FromField (MBID a) where
@@ -123,11 +123,11 @@ instance Typeable a => FromField (MBID a) where
 
 
 instance FromField (Ref (Revision a)) where
-  fromField f v = RevisionRef <$> fromField f v
+  fromField f v = Ref <$> fromField f v
 
 
 instance FromField (Ref (Tree a)) where
-  fromField f v = TreeRef <$> fromField f v
+  fromField f v = Ref <$> fromField f v
 
 
 --------------------------------------------------------------------------------
@@ -234,87 +234,87 @@ instance ToField (MBID a) where
 
 
 instance ToField (Ref AliasType) where
-  toField (AliasTypeRef id') = toField id'
+  toField = toField . dereference
 
 
 instance ToField (Ref Artist) where
-  toField (ArtistRef id') = toField id'
+  toField = toField . dereference
 
 
 instance ToField (Ref ArtistCredit) where
-  toField (ArtistCreditRef id') = toField id'
+  toField = toField . dereference
 
 
 instance ToField (Ref ArtistType) where
-  toField (ArtistTypeRef id') = toField id'
+  toField = toField . dereference
 
 
 instance ToField (Ref Country) where
-  toField (CountryRef id') = toField id'
+  toField = toField . dereference
 
 
 instance ToField (Ref Edit) where
-  toField (EditRef id') = toField id'
+  toField = toField . dereference
 
 
 instance ToField (Ref Editor) where
-  toField (EditorRef id') = toField id'
+  toField = toField . dereference
 
 
 instance ToField (Ref Gender) where
-  toField (GenderRef id') = toField id'
+  toField = toField . dereference
 
 
 instance ToField (Ref Label) where
-  toField (LabelRef id') = toField id'
+  toField = toField . dereference
 
 
 instance ToField (Ref LabelType) where
-  toField (LabelTypeRef id') = toField id'
+  toField = toField . dereference
 
 
 instance ToField (Ref Language) where
-  toField (LanguageRef id') = toField id'
+  toField = toField . dereference
 
 
 instance ToField (Ref Recording) where
-  toField (RecordingRef id') = toField id'
+  toField = toField . dereference
 
 
 instance ToField (Ref RelationshipType) where
-  toField (RelationshipTypeRef id') = toField id'
+  toField = toField . dereference
 
 
 instance ToField (Ref Release) where
-  toField (ReleaseRef id') = toField id'
+  toField = toField . dereference
 
 
 instance ToField (Ref ReleaseGroup) where
-  toField (ReleaseGroupRef id') = toField id'
+  toField = toField . dereference
 
 
 instance ToField (Ref (ReleaseGroupType a)) where
-  toField (ReleaseGroupTypeRef id') = toField id'
+  toField = toField . dereference
 
 
 instance ToField (Ref ReleasePackaging) where
-  toField (ReleasePackagingRef id') = toField id'
+  toField = toField . dereference
 
 
 instance ToField (Ref ReleaseStatus) where
-  toField (ReleaseStatusRef id') = toField id'
+  toField = toField . dereference
 
 
 instance ToField (Ref (Revision a)) where
-  toField (RevisionRef id') = toField id'
+  toField = toField . dereference
 
 
 instance ToField (Ref Script) where
-  toField (ScriptRef id') = toField id'
+  toField = toField . dereference
 
 
 instance ToField (Ref (Tree a)) where
-  toField (TreeRef id') = toField id'
+  toField = toField . dereference
 
 
 instance ToField Vote where

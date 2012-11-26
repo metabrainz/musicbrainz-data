@@ -1,3 +1,4 @@
+{-# LANGUAGE TypeFamilies #-}
 module MusicBrainz.Data.ClassTests
     ( testAliases
     , testCreateFindLatest
@@ -53,7 +54,7 @@ testUpdate start end = do
 
 
 --------------------------------------------------------------------------------
-testMerge :: (RefMBID a, Merge a, Create a)
+testMerge :: (RefSpec a ~ MBID a, Referenceable a, Merge a, Create a)
   => Tree a -> Tree a -> MusicBrainzT IO ()
 testMerge treeA treeB = do
   editor <- entityRef <$> register acid2
@@ -66,7 +67,7 @@ testMerge treeA treeB = do
 
   apply edit
 
-  aResolved <- resolveMbid (refMbid $ coreRef a)
+  aResolved <- resolveMbid (dereference $ coreRef a)
   liftIO $ aResolved @?= Just (coreRef b)
 
 

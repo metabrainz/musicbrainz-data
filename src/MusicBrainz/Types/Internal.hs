@@ -1,80 +1,11 @@
 {-# LANGUAGE DeriveDataTypeable #-}
-{-# LANGUAGE EmptyDataDecls #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TypeFamilies #-}
 {-| Definitions of all types used within MusicBrainz. -}
-module MusicBrainz.Types.Internal
-    ( -- * MusicBrainz entities
-      -- ** Core entities
-      -- | Core entities hold MusicBrainz IDs, have versioning, etc.
-
-      -- *** Artists
-      Artist(..)
-    , ArtistType(..)
-
-      -- *** Labels
-    , Label(..)
-    , LabelType(..)
-
-      -- *** Recordings
-    , Recording(..)
-
-      -- *** Releases
-    , Release(..)
-    , ReleasePackaging(..)
-    , ReleaseStatus(..)
-
-      -- *** Release Groups
-    , ReleaseGroup(..)
-    , ReleaseGroupType(..), Primary
-
-      -- ** Non-core entities
-      -- | These are entities that are used by core-entities, but are not
-      -- particularly interesting on their own.
-    , Alias(..)
-    , AliasType(..)
-    , ArtistCredit
-    , ArtistCreditName(..)
-    , Country(..)
-    , Editor(..)
-    , Gender(..)
-    , IPI(..)
-    , Language(..)
-    , Script(..)
-
-      -- ** Relationships
-    , LinkedRelationship(..)
-    , Relationship(..)
-    , RelationshipType(..)
-    , RelationshipAttribute(..)
-    , RelationshipTarget(..)
-
-      -- * Entity attributes
-    , MBID(..), mbid
-    , PartialDate(..)
-    , emptyDate, isEmpty
-
-      -- * Versioning
-    , CoreEntity(..)
-    , Revision
-    , Tree(..)
-    , treeData
-
-      -- ** Edit system mechanics
-    , Edit(..)
-    , EditNote(..)
-    , Vote(..)
-    , EditStatus(..)
-
-      -- * Entity/reference handling
-    , Entity(..)
-    , Ref(..)
-    , RefMBID(..)
-    ) where
+module MusicBrainz.Types.Internal where
 
 import Control.Lens
 import Data.Text (Text)
@@ -87,68 +18,100 @@ import qualified Data.Set as Set
 --------------------------------------------------------------------------------
 {-| A reference to a specific entity. In the database, this a foreign key
 relationship to an entity of type @a@. -}
-data Ref a where
-    AliasTypeRef :: Int -> Ref AliasType
-    ArtistCreditRef :: Int -> Ref ArtistCredit
-    ArtistRef :: (MBID Artist) -> Ref Artist
-    ArtistTypeRef :: Int -> Ref ArtistType
-    CountryRef :: Int -> Ref Country
-    EditRef :: Int -> Ref Edit
-    EditNoteRef :: Int -> Ref EditNote
-    EditorRef :: Int -> Ref Editor
-    GenderRef :: Int -> Ref Gender
-    LabelRef :: (MBID Label) -> Ref Label
-    LabelTypeRef :: Int -> Ref LabelType
-    LanguageRef :: Int -> Ref Language
-    RecordingRef :: (MBID Recording) -> Ref Recording
-    RelationshipAttributeRef :: Int -> Ref RelationshipAttribute
-    RelationshipTypeRef :: Int -> Ref RelationshipType
-    ReleaseRef :: (MBID Release) -> Ref Release
-    ReleaseGroupRef :: (MBID ReleaseGroup) -> Ref ReleaseGroup
-    ReleaseGroupTypeRef :: Int -> Ref (ReleaseGroupType a)
-    ReleasePackagingRef :: Int -> Ref ReleasePackaging
-    ReleaseStatusRef :: Int -> Ref ReleaseStatus
-    ScriptRef :: Int -> Ref Script
-    RevisionRef :: Int -> Ref (Revision a)
-    TreeRef :: Int -> Ref (Tree a)
+data Ref a = Referenceable a => Ref (RefSpec a)
 
 deriving instance Eq (Ref a)
+deriving instance Ord (Ref a)
 deriving instance Show (Ref a)
 
-instance Ord (Ref a) where
-  compare (ArtistCreditRef a) (ArtistCreditRef b) = a `compare` b
-  compare (ArtistRef a) (ArtistRef b) = a `compare` b
-  compare (ArtistTypeRef a) (ArtistTypeRef b) = a `compare` b
-  compare (CountryRef a) (CountryRef b) = a `compare` b
-  compare (EditRef a) (EditRef b) = a `compare` b
-  compare (EditNoteRef a) (EditNoteRef b) = a `compare` b
-  compare (EditorRef a) (EditorRef b) = a `compare` b
-  compare (GenderRef a) (GenderRef b) = a `compare` b
-  compare (LabelTypeRef a) (LabelTypeRef b) = a `compare` b
-  compare (LanguageRef a) (LanguageRef b) = a `compare` b
-  compare (RecordingRef a) (RecordingRef b) = a `compare` b
-  compare (RelationshipTypeRef a) (RelationshipTypeRef b) = a `compare` b
-  compare (ReleaseRef a) (ReleaseRef b) = a `compare` b
-  compare (ReleaseGroupRef a) (ReleaseGroupRef b) = a `compare` b
-  compare (ReleaseGroupTypeRef a) (ReleaseGroupTypeRef b) = a `compare` b
-  compare (ReleasePackagingRef a) (ReleasePackagingRef b) = a `compare` b
-  compare (ReleaseStatusRef a) (ReleaseStatusRef b) = a `compare` b
-  compare (ScriptRef a) (ScriptRef b) = a `compare` b
-  compare (RevisionRef a) (RevisionRef b) = a `compare` b
-  compare (TreeRef a) (TreeRef b) = a `compare` b
-  compare _ _ = error "Impossible condition: comparing references of different types"
+{-| The family of types which can be referenced via a primary key. -}
+class (Eq (RefSpec a), Ord (RefSpec a), Show (RefSpec a)) => Referenceable a where
+  {-| The exact type of all attributes that make up a reference. For example,
+  a PostgreSQL @SERIAL@ field would be 'Int', while a compound key might be
+  @(@'Int'@, @'Int'). -}
+  type RefSpec a :: *
+
+instance Referenceable AliasType where
+  type RefSpec AliasType = Int
+
+instance Referenceable Artist where
+  type RefSpec Artist = MBID Artist
+
+instance Referenceable ArtistCredit where
+  type RefSpec ArtistCredit = Int
+
+instance Referenceable ArtistType where
+  type RefSpec ArtistType = Int
+
+instance Referenceable Country where
+  type RefSpec Country = Int
+
+instance Referenceable Edit where
+  type RefSpec Edit = Int
+
+instance Referenceable Editor where
+  type RefSpec Editor = Int
+
+instance Referenceable EditNote where
+  type RefSpec EditNote = Int
+
+instance Referenceable Gender where
+  type RefSpec Gender = Int
+
+instance Referenceable Label where
+  type RefSpec Label = MBID Label
+
+instance Referenceable LabelType where
+  type RefSpec LabelType = Int
+
+instance Referenceable Language where
+  type RefSpec Language = Int
+
+instance Referenceable Recording where
+  type RefSpec Recording = MBID Recording
+
+instance Referenceable RelationshipAttribute where
+  type RefSpec RelationshipAttribute = Int
+
+instance Referenceable RelationshipType where
+  type RefSpec RelationshipType = Int
+
+instance Referenceable Release where
+  type RefSpec Release = MBID Release
+
+instance Referenceable ReleaseGroup where
+  type RefSpec ReleaseGroup = MBID ReleaseGroup
+
+instance Referenceable (ReleaseGroupType a) where
+  type RefSpec (ReleaseGroupType a) = Int
+
+instance Referenceable ReleasePackaging where
+  type RefSpec ReleasePackaging = Int
+
+instance Referenceable ReleaseStatus where
+  type RefSpec ReleaseStatus = Int
+
+instance Referenceable (Revision a) where
+  type RefSpec (Revision a) = Int
+
+instance Referenceable Script where
+  type RefSpec Script = Int
+
+instance Referenceable (Tree a) where
+  type RefSpec (Tree a) = Int
 
 
 --------------------------------------------------------------------------------
-class RefMBID a where
-  {-| Unwrap a 'Ref' to get the underlying 'MBID'. -}
-  refMbid :: Ref a -> MBID a
+{-| Unpack a reference into its individual attributes. -}
+dereference :: Referenceable a => Ref a -> RefSpec a
+dereference  = view (from reference)
 
-instance RefMBID Artist where refMbid (ArtistRef a) = a
-instance RefMBID Label where refMbid (LabelRef a) = a
-instance RefMBID Recording where refMbid (RecordingRef a) = a
-instance RefMBID Release where refMbid (ReleaseRef a) = a
-instance RefMBID ReleaseGroup where refMbid (ReleaseGroupRef a) = a
+
+--------------------------------------------------------------------------------
+{-| An 'Iso'morphism to move between a set of attributes and a reference, and
+back again. -}
+reference :: Referenceable a => Simple Iso (RefSpec a) (Ref a)
+reference = iso Ref (\(Ref r) -> r)
 
 
 --------------------------------------------------------------------------------
