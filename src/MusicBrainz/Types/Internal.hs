@@ -357,7 +357,7 @@ isEmpty = (== emptyDate)
 {-| A MusicBrainz MBID, which is a 'UUID' but scoped to a specific entity
 type. -}
 newtype MBID a = MBID UUID
-  deriving (Eq, Ord, Show, Typeable)
+  deriving (Eq, Ord, Read, Show, Typeable)
 
 
 {-| Inject a 'String' into an 'MBID', or extract a 'String' from an 'MBID'. To
