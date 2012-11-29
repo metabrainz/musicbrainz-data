@@ -38,6 +38,7 @@ Library
     MusicBrainz.Data.Gender
     MusicBrainz.Data.IPI
     MusicBrainz.Data.Label
+    MusicBrainz.Data.LabelType
     MusicBrainz.Data.Language
     MusicBrainz.Data.Merge
     MusicBrainz.Data.Recording
