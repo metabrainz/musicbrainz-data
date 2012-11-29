@@ -14,7 +14,7 @@ module MusicBrainz.Data.Generic
     ) where
 
 import Control.Applicative
-import Control.Lens hiding (query)
+import Control.Lens
 import Control.Monad (void)
 import Control.Monad.IO.Class
 import Data.Maybe (listToMaybe)

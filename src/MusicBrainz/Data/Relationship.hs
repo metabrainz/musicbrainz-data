@@ -10,7 +10,7 @@ module MusicBrainz.Data.Relationship
     ) where
 
 import Control.Applicative
-import Control.Lens hiding (by, query)
+import Control.Lens hiding (by)
 import Control.Monad.IO.Class (MonadIO)
 import Database.PostgreSQL.Simple (Only(..), In(..))
 import Database.PostgreSQL.Simple.SqlQQ (sql)
