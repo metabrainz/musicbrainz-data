@@ -5,7 +5,7 @@ module MusicBrainz.Data.Release.Tests
 import Control.Applicative
 import Test.MusicBrainz
 import Test.MusicBrainz.Data
-import Test.MusicBrainz.Repository (portishead, dummy, uk, acid2)
+import Test.MusicBrainz.Repository (portishead, dummy, uk, acid2, latin, english)
 
 import qualified MusicBrainz.Data.ClassTests as ClassTests
 
@@ -13,11 +13,8 @@ import MusicBrainz
 import MusicBrainz.Data
 import MusicBrainz.Data.Editor (register)
 
-import qualified MusicBrainz.Data.Country as Country
-import qualified MusicBrainz.Data.Language as Language
 import qualified MusicBrainz.Data.ReleasePackaging as ReleasePackaging
 import qualified MusicBrainz.Data.ReleaseStatus as ReleaseStatus
-import qualified MusicBrainz.Data.Script as Script
 
 --------------------------------------------------------------------------------
 tests :: [Test]
@@ -47,18 +44,9 @@ dummyTree :: Ref Editor -> MusicBrainz (Tree Release)
 dummyTree editor = do
   portisheadAc <- singleArtistAc editor portishead
   portisheadRg <- create editor (minimalTree (dummy portisheadAc))
-  country <- Country.addCountry uk
-  script <- Script.addScript Script { scriptName = "United Kingdom"
-                                    , scriptIsoCode = "gb"
-                                    , scriptIsoNumber = "360"
-                                    }
-  language <- Language.addLanguage Language
-    { languageName = "United Kingdom"
-    , languageIsoCode2t = "gb"
-    , languageIsoCode2b = ""
-    , languageIsoCode1 = ""
-    , languageIsoCode3 = ""
-    }
+  country <- add uk
+  script <- add latin
+  language <- add english
   packaging <- ReleasePackaging.addReleasePackaging ReleasePackaging
     { releasePackagingName = "Jewel Case" }
   status <- ReleaseStatus.addReleaseStatus ReleaseStatus

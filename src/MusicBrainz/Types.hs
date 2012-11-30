@@ -22,7 +22,7 @@ module MusicBrainz.Types
 
       -- *** Release Groups
     , ReleaseGroup(..)
-    , ReleaseGroupType(..), Primary
+    , ReleaseGroupType(..), Primary, Secondary
 
       -- ** Non-core entities
       -- | These are entities that are used by core-entities, but are not

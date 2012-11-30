@@ -2,10 +2,8 @@
 {-# LANGUAGE QuasiQuotes #-}
 {-| Functions for working relationships of any general type. -}
 module MusicBrainz.Data.Relationship
-    ( addRelationshipType
-
-    -- * Viewing relationships
-    , viewRelationships
+    ( -- * Viewing relationships
+      viewRelationships
     , HoldsRelationships
     ) where
 
@@ -19,16 +17,15 @@ import qualified Data.Map as Map
 import qualified Data.Set as Set
 
 import MusicBrainz
+import MusicBrainz.Data.Add
 import MusicBrainz.Data.Relationship.Internal
 import MusicBrainz.Types.Internal
 
 --------------------------------------------------------------------------------
-{-| Add a new 'RelationshipType' to the list of known relationship types in
-MusicBrainz. -}
-addRelationshipType :: RelationshipType -> MusicBrainz (Entity RelationshipType)
-addRelationshipType rt = head <$>
-  query [sql| INSERT INTO relationship_type (name) VALUES (?)
-              RETURNING relationship_type_id, name |] rt
+instance Add RelationshipType where
+  add rt = head <$>
+    query [sql| INSERT INTO relationship_type (name) VALUES (?)
+                RETURNING relationship_type_id, name |] rt
 
 
 --------------------------------------------------------------------------------

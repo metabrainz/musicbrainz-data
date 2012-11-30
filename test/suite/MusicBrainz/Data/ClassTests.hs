@@ -1,10 +1,12 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeFamilies #-}
 module MusicBrainz.Data.ClassTests
-    ( testAliases
+    ( testAdd
+    , testAliases
     , testAnnotation
     , testCreateFindLatest
     , testMerge
+    , testResolveReference
     , testUpdate
     ) where
 
@@ -24,7 +26,7 @@ import MusicBrainz.Data.Editor (register)
 
 --------------------------------------------------------------------------------
 testCreateFindLatest :: (Eq a, Show a, FindLatest a, Create a)
-  => Tree a -> MusicBrainzT IO ()
+  => Tree a -> MusicBrainz ()
 testCreateFindLatest tree = do
   editor <- register acid2
   created <- create (entityRef editor) tree
@@ -34,7 +36,7 @@ testCreateFindLatest tree = do
 
 --------------------------------------------------------------------------------
 testUpdate :: (Create a, Update a, FindLatest a, ViewTree a)
-  => Tree a -> Tree a -> MusicBrainzT IO ()
+  => Tree a -> Tree a -> MusicBrainz ()
 testUpdate start end = do
   editor <- entityRef <$> register acid2
 
@@ -57,7 +59,7 @@ testUpdate start end = do
 
 --------------------------------------------------------------------------------
 testMerge :: (RefSpec a ~ MBID a, Merge a, Referenceable a, ResolveReference a, Create a)
-  => Tree a -> Tree a -> MusicBrainzT IO ()
+  => Tree a -> Tree a -> MusicBrainz ()
 testMerge treeA treeB = do
   editor <- entityRef <$> register acid2
 
@@ -74,7 +76,7 @@ testMerge treeA treeB = do
 
 
 --------------------------------------------------------------------------------
-testAliases :: (Create a, FindLatest a, TreeAliases a, Update a, ViewAliases a) => Tree a -> Alias -> MusicBrainzT IO ()
+testAliases :: (Create a, FindLatest a, TreeAliases a, Update a, ViewAliases a) => Tree a -> Alias -> MusicBrainz ()
 testAliases tree alias = do
   editor <- entityRef <$> register acid2
 
@@ -114,3 +116,20 @@ testAnnotation startTree = do
 
   where
     expected = "This is the expected annotation"
+
+
+--------------------------------------------------------------------------------
+testAdd :: (Add a, Eq a, Show a)
+  => a -> MusicBrainz ()
+testAdd e = do
+  created <- add e
+  liftIO $ entityData created @?= e
+
+
+--------------------------------------------------------------------------------
+testResolveReference :: (Eq a, ResolveReference a, Referenceable a, Show a)
+  => MusicBrainz e -> (e -> Ref a) -> MusicBrainz ()
+testResolveReference runCreate getRef = do
+  expected <- getRef <$> runCreate
+  actual <- resolveReference (dereference expected)
+  liftIO $ actual @?= Just expected

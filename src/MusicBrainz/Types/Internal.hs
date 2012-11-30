@@ -251,6 +251,7 @@ data Language = Language { languageName :: Text
                          , languageIsoCode1 :: Text
                          , languageIsoCode3  :: Text
                          }
+  deriving (Eq, Show)
 
 
 --------------------------------------------------------------------------------
@@ -303,6 +304,10 @@ data ReleaseGroup = ReleaseGroup
 is primary and can only occur once. -}
 data Primary
 
+{-| A type index for 'ReleaseGroupType' indicating that this 'ReleaseGroupType'
+is secondary and can only occur multiple times. -}
+data Secondary
+
 {-| A release group type indicates the various types a release group can be.
 For example, one release group type combination might be 'Album + Remix' to
 indicate a remix album.
@@ -331,6 +336,7 @@ data Script = Script { scriptIsoCode :: Text
                      , scriptIsoNumber :: Text
                      , scriptName :: Text
                      }
+  deriving (Eq, Show)
 
 
 --------------------------------------------------------------------------------

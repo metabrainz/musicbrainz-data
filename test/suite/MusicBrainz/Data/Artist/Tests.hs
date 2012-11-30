@@ -14,9 +14,6 @@ import MusicBrainz.Data
 import MusicBrainz.Data.Edit
 import MusicBrainz.Data.Editor
 
-import qualified MusicBrainz.Data.ArtistType as ArtistType
-import qualified MusicBrainz.Data.Country as Country
-import qualified MusicBrainz.Data.Gender as Gender
 import qualified MusicBrainz.Data.Relationship as Relationship
 
 import qualified MusicBrainz.Data.ClassTests as ClassTests
@@ -35,9 +32,9 @@ tests = [ testCreateFindLatest
 --------------------------------------------------------------------------------
 testCreateFindLatest :: Test
 testCreateFindLatest = testCase "create >>= findLatest == create" $ mbTest $ do
-  tree' <- tree <$> (entityRef <$> Country.addCountry uk)
-                <*> (entityRef <$> Gender.addGender male)
-                <*> (entityRef <$> ArtistType.addArtistType person)
+  tree' <- tree <$> (entityRef <$> add uk)
+                <*> (entityRef <$> add male)
+                <*> (entityRef <$> add person)
   ClassTests.testCreateFindLatest tree'
 
   where
@@ -105,7 +102,7 @@ testRelationships = testCase "Relationships are bidirectional over addition and 
 
   where
     expectedRel =
-      Relationship <$> fmap entityRef (Relationship.addRelationshipType $ RelationshipType "performer")
+      Relationship <$> fmap entityRef (add $ RelationshipType "performer")
                    <*> pure Set.empty
                    <*> pure emptyDate
                    <*> pure emptyDate

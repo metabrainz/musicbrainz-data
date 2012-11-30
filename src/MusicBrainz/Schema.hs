@@ -187,6 +187,10 @@ instance FromRow Label where
                   <*> field <*> field <*> field
 
 
+instance FromRow LabelType where
+  fromRow = LabelType <$> field
+
+
 instance FromRow Language where
   fromRow = Language <$> field <*> field <*> field <*> field <*> field
 
@@ -210,6 +214,10 @@ instance FromRow Release where
 
 instance FromRow ReleaseGroup where
   fromRow = ReleaseGroup <$> field <*> field <*> field <*> field
+
+
+instance FromRow (ReleaseGroupType a) where
+  fromRow = ReleaseGroupType <$> field
 
 
 instance FromRow ReleasePackaging where
@@ -398,6 +406,11 @@ instance ToRow Label where
                     ]
 
 
+instance ToRow LabelType where
+  toRow LabelType{..} = [ toField labelTypeName
+                        ]
+
+
 instance ToRow Language where
   toRow Language{..} = [ toField languageName
                        , toField languageIsoCode2t
@@ -448,6 +461,11 @@ instance ToRow ReleaseGroup where
                            , toField releaseGroupArtistCredit
                            , toField releaseGroupPrimaryType
                            ]
+
+
+instance ToRow (ReleaseGroupType a) where
+  toRow ReleaseGroupType{..} = [ toField releaseGroupTypeName
+                               ]
 
 
 instance ToRow ReleasePackaging where

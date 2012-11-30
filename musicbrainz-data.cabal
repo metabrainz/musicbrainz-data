@@ -25,6 +25,7 @@ Library
   exposed-modules:
     MusicBrainz
     MusicBrainz.Data
+    MusicBrainz.Data.Add
     MusicBrainz.Data.Alias
     MusicBrainz.Data.Annotation
     MusicBrainz.Data.Artist

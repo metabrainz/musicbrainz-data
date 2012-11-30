@@ -9,7 +9,15 @@ import Database.PostgreSQL.Simple (Only(..))
 import Database.PostgreSQL.Simple.SqlQQ (sql)
 
 import MusicBrainz hiding (labelType)
+import MusicBrainz.Data.Add
 import MusicBrainz.Data.FindLatest
+
+--------------------------------------------------------------------------------
+instance Add LabelType where
+  add labelType = head <$>
+    query [sql| INSERT INTO label_type (name) VALUES (?)
+                RETURNING id, name |] labelType
+
 
 --------------------------------------------------------------------------------
 instance ResolveReference LabelType where

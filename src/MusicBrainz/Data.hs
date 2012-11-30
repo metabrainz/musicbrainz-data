@@ -11,6 +11,7 @@ module MusicBrainz.Data
     , ViewTree(..)
 
       -- * Editing data
+    , Add(..)
     , Create(..)
     , Merge
     , merge
@@ -27,11 +28,15 @@ import MusicBrainz.Data.Editor ()
 import MusicBrainz.Data.Gender ()
 import MusicBrainz.Data.Label ()
 import MusicBrainz.Data.LabelType ()
+import MusicBrainz.Data.Language ()
 import MusicBrainz.Data.Recording ()
+import MusicBrainz.Data.Relationship ()
 import MusicBrainz.Data.Release ()
 import MusicBrainz.Data.ReleaseGroup ()
 import MusicBrainz.Data.ReleaseGroupType ()
+import MusicBrainz.Data.Script ()
 
+import MusicBrainz.Data.Add
 import MusicBrainz.Data.Alias
 import MusicBrainz.Data.Annotation
 import MusicBrainz.Data.Create

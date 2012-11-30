@@ -35,3 +35,14 @@ male = Gender { genderName = "Male" }
 
 person :: ArtistType
 person = ArtistType { artistTypeName = "Person" }
+
+latin :: Script
+latin = Script { scriptName = "Latin", scriptIsoCode = "Latn", scriptIsoNumber = "215" }
+
+english = Language
+    { languageName = "English"
+    , languageIsoCode2t = "eng"
+    , languageIsoCode2b = "eng"
+    , languageIsoCode1 = "en"
+    , languageIsoCode3 = "eng"
+    }
