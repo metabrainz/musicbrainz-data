@@ -206,6 +206,8 @@ data Entity a = Entity { entityRef :: Ref a
                        , entityData :: a
                        }
 
+deriving instance (Eq a, Show a) => Eq (Entity a)
+deriving instance (Eq a, Show a) => Show (Entity a)
 
 --------------------------------------------------------------------------------
 {-| The gender of an artist or editor. -}
