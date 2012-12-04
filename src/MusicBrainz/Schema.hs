@@ -28,87 +28,87 @@ import qualified Data.UUID as UUID
 
 --------------------------------------------------------------------------------
 instance FromField (Ref AliasType) where
-  fromField f v = Ref <$> fromField f v
+  fromField f v = view reference <$> fromField f v
 
 
 instance FromField (Ref Artist) where
-  fromField f v = Ref <$> fromField f v
+  fromField f v = view reference <$> fromField f v
 
 
 instance FromField (Ref ArtistCredit) where
-  fromField f v = Ref <$> fromField f v
+  fromField f v = view reference <$> fromField f v
 
 
 instance FromField (Ref ArtistType) where
-  fromField f v = Ref <$> fromField f v
+  fromField f v = view reference <$> fromField f v
 
 
 instance FromField (Ref Country) where
-  fromField f v = Ref <$> fromField f v
+  fromField f v = view reference <$> fromField f v
 
 
 instance FromField (Ref Edit) where
-  fromField f v = Ref <$> fromField f v
+  fromField f v = view reference <$> fromField f v
 
 
 instance FromField (Ref EditNote) where
-  fromField f v = Ref <$> fromField f v
+  fromField f v = view reference <$> fromField f v
 
 
 instance FromField (Ref Editor) where
-  fromField f v = Ref <$> fromField f v
+  fromField f v = view reference <$> fromField f v
 
 
 instance FromField (Ref Gender) where
-  fromField f v = Ref <$> fromField f v
+  fromField f v = view reference <$> fromField f v
 
 
 instance FromField (Ref Label) where
-  fromField f v = Ref <$> fromField f v
+  fromField f v = view reference <$> fromField f v
 
 
 instance FromField (Ref LabelType) where
-  fromField f v = Ref <$> fromField f v
+  fromField f v = view reference <$> fromField f v
 
 
 instance FromField (Ref Language) where
-  fromField f v = Ref <$> fromField f v
+  fromField f v = view reference <$> fromField f v
 
 
 instance FromField (Ref Recording) where
-  fromField f v = Ref <$> fromField f v
+  fromField f v = view reference <$> fromField f v
 
 
 instance FromField (Ref RelationshipAttribute) where
-  fromField f v = Ref <$> fromField f v
+  fromField f v = view reference <$> fromField f v
 
 
 instance FromField (Ref RelationshipType) where
-  fromField f v = Ref <$> fromField f v
+  fromField f v = view reference <$> fromField f v
 
 
 instance FromField (Ref Release) where
-  fromField f v = Ref <$> fromField f v
+  fromField f v = view reference <$> fromField f v
 
 
 instance FromField (Ref ReleaseGroup) where
-  fromField f v = Ref <$> fromField f v
+  fromField f v = view reference <$> fromField f v
 
 
 instance FromField (Ref (ReleaseGroupType a)) where
-  fromField f v = Ref <$> fromField f v
+  fromField f v = view reference <$> fromField f v
 
 
 instance FromField (Ref ReleasePackaging) where
-  fromField f v = Ref <$> fromField f v
+  fromField f v = view reference <$> fromField f v
 
 
 instance FromField (Ref ReleaseStatus) where
-  fromField f v = Ref <$> fromField f v
+  fromField f v = view reference <$> fromField f v
 
 
 instance FromField (Ref Script) where
-  fromField f v = Ref <$> fromField f v
+  fromField f v = view reference <$> fromField f v
 
 
 instance Typeable a => FromField (MBID a) where
@@ -123,11 +123,11 @@ instance Typeable a => FromField (MBID a) where
 
 
 instance FromField (Ref (Revision a)) where
-  fromField f v = Ref <$> fromField f v
+  fromField f v = view reference <$> fromField f v
 
 
 instance FromField (Ref (Tree a)) where
-  fromField f v = Ref <$> fromField f v
+  fromField f v = view reference <$> fromField f v
 
 
 instance FromField VoteScore where
