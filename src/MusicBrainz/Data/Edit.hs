@@ -9,6 +9,7 @@ module MusicBrainz.Data.Edit
     , addEditNote
     , findEditNotes
     , voteOnEdit
+    , listVotes
     , module MusicBrainz.Edit
     ) where
 
@@ -94,10 +95,10 @@ findEditNotes editId = query
 
 --------------------------------------------------------------------------------
 {-| Allow an editor to cast a 'Vote' on an edit. -}
-voteOnEdit :: Ref Editor -> Ref Edit -> Vote -> MusicBrainz ()
+voteOnEdit :: Ref Editor -> Ref Edit -> VoteScore -> MusicBrainz ()
 voteOnEdit editorId editId vote = void $ execute
   [sql| INSERT INTO vote (edit_id, editor_id, vote) VALUES (?, ?, ?) |]
-    (editorId, editId, vote)
+    (editId, editorId, vote)
 
 
 --------------------------------------------------------------------------------
@@ -140,3 +141,15 @@ mergeRevisionUpstream new = do
           addChild revisionId new
 
           setMasterRevision artistId revisionId
+
+
+--------------------------------------------------------------------------------
+listVotes :: (Functor m, Monad m, MonadIO m) => Ref Edit -> MusicBrainzT m [Vote]
+listVotes editId =
+  query [sql|
+      SELECT vote, editor_id,
+        row_number() OVER (PARTITION BY editor_id ORDER BY vote_time DESC) > 1 AS superceded
+      FROM vote
+      WHERE edit_id = ?
+      ORDER BY vote_time ASC
+    |] (Only editId)

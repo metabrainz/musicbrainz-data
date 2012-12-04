@@ -480,11 +480,11 @@ instance Bounded EditStatus where
 
 --------------------------------------------------------------------------------
 {-| The possible types of votes that editors can cast on an edit. -}
-data Vote = Accept | Reject | Abstain
+data VoteScore = Accept | Reject | Abstain
   deriving (Eq, Show)
 
 -- A custom instance here allows us to use -1 for reject.
-instance Enum Vote where
+instance Enum VoteScore where
   fromEnum Accept = 1
   fromEnum Reject = -1
   fromEnum Abstain = 0
@@ -496,9 +496,18 @@ instance Enum Vote where
 
   enumFrom = boundedEnumFrom
 
-instance Bounded Vote where
+instance Bounded VoteScore where
   minBound = Reject
   maxBound = Accept
+
+
+--------------------------------------------------------------------------------
+{-| A vote on an edit. -}
+data Vote = Vote { voteVote :: VoteScore
+                 , voteEditor :: Ref Editor
+                 , voteSuperceded :: Bool
+                 }
+  deriving (Eq, Show)
 
 --------------------------------------------------------------------------------
 {-| An edit note is a comment that can be left by editors on edit notes, to

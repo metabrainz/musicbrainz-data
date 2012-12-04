@@ -130,6 +130,10 @@ instance FromField (Ref (Tree a)) where
   fromField f v = Ref <$> fromField f v
 
 
+instance FromField VoteScore where
+  fromField f v = toEnum <$> fromField f v
+
+
 --------------------------------------------------------------------------------
 instance (FromField (Ref a), FromRow a, Typeable a) => FromRow (CoreEntity a) where
   fromRow = CoreEntity     -- Core entity's MBID
@@ -232,6 +236,10 @@ instance FromRow Script where
   fromRow = Script <$> field <*> field <*> field
 
 
+instance FromRow Vote where
+  fromRow = Vote <$> field <*> field <*> field
+
+
 --------------------------------------------------------------------------------
 instance ToField EditStatus where
   toField = toField . fromEnum
@@ -325,7 +333,7 @@ instance ToField (Ref (Tree a)) where
   toField = toField . dereference
 
 
-instance ToField Vote where
+instance ToField VoteScore where
   toField = toField . fromEnum
 
 

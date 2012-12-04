@@ -58,7 +58,7 @@ module MusicBrainz.Types
       -- ** Edit system mechanics
     , Edit(..)
     , EditNote(..)
-    , Vote(..)
+    , VoteScore(..), Vote(voteVote, voteEditor, voteSuperceded)
     , EditStatus(..)
 
       -- * Entity/reference handling

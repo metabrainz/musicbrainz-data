@@ -3150,7 +3150,7 @@ CREATE TABLE vote (
     editor_id integer NOT NULL,
     edit_id integer NOT NULL,
     vote smallint NOT NULL,
-    vote_time timestamp with time zone DEFAULT now() NOT NULL,
+    vote_time timestamp with time zone DEFAULT clock_timestamp() NOT NULL,
     CONSTRAINT vote_vote_check CHECK ((vote = ANY (ARRAY[(-1), 0, 1])))
 );
 
