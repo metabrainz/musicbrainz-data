@@ -19,6 +19,7 @@ Library
     MonadCatchIO-mtl >= 0.3.0.0 && <0.4,
     mtl >= 2.1.1 && < 2.2,
     postgresql-simple >= 0.2.4.1 && < 0.3,
+    semigroups >= 0.7,
     text >= 0.11 && < 0.12,
     transformers >= 0.3 && < 0.4,
     uuid >= 1.2.7 && < 1.3

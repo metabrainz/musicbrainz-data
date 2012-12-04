@@ -30,8 +30,7 @@ import MusicBrainz
 import MusicBrainz.Data.Edit
 
 mbTest :: MusicBrainz a -> IO a
-mbTest a = runMb databaseSettings $
-  begin *> a `onException` rollback <* rollback
+mbTest a = runMb databaseSettings (withTransactionRollBack a)
   where databaseSettings = defaultConnectInfo { connectDatabase = "musicbrainz_nes"
                                               , connectUser = "musicbrainz"
                                               }

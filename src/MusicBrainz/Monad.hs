@@ -1,4 +1,5 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE TemplateHaskell #-}
 {-| This module provides the 'MusicBrainz' monad for interacting with various
 MusicBrainz services, along with convenience re-exports of 'MusicBrainz.Types'
 and other very commonly used types, functions and values. -}
@@ -15,34 +16,38 @@ module MusicBrainz.Monad
     , Context
     , mbDb
 
-
       -- * Convenience database functions
     , defaultConnectInfo, ConnectInfo(..)
     , query, query_, execute, execute_, returning, executeMany
     , selectValue
-    , withTransaction
-    , begin, commit, rollback
+    , withTransaction, withTransactionRollBack
     ) where
 
 import Control.Applicative
+import Control.Lens hiding (Context)
 import Control.Monad.CatchIO
 import Control.Monad.IO.Class (MonadIO, liftIO)
 import Control.Monad.Reader (ReaderT, runReaderT)
-import Control.Monad.Reader.Class (MonadReader, ask)
+import Control.Monad.Reader.Class (MonadReader, ask, local)
 import Control.Monad.Trans.Class
 import Data.Int (Int64)
 import Database.PostgreSQL.Simple (Connection, ConnectInfo(..), Only(..), Query, connect, defaultConnectInfo)
 import Database.PostgreSQL.Simple.FromRow (FromRow)
 import Database.PostgreSQL.Simple.ToRow (ToRow)
+import Numeric.Natural (Natural)
 
 import qualified Database.PostgreSQL.Simple as PG
 
 --------------------------------------------------------------------------------
 {-| Context available when executing 'MusicBrainz' actions. -}
 data Context = Context
-    { mbDb :: Connection
+    { _mbDb :: Connection
       -- ^ The underlying PostgreSQL 'Connection'.
+    , _transactionDepth :: Natural
     }
+
+makeLenses ''Context
+
 
 
 {-| The MusicBrainz monad allows you to run queries against the MusicBrainz
@@ -62,7 +67,7 @@ newtype MusicBrainzT m a = MusicBrainzT (ReaderT Context m a)
 to the MusicBrainz database, and can be quite expensive if the target doesn't
 have pgBouncer running. If this is the case, you should try and call this as
 /late/ as possible. -}
-runMb :: (Functor m, MonadIO m) => ConnectInfo -> MusicBrainzT m a -> m a
+runMb :: (Applicative m, Functor m, MonadIO m) => ConnectInfo -> MusicBrainzT m a -> m a
 runMb connArgs actions = do
   context <- openContext connArgs
   runMbContext context actions
@@ -74,8 +79,9 @@ runMbContext context (MusicBrainzT actions) = runReaderT actions context
 
 
 {-| Open a fresh set of connections to interact with MusicBrainz. -}
-openContext :: (Functor m, MonadIO m) => ConnectInfo -> m Context
+openContext :: (Applicative m, Functor m, MonadIO m) => ConnectInfo -> m Context
 openContext connArgs = Context <$> liftIO (connect connArgs)
+                               <*> pure 0
 
 
 {-| Nest a set of 'MusicBrainzT' actions inside another monad, allowing for the
@@ -129,8 +135,22 @@ selectValue = fmap (fromOnly . head)
 {-| Run a series of MusicBrainz actions within a single PostgreSQL
 transaction. -}
 withTransaction :: (MonadIO m, Applicative m, MonadCatchIO m) => MusicBrainzT m a -> MusicBrainzT m a
-withTransaction action = begin *> action `onException` rollback <* commit
+withTransaction = withTransaction' commit
 
+{-| Run a series of MusicBrainz actions within a single PostgreSQL
+transaction. At the end of the action, roll back the transaction.
+This is mostly useful for testing things but leaving with a clean
+state. -}
+withTransactionRollBack :: (MonadIO m, Applicative m, MonadCatchIO m) => MusicBrainzT m a -> MusicBrainzT m a
+withTransactionRollBack = withTransaction' rollback
+
+withTransaction' :: (MonadIO m, Applicative m, MonadCatchIO m) => MusicBrainzT m () -> MusicBrainzT m a -> MusicBrainzT m a
+withTransaction' conclude action = peruse transactionDepth >>= runAt
+  where
+    action' = local (transactionDepth +~ 1) action
+    runAt depth
+      | depth == 0 = begin *> action' `onException` rollback <* conclude
+      | otherwise  = action'
 
 {-| Begin a transaction. This is a low-level operation, and generally *not*
 what you are really looking for, which is 'withTransaction'. -}
@@ -151,7 +171,5 @@ rollback = withMBConn PG.rollback
 
 
 withMBConn :: MonadIO m => (Connection -> IO a) -> MusicBrainzT m a
-withMBConn action = do
-  (Context conn) <- ask
-  liftIO $ action conn
+withMBConn action = peruse mbDb >>= liftIO . action
 
