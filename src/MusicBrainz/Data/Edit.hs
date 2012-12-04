@@ -6,6 +6,7 @@ module MusicBrainz.Data.Edit
     ( apply
     , openEdit
     , createEdit
+    , withEdit
     , addEditNote
     , findEditNotes
     , voteOnEdit
@@ -107,10 +108,25 @@ of the edit (that is, link revisions to the edit). -}
 createEdit :: EditM a -> MusicBrainz (Ref Edit)
 createEdit actions = do
   editId <- openEdit
-  changes <- fmap execWriterT (nestMb actions) >>= liftIO
-  mapM_ (linkChange editId) changes
+  runEditM editId actions
   return editId
-  where linkChange editId (Change r) = linkRevisionToEdit editId r
+
+
+--------------------------------------------------------------------------------
+{-| Given an edit that already exists, run 'EditM' actions against it, to
+augment the edit with additional changes. -}
+withEdit :: Ref Edit -> EditM a -> MusicBrainz a
+withEdit editId action = fst <$> runEditM editId action
+
+
+--------------------------------------------------------------------------------
+runEditM :: Ref Edit -> EditM a -> MusicBrainz (a, [Change])
+runEditM editId action = do
+  (a, changes) <- fmap runWriterT (nestMb action) >>= liftIO
+  mapM_ linkChange changes
+  return (a, changes)
+  where
+    linkChange (Change r) = linkRevisionToEdit editId r
 
 
 --------------------------------------------------------------------------------
@@ -121,26 +137,33 @@ mergeRevisionUpstream new = do
   let artistId = coreRef newVer
 
   current <- findLatest artistId
-  ancestor' <- mergeBase new (coreRevision current) >>= traverse viewRevision
-  case ancestor' of
-    Nothing -> error "Unable to merge: no common ancestor"
-    Just ancestor -> do
-      newTree <- viewTree new
-      currentTree <- viewTree (coreRevision current)
-      ancestorTree <- viewTree (coreRevision ancestor)
+  case coreRevision current == new of
+    -- We aren't doing a merge at all, but we're simply 'creating' this
+    -- entity (by setting an upstream revision).
+    True -> do
+      setMasterRevision artistId new
 
-      case runMerge newTree currentTree ancestorTree merge of
-        Nothing -> error "Unable to merge: conflict"
-        Just merged -> do
-          editorId <- selectValue $ query
-            [sql| SELECT editor_id FROM revision WHERE revision_id = ? |]
-              (Only $ coreRevision current)
+    False -> do
+      ancestor' <- mergeBase new (coreRevision current) >>= traverse viewRevision
+      case ancestor' of
+        Nothing -> error "Unable to merge: no common ancestor"
+        Just ancestor -> do
+          newTree <- viewTree new
+          currentTree <- viewTree (coreRevision current)
+          ancestorTree <- viewTree (coreRevision ancestor)
 
-          treeId <- realiseTree merged
-          revisionId <- newChildRevision editorId (coreRevision current) treeId
-          addChild revisionId new
+          case runMerge newTree currentTree ancestorTree merge of
+            Nothing -> error "Unable to merge: conflict"
+            Just merged -> do
+              editorId <- selectValue $ query
+                [sql| SELECT editor_id FROM revision WHERE revision_id = ? |]
+                  (Only $ coreRevision current)
 
-          setMasterRevision artistId revisionId
+              treeId <- realiseTree merged
+              revisionId <- newChildRevision editorId (coreRevision current) treeId
+              addChild revisionId new
+
+              setMasterRevision artistId revisionId
 
 
 --------------------------------------------------------------------------------

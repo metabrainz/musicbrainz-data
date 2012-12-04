@@ -11,6 +11,9 @@ module Test.MusicBrainz
       -- * Test utilities
     , mbTest
     , assertException
+
+      -- * Edit combinators
+    , autoEdit
     ) where
 
 import Control.Applicative
@@ -24,6 +27,7 @@ import Test.HUnit hiding (Label, Test, Testable)
 import Test.QuickCheck hiding (Testable)
 
 import MusicBrainz
+import MusicBrainz.Data.Edit
 
 mbTest :: MusicBrainz a -> IO a
 mbTest a = runMb databaseSettings $
@@ -38,3 +42,7 @@ assertException isWanted action =
         action
         assertFailure $ "No exception thrown"
 
+autoEdit :: EditM a -> MusicBrainz a
+autoEdit action = do
+  editId <- openEdit
+  withEdit editId action <* apply editId

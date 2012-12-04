@@ -10,37 +10,37 @@ module MusicBrainz.Data.ClassTests
     , testUpdate
     ) where
 
-import Control.Applicative
-import Control.Lens
+import           Control.Applicative
+import           Control.Lens
 
 import qualified Data.Set as Set
 
-import Test.MusicBrainz
-import Test.MusicBrainz.Repository (acid2)
+import           Test.MusicBrainz
+import           Test.MusicBrainz.Repository (acid2)
 
-import MusicBrainz
-import MusicBrainz.Lens
-import MusicBrainz.Data
-import MusicBrainz.Data.Edit
-import MusicBrainz.Data.Editor (register)
+import           MusicBrainz
+import           MusicBrainz.Lens
+import           MusicBrainz.Data
+import           MusicBrainz.Data.Edit
+import           MusicBrainz.Data.Editor (register)
 
 --------------------------------------------------------------------------------
-testCreateFindLatest :: (Eq a, Show a, FindLatest a, Create a)
+testCreateFindLatest :: (Eq a, Show a, FindLatest a, Create a, ViewRevision a)
   => Tree a -> MusicBrainz ()
 testCreateFindLatest tree = do
   editor <- register acid2
-  created <- create (entityRef editor) tree
+  created <- autoEdit $ create (entityRef editor) tree >>= viewRevision
   found <- findLatest (coreRef created)
   liftIO $ found @?= created
 
 
 --------------------------------------------------------------------------------
-testUpdate :: (Create a, Update a, FindLatest a, ViewTree a)
+testUpdate :: (Create a, Update a, FindLatest a, ViewRevision a, ViewTree a)
   => Tree a -> Tree a -> MusicBrainz ()
 testUpdate start end = do
   editor <- entityRef <$> register acid2
 
-  created <- create editor start
+  created <- autoEdit $ create editor start >>= viewRevision
   let entityId = coreRef created
 
   editId <- createEdit $
@@ -58,13 +58,13 @@ testUpdate start end = do
 
 
 --------------------------------------------------------------------------------
-testMerge :: (RefSpec a ~ MBID a, Merge a, Referenceable a, ResolveReference a, Create a)
+testMerge :: (RefSpec a ~ MBID a, Merge a, Referenceable a, ResolveReference a, Create a, ViewRevision a)
   => Tree a -> Tree a -> MusicBrainz ()
 testMerge treeA treeB = do
   editor <- entityRef <$> register acid2
 
-  a <- create editor treeA
-  b <- create editor treeB
+  a <- autoEdit $ create editor treeA >>= viewRevision
+  b <- autoEdit $ create editor treeB >>= viewRevision
 
   edit <- createEdit $
     merge editor (coreRevision a) (coreRef b)
@@ -76,11 +76,12 @@ testMerge treeA treeB = do
 
 
 --------------------------------------------------------------------------------
-testAliases :: (Create a, FindLatest a, TreeAliases a, Update a, ViewAliases a) => Tree a -> Alias -> MusicBrainz ()
+testAliases :: (Create a, FindLatest a, TreeAliases a, Update a, ViewAliases a, ViewRevision a)
+  => Tree a -> Alias -> MusicBrainz ()
 testAliases tree alias = do
   editor <- entityRef <$> register acid2
 
-  artist <- create editor (aliases .~ Set.singleton alias $ tree)
+  artist <- autoEdit $ create editor (aliases .~ Set.singleton alias $ tree) >>= viewRevision
   aliasesPreUpdate <- viewAliases (coreRevision artist)
   liftIO $ aliasesPreUpdate @?= Set.singleton alias
 
@@ -95,13 +96,13 @@ testAliases tree alias = do
 
 
 --------------------------------------------------------------------------------
-testAnnotation :: (Create a, FindLatest a, TreeAnnotation a, Update a, ViewAnnotation a)
+testAnnotation :: (Create a, FindLatest a, TreeAnnotation a, Update a, ViewAnnotation a, ViewRevision a)
   => (Ref Editor -> MusicBrainz (Tree a)) -> MusicBrainz ()
 testAnnotation startTree = do
   editor <- entityRef <$> register acid2
 
   entityTree <- startTree editor
-  entity <- create editor (annotation .~ expected $ entityTree)
+  entity <- autoEdit $ create editor (annotation .~ expected $ entityTree) >>= viewRevision
   annPreUpdate <- viewAnnotation (coreRevision entity)
   liftIO $ annPreUpdate @?= expected
 

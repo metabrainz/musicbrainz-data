@@ -25,7 +25,7 @@ tests = [ testFindLatest
 testFindLatest :: Test
 testFindLatest = testCase "findLatest when release group exists" $ mbTest $ do
   editor <- entityRef <$> register acid2
-  created <- dummyTree editor >>= create editor
+  created <- dummyTree editor >>= \t -> autoEdit (create editor t >>= viewRevision)
   found <- findLatest (coreRef created)
   liftIO $ found @?= created
 

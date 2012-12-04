@@ -67,18 +67,16 @@ viewAnnotation entityName r = fromOnly . head <$> query q (Only r)
 
 
 --------------------------------------------------------------------------------
-create :: (Functor m, Monad m, MonadIO m, FromField (Ref a), Typeable a, MasterRevision a, NewEntityRevision a, RealiseTree a)
-  => String -> Ref Editor -> Tree a -> MusicBrainzT m (CoreEntity a)
+create :: (Editable a, FromField (Ref a), MasterRevision a, NewEntityRevision a, RealiseTree a, Typeable a)
+  => String -> Ref Editor -> Tree a -> EditM (Ref (Revision a))
 create eName editor entity = do
   treeId <- realiseTree entity
   entityId <- reserveEntityTable eName
   revisionId <- newUnlinkedRevision editor
   MusicBrainz.Edit.newEntityRevision revisionId entityId treeId
   MusicBrainz.Edit.setMasterRevision entityId revisionId
-  return CoreEntity { coreRef = entityId
-                    , coreRevision = revisionId
-                    , coreData = treeData entity
-                    }
+  includeRevision revisionId
+  return revisionId
 
 
 --------------------------------------------------------------------------------

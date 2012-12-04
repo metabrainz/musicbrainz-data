@@ -27,7 +27,7 @@ tests = [ testCreateFindLatest
 testCreateFindLatest :: Test
 testCreateFindLatest = testCase "findLatest when release exists" $ mbTest $ do
   editor <- entityRef <$> register acid2
-  created <- dummyTree editor >>= create editor
+  created <- dummyTree editor >>= \t -> autoEdit (create editor t >>= viewRevision)
 
   found <- findLatest (coreRef created)
   liftIO $ found @?= created
@@ -43,7 +43,7 @@ testAnnotation = testCase "Can add and remove artist annotations" $ mbTest $ do
 dummyTree :: Ref Editor -> MusicBrainz (Tree Release)
 dummyTree editor = do
   portisheadAc <- singleArtistAc editor portishead
-  portisheadRg <- create editor (minimalTree (dummy portisheadAc))
+  portisheadRg <- autoEdit $ create editor (minimalTree (dummy portisheadAc)) >>= viewRevision
   country <- add uk
   script <- add latin
   language <- add english

@@ -5,10 +5,10 @@ module MusicBrainz.Data.Create
 import Control.Monad.IO.Class (MonadIO)
 
 import MusicBrainz
+import MusicBrainz.Edit
 
 --------------------------------------------------------------------------------
 {-| The create type class allows you to create new entities. -}
 class Create a where
   {-| Create a new entity, with some starting data, producing a fresh MBID. -}
-  create :: (Functor m, MonadIO m)
-    => Ref Editor -> Tree a -> MusicBrainzT m (CoreEntity a)
+  create :: Ref Editor -> Tree a -> EditM (Ref (Revision a))

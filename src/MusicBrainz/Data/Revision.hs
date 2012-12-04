@@ -8,6 +8,7 @@ module MusicBrainz.Data.Revision
 
 import Control.Applicative
 import Control.Monad.IO.Class
+import Data.Maybe (listToMaybe)
 import Database.PostgreSQL.Simple (In(..), Only(..))
 import Database.PostgreSQL.Simple.SqlQQ
 
@@ -19,7 +20,7 @@ import MusicBrainz
 {-| Attempt to resolve a the revision which 2 revisions forked from. -}
 mergeBase :: (Functor m, MonadIO m) => Ref (Revision a) -> Ref (Revision a)
           -> MusicBrainzT m (Maybe (Ref (Revision a)))
-mergeBase a b = selectValue $ query
+mergeBase a b = listToMaybe . map fromOnly <$> query
   [sql| WITH RECURSIVE revision_path (revision_id, parent_revision_id, distance)
         AS (
           SELECT revision_id, parent_revision_id, 1

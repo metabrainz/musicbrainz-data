@@ -77,8 +77,8 @@ testRelationships = testCase "Relationships are bidirectional over addition and 
   editor <- entityRef <$> register acid2
   rel <- expectedRel
 
-  a <- create editor freddie
-  b <- create editor (minimalTree portishead)
+  a <- autoEdit $ create editor freddie >>= viewRevision
+  b <- autoEdit $ create editor (minimalTree portishead) >>= viewRevision
 
   edit1 <- createEdit $
     update editor (coreRevision a) freddie { artistRelationships = Set.singleton $ ArtistRelationship (coreRef b) rel }
@@ -138,7 +138,7 @@ testIpiCodes :: Test
 testIpiCodes = testCase "Can add and remove artist IPI codes" $ mbTest $ do
   editor <- entityRef <$> register acid2
 
-  artist <- create editor freddie { artistIpiCodes = Set.singleton ipi }
+  artist <- autoEdit $ create editor freddie { artistIpiCodes = Set.singleton ipi } >>= viewRevision
   ipiPreUpdate <- viewIpiCodes (coreRevision artist)
   liftIO $ ipiPreUpdate @?= Set.singleton ipi
 
@@ -166,8 +166,8 @@ testMerge :: Test
 testMerge = testCase "Can merge 2 distinct artists" $ mbTest $ do
   editor <- entityRef <$> register acid2
 
-  a <- create editor freddie
-  b <- create editor (minimalTree portishead)
+  a <- autoEdit $ create editor freddie >>= viewRevision
+  b <- autoEdit $ create editor (minimalTree portishead) >>= viewRevision
 
   edit <- createEdit $
     merge editor (coreRevision a) (coreRef b)
