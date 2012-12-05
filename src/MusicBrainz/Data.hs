@@ -24,6 +24,7 @@ module MusicBrainz.Data
 import MusicBrainz.Data.Artist ()
 import MusicBrainz.Data.ArtistType ()
 import MusicBrainz.Data.Country ()
+import MusicBrainz.Data.Edit ()
 import MusicBrainz.Data.Editor ()
 import MusicBrainz.Data.Gender ()
 import MusicBrainz.Data.Label ()

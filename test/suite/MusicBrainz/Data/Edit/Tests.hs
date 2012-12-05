@@ -11,10 +11,13 @@ import MusicBrainz
 import MusicBrainz.Data.Edit
 import MusicBrainz.Data.Editor
 
+import qualified MusicBrainz.Data.ClassTests as ClassTests
+
 --------------------------------------------------------------------------------
 tests :: [Test]
 tests = [ testAddEditNote
         , testVoteOnEdit
+        , testResolveReference
         ]
 
 
@@ -57,3 +60,9 @@ testVoteOnEdit = testCase "Can submit votes on edits" $ mbTest $ do
       voteEditor vote @?= editor
       voteVote vote @?= score
       voteSuperceded vote @?= superceded
+
+
+--------------------------------------------------------------------------------
+testResolveReference :: Test
+testResolveReference = testCase "Can resolve edit references" $ mbTest $ do
+  ClassTests.testResolveReference openEdit id

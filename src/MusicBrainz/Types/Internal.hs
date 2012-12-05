@@ -458,6 +458,7 @@ emerges. -}
 data Edit = Edit
     { editStatus :: EditStatus
     }
+  deriving (Eq, Show)
 
 
 --------------------------------------------------------------------------------

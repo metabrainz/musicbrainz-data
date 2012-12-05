@@ -18,13 +18,14 @@ import Control.Applicative
 import Control.Monad
 import Control.Monad.Trans
 import Control.Monad.Trans.Writer
+import Data.Maybe (listToMaybe)
 import Data.Traversable (traverse)
 import Database.PostgreSQL.Simple (Only(..), (:.)(..))
 import Database.PostgreSQL.Simple.SqlQQ (sql)
 
 import MusicBrainz
 import MusicBrainz.Data.Artist ()
-import MusicBrainz.Data.FindLatest (findLatest, FindLatest)
+import MusicBrainz.Data.FindLatest (findLatest, FindLatest, ResolveReference(..))
 import MusicBrainz.Data.Label ()
 import MusicBrainz.Data.Recording ()
 import MusicBrainz.Data.Release ()
@@ -176,3 +177,9 @@ listVotes editId =
       WHERE edit_id = ?
       ORDER BY vote_time ASC
     |] (Only editId)
+
+
+--------------------------------------------------------------------------------
+instance ResolveReference Edit where
+  resolveReference editId = listToMaybe . map fromOnly <$> query q (Only editId)
+    where q = [sql| SELECT edit_id FROM edit WHERE edit_id = ? |]
