@@ -6,12 +6,14 @@ import Control.Applicative
 import qualified Data.Set as Set
 
 import Test.MusicBrainz
+import Test.MusicBrainz.Data
 import Test.MusicBrainz.Repository (acid2)
 
 import MusicBrainz
 import MusicBrainz.Data
 import MusicBrainz.Data.Edit
 import MusicBrainz.Data.Editor
+import MusicBrainz.Data.Work
 
 import qualified MusicBrainz.Data.ClassTests as ClassTests
 
@@ -22,6 +24,7 @@ tests = [ testCreateFindLatest
         , testAliases
         , testAnnotation
         , testMerge
+        , testIswc
         ]
 
 --------------------------------------------------------------------------------
@@ -29,16 +32,12 @@ testCreateFindLatest :: Test
 testCreateFindLatest = testCase "create >>= findLatest == create" $ mbTest $ do
   ClassTests.testCreateFindLatest tree
   where
-    tree =
-      WorkTree { workData = Work
-                     { workName = "Freddie Mercury"
-                     , workComment = "Of queen"
-                     , workType = Nothing
-                     , workLanguage = Nothing
-                     }
-                 , workAliases = Set.empty
-                 , workAnnotation = ""
-                 }
+    tree = minimalTree Work
+             { workName = "Freddie Mercury"
+             , workComment = "Of queen"
+             , workType = Nothing
+             , workLanguage = Nothing
+             }
 
 
 --------------------------------------------------------------------------------
@@ -92,12 +91,32 @@ testMerge = testCase "Can merge 2 distinct works" $ mbTest $ do
 
 
 --------------------------------------------------------------------------------
+testIswc :: Test
+testIswc = testCase "Can add and remove ISWCs" $ mbTest $ do
+  editor <- entityRef <$> register acid2
+
+  work <- autoEdit $ create editor wildRoseWithIswc >>= viewRevision
+  iswcPreUpdate <- viewIswcs (coreRevision work)
+  liftIO $ iswcPreUpdate @?= Set.singleton iswc
+
+  edit <- createEdit $
+    update editor (coreRevision work) wildRose
+
+  apply edit
+
+  latest <- findLatest (coreRef work)
+  iswcsPostUpdate <- viewIswcs (coreRevision latest)
+  liftIO $ iswcsPostUpdate @?= Set.empty
+
+  where
+    iswc = ISWC "T-070.116.442-2"
+    wildRoseWithIswc = wildRose { workIswcs = Set.singleton iswc }
+
+
+--------------------------------------------------------------------------------
 wildRose :: Tree Work
-wildRose = WorkTree { workData = Work { workName = "To a Wild Rose"
-                                      , workComment = ""
-                                      , workLanguage = Nothing
-                                      , workType = Nothing
-                                      }
-                    , workAliases = Set.empty
-                    , workAnnotation = ""
-                    }
+wildRose = minimalTree Work { workName = "To a Wild Rose"
+                            , workComment = ""
+                            , workLanguage = Nothing
+                            , workType = Nothing
+                            }

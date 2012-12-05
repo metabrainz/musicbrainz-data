@@ -151,6 +151,7 @@ instance Mergeable (Tree Work) where
     WorkTree <$> workData `mergedVia` mergeWorkData
              <*> workAliases `mergedVia` merge
              <*> workAnnotation `mergedVia` mergeEq
+             <*> workIswcs `mergedVia` merge
     where
       mergeWorkData =
         Work

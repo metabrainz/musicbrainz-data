@@ -39,6 +39,7 @@ person = ArtistType { artistTypeName = "Person" }
 latin :: Script
 latin = Script { scriptName = "Latin", scriptIsoCode = "Latn", scriptIsoNumber = "215" }
 
+english :: Language
 english = Language
     { languageName = "English"
     , languageIsoCode2t = "eng"

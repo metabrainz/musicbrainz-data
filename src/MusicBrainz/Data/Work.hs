@@ -6,12 +6,15 @@ The majority of operations on works are common for all core entities, so you
 should see the documentation on the 'Work' type and notice all the type class
 instances. -}
 module MusicBrainz.Data.Work
-    ( ) where
+    ( viewIswcs ) where
 
 import Control.Applicative
 import Control.Monad.IO.Class (MonadIO)
+import Data.Foldable (forM_)
 import Database.PostgreSQL.Simple (Only(..))
 import Database.PostgreSQL.Simple.SqlQQ
+
+import qualified Data.Set as Set
 
 import MusicBrainz
 import MusicBrainz.Data.Alias
@@ -62,6 +65,7 @@ instance RealiseTree Work where
     dataId <- insertWorkData (workData work)
     treeId <- insertWorkTree (workAnnotation work) dataId
     Generic.realiseAliases "work" treeId work
+    realiseIswcs treeId
     return treeId
     where
       insertWorkData :: (Functor m, MonadIO m) => Work -> MusicBrainzT m Int
@@ -74,6 +78,11 @@ instance RealiseTree Work where
                     VALUES (?, ?)
                     RETURNING work_tree_id  |]
           (dataId, annotation)
+
+      realiseIswcs treeId = forM_ (workIswcs work) $ \iswc ->
+        execute q (treeId, iswc)
+        where q = [sql| INSERT INTO iswc (work_tree_id, iswc) VALUES (?, ?) |]
+
 
 
 --------------------------------------------------------------------------------
@@ -95,6 +104,7 @@ instance ViewTree Work where
   viewTree r = WorkTree <$> fmap coreData (viewRevision r)
                         <*> viewAliases r
                         <*> viewAnnotation r
+                        <*> viewIswcs r
 
 
 --------------------------------------------------------------------------------
@@ -137,3 +147,14 @@ instance ResolveReference Work where
 
 --------------------------------------------------------------------------------
 instance Merge Work
+
+
+--------------------------------------------------------------------------------
+viewIswcs :: (Functor m, Monad m, MonadIO m)
+  => Ref (Revision Work) -> MusicBrainzT m (Set.Set ISWC)
+viewIswcs revisionId = Set.fromList . map fromOnly <$> query q (Only revisionId)
+  where
+    q = [sql| SELECT iswc
+              FROM iswc
+              JOIN work_revision USING (work_tree_id)
+              WHERE revision_id = ? |]

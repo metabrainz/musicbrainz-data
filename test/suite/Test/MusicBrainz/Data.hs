@@ -48,3 +48,6 @@ instance MinimalTree Release where
 
 instance MinimalTree ReleaseGroup where
   minimalTree dat' = ReleaseGroupTree dat' ""
+
+instance MinimalTree Work where
+  minimalTree dat' = WorkTree dat' Set.empty "" Set.empty

@@ -462,6 +462,7 @@ data Tree a where
     workData :: Work
   , workAliases :: Set.Set Alias
   , workAnnotation :: Text
+  , workIswcs :: Set.Set ISWC
   } -> Tree Work
 
 deriving instance Eq (Tree a)
@@ -592,3 +593,8 @@ data RelationshipAttribute = RelationshipAttribute
 {-| A description of all types that a relationship can be between. -}
 data RelationshipTarget = ToArtist
   deriving (Bounded, Enum)
+
+
+--------------------------------------------------------------------------------
+newtype ISWC = ISWC Text
+  deriving (Eq, Ord, Show)

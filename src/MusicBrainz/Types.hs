@@ -39,6 +39,7 @@ module MusicBrainz.Types
     , Editor(..)
     , Gender(..)
     , IPI(..)
+    , ISWC(..)
     , Language(..)
     , Script(..)
 
