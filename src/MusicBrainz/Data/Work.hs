@@ -18,7 +18,6 @@ import MusicBrainz.Data.Alias
 import MusicBrainz.Data.Annotation
 import MusicBrainz.Data.Create
 import MusicBrainz.Data.FindLatest
-import MusicBrainz.Data.IPI
 import MusicBrainz.Data.Merge
 import MusicBrainz.Data.Revision.Internal
 import MusicBrainz.Data.Tree
@@ -111,11 +110,6 @@ instance ViewAliases Work where
 --------------------------------------------------------------------------------
 instance ViewAnnotation Work where
   viewAnnotation = Generic.viewAnnotation "work"
-
-
---------------------------------------------------------------------------------
-instance ViewIPICodes Work where
-  viewIpiCodes = Generic.viewIpiCodes "work"
 
 
 --------------------------------------------------------------------------------
