@@ -14,13 +14,8 @@ class TreeRelationships a where
   {-| A 'Lens' into all relationships for any 'Tree'. -}
   relationships :: SimpleLens (Tree a) (Set.Set LinkedRelationship)
 
-
 instance TreeRelationships Artist where
-  relationships = lens getter setter
-    where
-      getter = artistRelationships
-      setter tree new = tree { artistRelationships = new }
-
+  relationships f artist = f (artistRelationships artist) <&> \b -> artist { artistRelationships = b }
 
 --------------------------------------------------------------------------------
 {-| Provide a single lens to view all aliases inside a 'Tree'. -}
@@ -28,24 +23,14 @@ class TreeAliases a where
   {-| A 'Lens' into all aliases for any 'Tree'. -}
   aliases :: SimpleLens (Tree a) (Set.Set Alias)
 
-
 instance TreeAliases Artist where
-  aliases = lens getter setter
-    where
-      getter = artistAliases
-      setter tree new = tree { artistAliases = new }
+  aliases f artist = f (artistAliases artist) <&> \b -> artist { artistAliases = b }
 
 instance TreeAliases Label where
-  aliases = lens getter setter
-    where
-      getter = labelAliases
-      setter tree new = tree { labelAliases = new }
+  aliases f label = f (labelAliases label) <&> \b -> label { labelAliases = b }
 
 instance TreeAliases Work where
-  aliases = lens getter setter
-    where
-      getter = workAliases
-      setter tree new = tree { workAliases = new }
+  aliases f work = f (workAliases work) <&> \b -> work { workAliases = b }
 
 
 --------------------------------------------------------------------------------
@@ -54,39 +39,20 @@ class TreeAnnotation a where
   {-| A 'Lens' into the annotation for any 'Tree'. -}
   annotation :: SimpleLens (Tree a) Text
 
-
 instance TreeAnnotation Artist where
-  annotation = lens getter setter
-    where
-      getter = artistAnnotation
-      setter tree new = tree { artistAnnotation = new }
+  annotation f artist = f (artistAnnotation artist) <&> \b -> artist { artistAnnotation = b }
 
 instance TreeAnnotation Label where
-  annotation = lens getter setter
-    where
-      getter = labelAnnotation
-      setter tree new = tree { labelAnnotation = new }
+  annotation f label = f (labelAnnotation label) <&> \b -> label { labelAnnotation = b }
 
 instance TreeAnnotation Recording where
-  annotation = lens getter setter
-    where
-      getter = recordingAnnotation
-      setter tree new = tree { recordingAnnotation = new }
+  annotation f recording = f (recordingAnnotation recording) <&> \b -> recording { recordingAnnotation = b }
 
 instance TreeAnnotation Release where
-  annotation = lens getter setter
-    where
-      getter = releaseAnnotation
-      setter tree new = tree { releaseAnnotation = new }
+  annotation f release = f (releaseAnnotation release) <&> \b -> release { releaseAnnotation = b }
 
 instance TreeAnnotation ReleaseGroup where
-  annotation = lens getter setter
-    where
-      getter = releaseGroupAnnotation
-      setter tree new = tree { releaseGroupAnnotation = new }
+  annotation f releaseGroup = f (releaseGroupAnnotation releaseGroup) <&> \b -> releaseGroup { releaseGroupAnnotation = b }
 
 instance TreeAnnotation Work where
-  annotation = lens getter setter
-    where
-      getter = workAnnotation
-      setter tree new = tree { workAnnotation = new }
+  annotation f work = f (workAnnotation work) <&> \b -> work { workAnnotation = b }
