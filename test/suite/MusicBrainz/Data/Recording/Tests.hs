@@ -4,6 +4,7 @@ module MusicBrainz.Data.Recording.Tests
 
 import Control.Applicative
 
+import Data.Monoid (mempty)
 import qualified Data.Set as Set
 
 import Test.MusicBrainz
@@ -59,7 +60,7 @@ testIsrc = testCase "Can add and remove ISRCs" $ mbTest $ do
 
   latest <- findLatest (coreRef recording)
   isrcsPostUpdate <- viewIsrcs (coreRevision latest)
-  liftIO $ isrcsPostUpdate @?= Set.empty
+  liftIO $ isrcsPostUpdate @?= mempty
 
   where
     isrc = ISRC "GBAAA9800322"

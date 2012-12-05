@@ -205,6 +205,8 @@ realiseAliases eName treeId tree = forM_ (Set.toList $ tree^.aliases) $ \alias -
 
 
 --------------------------------------------------------------------------------
-realiseIpiCodes eName treeId tree = executeMany q
+realiseIpiCodes :: (Functor m, MonadIO m, TreeIPICodes a)
+  => String -> Ref (Tree a) -> Tree a -> MusicBrainzT m ()
+realiseIpiCodes eName treeId tree = void $ executeMany q
       $ map (Only treeId :.) (Set.toList $ tree^.ipiCodes)
   where q = fromString $ "INSERT INTO " ++ eName ++ "_ipi (" ++ eName ++ "_tree_id, ipi) VALUES (?, ?)"

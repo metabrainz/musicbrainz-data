@@ -13,6 +13,7 @@ module MusicBrainz.Data.ClassTests
 
 import           Control.Applicative
 import           Control.Lens
+import           Data.Monoid (mempty)
 
 import qualified Data.Set as Set
 
@@ -93,7 +94,7 @@ testAliases tree alias = do
 
   latest <- findLatest (coreRef artist)
   aliasesPostUpdate <- viewAliases (coreRevision latest)
-  liftIO $ aliasesPostUpdate @?= Set.empty
+  liftIO $ aliasesPostUpdate @?= mempty
 
 
 --------------------------------------------------------------------------------
@@ -154,7 +155,7 @@ testIpiCodes startTree = do
 
   latest <- findLatest (coreRef entity)
   ipiPostUpdate <- viewIpiCodes (coreRevision latest)
-  liftIO $ ipiPostUpdate @?= Set.empty
+  liftIO $ ipiPostUpdate @?= mempty
 
   where
     ipi = IPI "12345678912"

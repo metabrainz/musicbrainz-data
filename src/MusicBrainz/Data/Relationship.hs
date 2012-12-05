@@ -10,6 +10,7 @@ module MusicBrainz.Data.Relationship
 import Control.Applicative
 import Control.Lens hiding (by)
 import Control.Monad.IO.Class (MonadIO)
+import Data.Monoid (mappend, mempty)
 import Database.PostgreSQL.Simple (Only(..), In(..))
 import Database.PostgreSQL.Simple.SqlQQ (sql)
 
@@ -31,7 +32,7 @@ instance Add RelationshipType where
 --------------------------------------------------------------------------------
 inflateRelationships :: (Functor m, MonadIO m) => [Int] -> MusicBrainzT m (Map.Map Int Relationship)
 inflateRelationships relationshipIds = do
-  attrs <- Map.fromListWith (Set.union) . over (mapped._2) Set.singleton
+  attrs <- Map.fromListWith mappend . over (mapped._2) Set.singleton
     <$> allAttributes
 
   relRows <- query [sql|
@@ -57,7 +58,7 @@ inflateRelationships relationshipIds = do
       (relId, typeId, by, bm, bd, ey, em, ed, ended) =
         let relationship = Relationship
               { relType = typeId
-              , relAttributes = Map.findWithDefault Set.empty relId attrMap
+              , relAttributes = Map.findWithDefault mempty relId attrMap
               , relBeginDate = PartialDate by bm bd
               , relEndDate = PartialDate ey em ed
               , relEnded = ended

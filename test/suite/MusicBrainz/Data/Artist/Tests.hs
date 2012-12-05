@@ -3,6 +3,7 @@ module MusicBrainz.Data.Artist.Tests ( tests ) where
 
 import Control.Applicative
 
+import Data.Monoid (mempty)
 import qualified Data.Set as Set
 
 import Test.MusicBrainz
@@ -52,9 +53,9 @@ testCreateFindLatest = testCase "create >>= findLatest == create" $ mbTest $ do
                      , artistCountry = Just country
                      , artistType = Just personRef
                      }
-                 , artistAliases = Set.empty
-                 , artistIpiCodes = Set.empty
-                 , artistRelationships = Set.empty
+                 , artistAliases = mempty
+                 , artistIpiCodes = mempty
+                 , artistRelationships = mempty
                  , artistAnnotation = ""
                  }
 
@@ -85,8 +86,8 @@ testRelationships = testCase "Relationships are bidirectional over addition and 
 
   apply edit1
 
-  relationshipsChanged a Set.empty (Set.singleton $ ArtistRelationship (coreRef b) rel)
-  relationshipsChanged b Set.empty (Set.singleton $ ArtistRelationship (coreRef a) rel)
+  relationshipsChanged a mempty (Set.singleton $ ArtistRelationship (coreRef b) rel)
+  relationshipsChanged b mempty (Set.singleton $ ArtistRelationship (coreRef a) rel)
 
   changedA <- findLatest (coreRef a)
   changedB <- findLatest (coreRef b)
@@ -97,13 +98,13 @@ testRelationships = testCase "Relationships are bidirectional over addition and 
 
   apply edit2
 
-  relationshipsChanged changedA (Set.singleton $ ArtistRelationship (coreRef b) rel) Set.empty
-  relationshipsChanged changedB (Set.singleton $ ArtistRelationship (coreRef a) rel) Set.empty
+  relationshipsChanged changedA (Set.singleton $ ArtistRelationship (coreRef b) rel) mempty
+  relationshipsChanged changedB (Set.singleton $ ArtistRelationship (coreRef a) rel) mempty
 
   where
     expectedRel =
       Relationship <$> fmap entityRef (add $ RelationshipType "performer")
-                   <*> pure Set.empty
+                   <*> pure mempty
                    <*> pure emptyDate
                    <*> pure emptyDate
                    <*> pure False
@@ -178,9 +179,9 @@ freddie = ArtistTree
       , artistCountry = Nothing
       , artistType = Nothing
       }
-  , artistRelationships = Set.empty
-  , artistAliases = Set.empty
-  , artistIpiCodes = Set.empty
+  , artistRelationships = mempty
+  , artistAliases = mempty
+  , artistIpiCodes = mempty
   , artistAnnotation = ""
   }
 

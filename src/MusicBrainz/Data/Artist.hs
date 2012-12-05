@@ -14,7 +14,7 @@ import Control.Lens hiding (by)
 import Control.Monad (when)
 import Control.Monad.IO.Class (MonadIO)
 import Data.Foldable (mapM_, forM_)
-import Database.PostgreSQL.Simple (Only(..), (:.)(..))
+import Database.PostgreSQL.Simple (Only(..))
 import Database.PostgreSQL.Simple.SqlQQ
 
 import qualified Data.Set as Set

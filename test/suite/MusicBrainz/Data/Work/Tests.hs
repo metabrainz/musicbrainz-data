@@ -3,6 +3,7 @@ module MusicBrainz.Data.Work.Tests ( tests ) where
 
 import Control.Applicative
 
+import Data.Monoid (mempty)
 import qualified Data.Set as Set
 
 import Test.MusicBrainz
@@ -106,7 +107,7 @@ testIswc = testCase "Can add and remove ISWCs" $ mbTest $ do
 
   latest <- findLatest (coreRef work)
   iswcsPostUpdate <- viewIswcs (coreRevision latest)
-  liftIO $ iswcsPostUpdate @?= Set.empty
+  liftIO $ iswcsPostUpdate @?= mempty
 
   where
     iswc = ISWC "T-070.116.442-2"

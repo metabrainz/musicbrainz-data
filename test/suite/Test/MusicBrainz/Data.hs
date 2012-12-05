@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Test.MusicBrainz.Data where
 
-import qualified Data.Set as Set
+import Data.Monoid (mempty)
 
 import           MusicBrainz
 
@@ -24,9 +24,9 @@ singleArtistAc editor artist = do
                         }
                ]
     acTree = ArtistTree { artistData = artist
-                        , artistRelationships = Set.empty
-                        , artistAliases =  Set.empty
-                        , artistIpiCodes = Set.empty
+                        , artistRelationships = mempty
+                        , artistAliases = mempty
+                        , artistIpiCodes = mempty
                         , artistAnnotation = ""
                         }
 
@@ -35,13 +35,13 @@ class MinimalTree a where
   minimalTree :: a -> Tree a
 
 instance MinimalTree Artist where
-  minimalTree dat' = ArtistTree dat' Set.empty Set.empty Set.empty ""
+  minimalTree dat' = ArtistTree dat' mempty mempty mempty ""
 
 instance MinimalTree Label where
-  minimalTree dat' = LabelTree dat' Set.empty Set.empty ""
+  minimalTree dat' = LabelTree dat' mempty mempty ""
 
 instance MinimalTree Recording where
-  minimalTree dat' = RecordingTree dat' "" Set.empty
+  minimalTree dat' = RecordingTree dat' "" mempty
 
 instance MinimalTree Release where
   minimalTree dat' = ReleaseTree dat' ""
@@ -50,4 +50,4 @@ instance MinimalTree ReleaseGroup where
   minimalTree dat' = ReleaseGroupTree dat' ""
 
 instance MinimalTree Work where
-  minimalTree dat' = WorkTree dat' Set.empty "" Set.empty
+  minimalTree dat' = WorkTree dat' mempty "" mempty
