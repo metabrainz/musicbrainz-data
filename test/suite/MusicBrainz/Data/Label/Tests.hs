@@ -13,6 +13,7 @@ tests :: [Test]
 tests = [ testAliases
         , testAnnotation
         , testCreateFindLatest
+        , testIpiCodes
         , testMerge
         , testUpdate
         ]
@@ -66,6 +67,12 @@ testMerge = testCase "can merge two labels" $ mbTest $ do
 testAnnotation :: Test
 testAnnotation = testCase "Can add and remove label annotations" $ mbTest $ do
   ClassTests.testAnnotation (return . const revolutionRecords)
+
+
+--------------------------------------------------------------------------------
+testIpiCodes :: Test
+testIpiCodes = testCase "Can add and remove label IPI codes" $ mbTest $ do
+  ClassTests.testIpiCodes revolutionRecords
 
 
 --------------------------------------------------------------------------------

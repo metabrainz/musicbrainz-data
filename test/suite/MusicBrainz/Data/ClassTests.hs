@@ -5,6 +5,7 @@ module MusicBrainz.Data.ClassTests
     , testAliases
     , testAnnotation
     , testCreateFindLatest
+    , testIpiCodes
     , testMerge
     , testResolveReference
     , testUpdate
@@ -134,3 +135,26 @@ testResolveReference runCreate getRef = do
   expected <- getRef <$> runCreate
   actual <- resolveReference (dereference expected)
   liftIO $ actual @?= Just expected
+
+
+--------------------------------------------------------------------------------
+testIpiCodes :: (Create a, FindLatest a, TreeIPICodes a, Update a, ViewIPICodes a, ViewRevision a)
+  => Tree a -> MusicBrainz ()
+testIpiCodes startTree = do
+  editor <- entityRef <$> register acid2
+
+  entity <- autoEdit $ create editor (ipiCodes .~ Set.singleton ipi $ startTree) >>= viewRevision
+  ipiPreUpdate <- viewIpiCodes (coreRevision entity)
+  liftIO $ ipiPreUpdate @?= Set.singleton ipi
+
+  edit <- createEdit $
+    update editor (coreRevision entity) startTree
+
+  apply edit
+
+  latest <- findLatest (coreRef entity)
+  ipiPostUpdate <- viewIpiCodes (coreRevision latest)
+  liftIO $ ipiPostUpdate @?= Set.empty
+
+  where
+    ipi = IPI "12345678912"

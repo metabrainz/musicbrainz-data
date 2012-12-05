@@ -180,9 +180,7 @@ instance RealiseTree Artist where
     mapM_ (addRelationship treeId) $ artistRelationships artist
 
     Generic.realiseAliases "artist" treeId artist
-
-    executeMany [sql| INSERT INTO artist_ipi (artist_tree_id, ipi) VALUES (?, ?) |]
-      $ map (Only treeId :.) (Set.toList $ artistIpiCodes artist)
+    Generic.realiseIpiCodes "artist" treeId artist
 
     return treeId
     where

@@ -56,3 +56,16 @@ instance TreeAnnotation ReleaseGroup where
 
 instance TreeAnnotation Work where
   annotation f work = f (workAnnotation work) <&> \b -> work { workAnnotation = b }
+
+
+--------------------------------------------------------------------------------
+{-| Provide a single lens to view the IPI codes inside a 'Tree'. -}
+class TreeIPICodes a where
+  {-| A 'Lens' into the annotation for any 'Tree'. -}
+  ipiCodes :: SimpleLens (Tree a) (Set.Set IPI)
+
+instance TreeIPICodes Artist where
+  ipiCodes f artist = f (artistIpiCodes artist) <&> \b -> artist { artistIpiCodes = b }
+
+instance TreeIPICodes Label where
+  ipiCodes f label = f (labelIpiCodes label) <&> \b -> label { labelIpiCodes = b }

@@ -11,6 +11,7 @@ module MusicBrainz.Data.Generic
     , resolveMbid
     , MusicBrainz.Data.Generic.setMasterRevision
     , realiseAliases
+    , realiseIpiCodes
     ) where
 
 import Control.Applicative
@@ -201,3 +202,9 @@ realiseAliases eName treeId tree = forM_ (Set.toList $ tree^.aliases) $ \alias -
           , "VALUES (?, (SELECT find_or_insert_" ++ eName ++ "_name(?)), "
           , "(SELECT find_or_insert_" ++ eName ++ "_name(?)), ?, ?, ?, ?, ?, ?, ?, ?, ?)"
           ]
+
+
+--------------------------------------------------------------------------------
+realiseIpiCodes eName treeId tree = executeMany q
+      $ map (Only treeId :.) (Set.toList $ tree^.ipiCodes)
+  where q = fromString $ "INSERT INTO " ++ eName ++ "_ipi (" ++ eName ++ "_tree_id, ipi) VALUES (?, ?)"

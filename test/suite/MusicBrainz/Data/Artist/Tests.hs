@@ -136,23 +136,7 @@ testAliases = testCase "Can add and remove aliases" $ mbTest $ do
 --------------------------------------------------------------------------------
 testIpiCodes :: Test
 testIpiCodes = testCase "Can add and remove artist IPI codes" $ mbTest $ do
-  editor <- entityRef <$> register acid2
-
-  artist <- autoEdit $ create editor freddie { artistIpiCodes = Set.singleton ipi } >>= viewRevision
-  ipiPreUpdate <- viewIpiCodes (coreRevision artist)
-  liftIO $ ipiPreUpdate @?= Set.singleton ipi
-
-  edit <- createEdit $
-    update editor (coreRevision artist) freddie
-
-  apply edit
-
-  latest <- findLatest (coreRef artist)
-  ipiPostUpdate <- viewAliases (coreRevision latest)
-  liftIO $ ipiPostUpdate @?= Set.empty
-
-  where
-    ipi = IPI "12345678912"
+  ClassTests.testIpiCodes freddie
 
 
 --------------------------------------------------------------------------------
