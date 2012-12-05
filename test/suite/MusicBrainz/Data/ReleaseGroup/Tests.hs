@@ -4,9 +4,11 @@ module MusicBrainz.Data.ReleaseGroup.Tests
 
 import Control.Applicative
 
+import qualified Data.Set as Set
+
 import Test.MusicBrainz
 import Test.MusicBrainz.Data
-import Test.MusicBrainz.Repository (portishead, dummy, acid2)
+import Test.MusicBrainz.Repository (portishead, dummy, acid2, compilation)
 
 import qualified MusicBrainz.Data.ClassTests as ClassTests
 
@@ -18,6 +20,7 @@ import MusicBrainz.Data.Editor
 tests :: [Test]
 tests = [ testFindLatest
         , testAnnotation
+        , testSecondaryTypes
         ]
 
 
@@ -34,6 +37,21 @@ testFindLatest = testCase "findLatest when release group exists" $ mbTest $ do
 testAnnotation :: Test
 testAnnotation = testCase "Can add and remove artist annotations" $ mbTest $ do
   ClassTests.testAnnotation dummyTree
+
+
+--------------------------------------------------------------------------------
+testSecondaryTypes :: Test
+testSecondaryTypes = testCase "Release groups can have secondary types" $ mbTest $ do
+  editor <- entityRef <$> register acid2
+
+  types <- Set.fromList . map entityRef <$> sequence [ add compilation, add remix ]
+  tree <- do
+    ac <- singleArtistAc editor portishead
+    return $ minimalTree (dummy ac) { releaseGroupSecondaryTypes = types }
+
+  created <- autoEdit $ create editor tree >>= viewRevision
+  liftIO $ releaseGroupSecondaryTypes (coreData created) @?= types
+  where remix = ReleaseGroupType { releaseGroupTypeName = "Remix" }
 
 
 --------------------------------------------------------------------------------

@@ -14,6 +14,7 @@ module MusicBrainz.Schema () where
 import Blaze.ByteString.Builder.Char8 (fromString)
 import Control.Applicative
 import Control.Lens
+import Data.Monoid (mempty)
 import Data.Typeable (Typeable)
 import Database.PostgreSQL.Simple.FromField (FromField(..), ResultError(..), returnError, typename)
 import Database.PostgreSQL.Simple.FromRow (FromRow(..), field)
@@ -233,7 +234,7 @@ instance FromRow Release where
 
 
 instance FromRow ReleaseGroup where
-  fromRow = ReleaseGroup <$> field <*> field <*> field <*> field
+  fromRow = ReleaseGroup <$> field <*> field <*> field <*> field <*> pure mempty
 
 
 instance FromRow (ReleaseGroupType a) where

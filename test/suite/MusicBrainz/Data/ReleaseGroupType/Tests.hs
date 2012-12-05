@@ -2,6 +2,7 @@
 module MusicBrainz.Data.ReleaseGroupType.Tests ( tests ) where
 
 import Test.MusicBrainz
+import Test.MusicBrainz.Repository (compilation)
 
 import MusicBrainz
 import MusicBrainz.Data
@@ -44,7 +45,3 @@ testResolveSecondaryReference :: Test
 testResolveSecondaryReference = testCase "Can resolve ReleaseGroupTypes" $ mbTest $ do
   ClassTests.testResolveReference (add compilation) entityRef
 
-
---------------------------------------------------------------------------------
-compilation :: ReleaseGroupType Secondary
-compilation = ReleaseGroupType { releaseGroupTypeName = "Compilation" }

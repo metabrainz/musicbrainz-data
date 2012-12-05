@@ -1,6 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Test.MusicBrainz.Repository where
 
+import Data.Monoid
+
 import MusicBrainz
 
 portishead :: Artist
@@ -17,10 +19,11 @@ portishead = Artist { artistName = "Portishead"
 
 dummy :: Ref ArtistCredit -> ReleaseGroup
 dummy ac = ReleaseGroup { releaseGroupName = "Dummy"
-                            , releaseGroupArtistCredit = ac
-                            , releaseGroupComment = ""
-                            , releaseGroupPrimaryType = Nothing
-                            }
+                        , releaseGroupArtistCredit = ac
+                        , releaseGroupComment = ""
+                        , releaseGroupPrimaryType = Nothing
+                        , releaseGroupSecondaryTypes = mempty
+                        }
 
 uk :: Country
 uk = Country { countryName = "United Kingdom"
@@ -47,3 +50,6 @@ english = Language
     , languageIsoCode1 = "en"
     , languageIsoCode3 = "eng"
     }
+
+compilation :: ReleaseGroupType Secondary
+compilation = ReleaseGroupType { releaseGroupTypeName = "Compilation" }

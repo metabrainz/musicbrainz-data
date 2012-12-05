@@ -302,6 +302,7 @@ data ReleaseGroup = ReleaseGroup
     , releaseGroupComment :: Text
     , releaseGroupArtistCredit :: Ref ArtistCredit
     , releaseGroupPrimaryType :: Maybe (Ref (ReleaseGroupType Primary))
+    , releaseGroupSecondaryTypes :: Set.Set (Ref (ReleaseGroupType Secondary))
     }
   deriving (Eq, Show, Typeable)
 

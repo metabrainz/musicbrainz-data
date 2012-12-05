@@ -146,6 +146,7 @@ instance Mergeable (Tree ReleaseGroup) where
               <*> releaseGroupComment `mergedVia` mergeEq
               <*> releaseGroupArtistCredit `mergedVia` mergeEq
               <*> releaseGroupPrimaryType `mergedVia` mergeEq
+              <*> releaseGroupSecondaryTypes `mergedVia` merge
 
 instance Mergeable (Tree Work) where
   merge =

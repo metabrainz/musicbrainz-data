@@ -14,6 +14,8 @@ import Control.Monad.IO.Class (MonadIO)
 import Database.PostgreSQL.Simple (Only(..))
 import Database.PostgreSQL.Simple.SqlQQ (sql)
 
+import qualified Data.Set as Set
+
 import MusicBrainz
 import MusicBrainz.Data.Annotation
 import MusicBrainz.Data.Create
@@ -27,8 +29,19 @@ import MusicBrainz.Edit
 import qualified MusicBrainz.Data.Generic as Generic
 
 --------------------------------------------------------------------------------
+addSecondaryTypes :: (Functor m, Monad m, MonadIO m)
+  => CoreEntity ReleaseGroup -> MusicBrainzT m (CoreEntity ReleaseGroup)
+addSecondaryTypes rg = augment <$> query q (Only $ coreRevision rg)
+  where
+    augment types = rg { coreData = (coreData rg) { releaseGroupSecondaryTypes = Set.fromList $ map fromOnly $ types } }
+    q = [sql| SELECT release_group_secondary_type_id
+              FROM release_group_tree_secondary_type
+              JOIN release_group_revision USING (release_group_tree_id)
+              WHERE revision_id = ? |]
+
+--------------------------------------------------------------------------------
 instance FindLatest ReleaseGroup where
-  findLatest releaseGroupId = head <$> query q (Only releaseGroupId)
+  findLatest releaseGroupId = addSecondaryTypes =<< head <$> query q (Only releaseGroupId)
     where q = [sql|
        SELECT release_group_id, revision_id,
          name.name, comment, artist_credit_id, release_group_primary_type_id
@@ -43,7 +56,7 @@ instance FindLatest ReleaseGroup where
 
 --------------------------------------------------------------------------------
 instance ViewRevision ReleaseGroup where
-  viewRevision revision = head <$> query q (Only revision)
+  viewRevision revision = addSecondaryTypes =<< head <$> query q (Only revision)
     where q = [sql|
        SELECT release_group_id, revision_id,
         name.name, comment, artist_credit_id, release_group_primary_type_id
@@ -84,7 +97,9 @@ instance CloneRevision ReleaseGroup where
 instance RealiseTree ReleaseGroup where
   realiseTree rg = do
     dataId <- insertRgData (releaseGroupData rg)
-    insertRgTree (releaseGroupAnnotation rg) dataId
+    treeId <- insertRgTree (releaseGroupAnnotation rg) dataId
+    realiseSecondaryTypes treeId
+    return treeId
     where
       insertRgData :: (Functor m, MonadIO m) => ReleaseGroup -> MusicBrainzT m Int
       insertRgData data' = selectValue $
@@ -97,11 +112,19 @@ instance RealiseTree ReleaseGroup where
                     RETURNING release_group_tree_id  |]
           (dataId, annotation)
 
+      realiseSecondaryTypes treeId = executeMany
+        [sql| INSERT INTO release_group_tree_secondary_type
+                (release_group_tree_id, release_group_secondary_type_id)
+              VALUES (?, ?) |] $
+        map (\t -> (treeId, t)) (Set.toList $ releaseGroupSecondaryTypes $ releaseGroupData rg)
+
 
 --------------------------------------------------------------------------------
 instance NewEntityRevision ReleaseGroup where
   newEntityRevision revisionId rgId rgTreeId = void $
-    execute [sql| INSERT INTO release_group_revision (release_group_id, revision_id, release_group_tree_id) VALUES (?, ?, ?) |]
+    execute [sql| INSERT INTO release_group_revision
+                    (release_group_id, revision_id, release_group_tree_id)
+                  VALUES (?, ?, ?) |]
       (rgId, revisionId, rgTreeId)
 
 
