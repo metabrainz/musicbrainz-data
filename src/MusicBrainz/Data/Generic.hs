@@ -32,7 +32,6 @@ import MusicBrainz
 import MusicBrainz.Lens
 import MusicBrainz.Data.Revision.Internal
 import MusicBrainz.Edit
-import MusicBrainz.Types.Internal
 
 --------------------------------------------------------------------------------
 viewAliases :: (Functor m, MonadIO m)

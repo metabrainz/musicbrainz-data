@@ -2,8 +2,6 @@
 module MusicBrainz.Data.Create
     ( Create(..) ) where
 
-import Control.Monad.IO.Class (MonadIO)
-
 import MusicBrainz
 import MusicBrainz.Edit
 
