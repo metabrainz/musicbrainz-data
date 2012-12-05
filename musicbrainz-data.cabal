@@ -54,6 +54,8 @@ Library
     MusicBrainz.Data.Script
     MusicBrainz.Data.Tree
     MusicBrainz.Data.Update
+    MusicBrainz.Data.Work
+    MusicBrainz.Data.WorkType
     MusicBrainz.Edit
     MusicBrainz.Lens
     MusicBrainz.Merge

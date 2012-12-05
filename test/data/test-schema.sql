@@ -691,6 +691,67 @@ $$;
 
 ALTER FUNCTION musicbrainz.find_or_insert_track_name(in_name text) OWNER TO musicbrainz;
 
+--
+-- Name: find_or_insert_work_data(text, text, integer, integer); Type: FUNCTION; Schema: musicbrainz; Owner: musicbrainz
+--
+
+CREATE FUNCTION find_or_insert_work_data(in_name text, in_comment text, in_type_id integer, in_language_id integer) RETURNS integer
+    LANGUAGE plpgsql
+    AS $$
+  DECLARE
+    found_id INT;
+    name_id INT;
+  BEGIN
+    SELECT find_or_insert_work_name(in_name) INTO name_id;
+
+    SELECT work_data_id INTO found_id
+    FROM work_data
+    WHERE name = name_id AND comment = in_comment AND
+      work_type_id IS NOT DISTINCT FROM in_type_id AND    
+      language_id IS NOT DISTINCT FROM in_language_id;
+
+    IF FOUND
+    THEN
+      RETURN found_id;
+    ELSE
+      INSERT INTO work_data (name, comment, work_type_id, language_id)
+      VALUES (name_id, in_comment, in_type_id, in_language_id)
+      RETURNING work_data_id INTO found_id;
+      RETURN found_id;
+    END IF;
+  END;
+$$;
+
+
+ALTER FUNCTION musicbrainz.find_or_insert_work_data(in_name text, in_comment text, in_type_id integer, in_language_id integer) OWNER TO musicbrainz;
+
+--
+-- Name: find_or_insert_work_name(text); Type: FUNCTION; Schema: musicbrainz; Owner: musicbrainz
+--
+
+CREATE FUNCTION find_or_insert_work_name(in_name text) RETURNS integer
+    LANGUAGE plpgsql
+    AS $$
+  DECLARE
+    found_id INT;
+  BEGIN
+    SELECT id INTO found_id
+    FROM work_name WHERE name = in_name;
+
+    IF FOUND
+    THEN
+      RETURN found_id;
+    ELSE
+      INSERT INTO work_name (name)
+      VALUES (in_name) RETURNING id INTO found_id;
+      RETURN found_id;
+    END IF;
+  END;
+$$;
+
+
+ALTER FUNCTION musicbrainz.find_or_insert_work_name(in_name text) OWNER TO musicbrainz;
+
 SET default_tablespace = '';
 
 SET default_with_oids = false;
@@ -1267,6 +1328,18 @@ CREATE TABLE edit_release_group (
 
 
 ALTER TABLE musicbrainz.edit_release_group OWNER TO musicbrainz;
+
+--
+-- Name: edit_work; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE edit_work (
+    edit_id integer NOT NULL,
+    revision_id integer NOT NULL
+);
+
+
+ALTER TABLE musicbrainz.edit_work OWNER TO musicbrainz;
 
 --
 -- Name: editor; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
@@ -3162,7 +3235,7 @@ ALTER TABLE musicbrainz.vote OWNER TO musicbrainz;
 --
 
 CREATE TABLE work (
-    work_id uuid NOT NULL,
+    work_id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
     master_revision_id integer NOT NULL,
     merged_into uuid
 );
@@ -3180,9 +3253,14 @@ CREATE TABLE work_alias (
     sort_name integer NOT NULL,
     locale locale,
     work_alias_type_id integer,
-    begin_date partial_date,
-    end_date partial_date,
-    primary_for_locale boolean DEFAULT false NOT NULL
+    begin_date_year smallint,
+    begin_date_month smallint,
+    begin_date_day smallint,
+    end_date_year smallint,
+    end_date_month smallint,
+    end_date_day smallint,
+    primary_for_locale boolean DEFAULT false NOT NULL,
+    ended boolean DEFAULT false NOT NULL
 );
 
 
@@ -3367,6 +3445,27 @@ CREATE TABLE work_tree (
 
 
 ALTER TABLE musicbrainz.work_tree OWNER TO musicbrainz;
+
+--
+-- Name: work_tree_id_seq; Type: SEQUENCE; Schema: musicbrainz; Owner: musicbrainz
+--
+
+CREATE SEQUENCE work_tree_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE musicbrainz.work_tree_id_seq OWNER TO musicbrainz;
+
+--
+-- Name: work_tree_id_seq; Type: SEQUENCE OWNED BY; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER SEQUENCE work_tree_id_seq OWNED BY work_tree.work_tree_id;
+
 
 --
 -- Name: work_type; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
@@ -3749,6 +3848,13 @@ ALTER TABLE ONLY work_data ALTER COLUMN work_data_id SET DEFAULT nextval('work_d
 --
 
 ALTER TABLE ONLY work_name ALTER COLUMN id SET DEFAULT nextval('work_name_id_seq'::regclass);
+
+
+--
+-- Name: work_tree_id; Type: DEFAULT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY work_tree ALTER COLUMN work_tree_id SET DEFAULT nextval('work_tree_id_seq'::regclass);
 
 
 --
@@ -4994,6 +5100,13 @@ CREATE UNIQUE INDEX work_alias_work_tree_id_name_idx ON work_alias USING btree (
 
 
 --
+-- Name: work_alias_work_tree_id_name_locale_idx; Type: INDEX; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE UNIQUE INDEX work_alias_work_tree_id_name_locale_idx ON work_alias USING btree (work_tree_id, name, locale);
+
+
+--
 -- Name: artist_alias_artist_alias_type_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
 --
 
@@ -5263,6 +5376,22 @@ ALTER TABLE ONLY edit_release_group
 
 ALTER TABLE ONLY edit_release
     ADD CONSTRAINT edit_release_revision_id_fkey FOREIGN KEY (revision_id) REFERENCES release_revision(revision_id);
+
+
+--
+-- Name: edit_work_edit_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY edit_work
+    ADD CONSTRAINT edit_work_edit_id_fkey FOREIGN KEY (edit_id) REFERENCES edit(edit_id);
+
+
+--
+-- Name: edit_work_revision_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY edit_work
+    ADD CONSTRAINT edit_work_revision_id_fkey FOREIGN KEY (revision_id) REFERENCES work_revision(revision_id);
 
 
 --
@@ -6134,7 +6263,7 @@ ALTER TABLE ONLY work_data
 --
 
 ALTER TABLE ONLY work
-    ADD CONSTRAINT work_master_revision_id_fkey FOREIGN KEY (master_revision_id) REFERENCES work_revision(revision_id);
+    ADD CONSTRAINT work_master_revision_id_fkey FOREIGN KEY (master_revision_id) REFERENCES work_revision(revision_id) DEFERRABLE INITIALLY DEFERRED;
 
 
 --

@@ -146,6 +146,19 @@ instance Mergeable (Tree ReleaseGroup) where
               <*> releaseGroupArtistCredit `mergedVia` mergeEq
               <*> releaseGroupPrimaryType `mergedVia` mergeEq
 
+instance Mergeable (Tree Work) where
+  merge =
+    WorkTree <$> workData `mergedVia` mergeWorkData
+             <*> workAliases `mergedVia` merge
+             <*> workAnnotation `mergedVia` mergeEq
+    where
+      mergeWorkData =
+        Work
+              <$> workName `mergedVia` mergeEq
+              <*> workComment `mergedVia` mergeEq
+              <*> workType `mergedVia` mergeEq
+              <*> workLanguage `mergedVia` mergeEq
+
 
 instance Ord a => Mergeable (Set.Set a) where
   merge = Merge $ Compose go

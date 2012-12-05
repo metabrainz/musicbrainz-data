@@ -100,6 +100,11 @@ instance Referenceable Script where
 instance Referenceable (Tree a) where
   type RefSpec (Tree a) = Int
 
+instance Referenceable Work where
+  type RefSpec Work = MBID Work
+
+instance Referenceable WorkType where
+  type RefSpec WorkType = Int
 
 --------------------------------------------------------------------------------
 {-| Unpack a reference into its individual attributes. -}
@@ -342,6 +347,21 @@ data Script = Script { scriptIsoCode :: Text
 
 
 --------------------------------------------------------------------------------
+data Work = Work
+    { workName :: Text
+    , workComment :: Text
+    , workType :: Maybe (Ref WorkType)
+    , workLanguage :: Maybe (Ref Language)
+    }
+  deriving (Eq, Show, Typeable)
+
+
+--------------------------------------------------------------------------------
+data WorkType = WorkType { workTypeName :: Text }
+  deriving (Eq, Show)
+
+
+--------------------------------------------------------------------------------
 {-| A partial date consisting of an optional year, month and day.-}
 data PartialDate = PartialDate
     { dateYear :: Maybe Int
@@ -438,6 +458,12 @@ data Tree a where
   , releaseGroupAnnotation :: Text
   } -> Tree ReleaseGroup
 
+  WorkTree :: {
+    workData :: Work
+  , workAliases :: Set.Set Alias
+  , workAnnotation :: Text
+  } -> Tree Work
+
 deriving instance Eq (Tree a)
 deriving instance Show (Tree a)
 
@@ -449,6 +475,7 @@ treeData LabelTree{..} = labelData
 treeData RecordingTree{..} = recordingData
 treeData ReleaseTree{..} = releaseData
 treeData ReleaseGroupTree{..} = releaseGroupData
+treeData WorkTree{..} = workData
 
 --------------------------------------------------------------------------------
 {-| An edit bundles up multiple 'Revision's that have not yet been applied to

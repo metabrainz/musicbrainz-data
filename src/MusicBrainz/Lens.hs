@@ -41,6 +41,12 @@ instance TreeAliases Label where
       getter = labelAliases
       setter tree new = tree { labelAliases = new }
 
+instance TreeAliases Work where
+  aliases = lens getter setter
+    where
+      getter = workAliases
+      setter tree new = tree { workAliases = new }
+
 
 --------------------------------------------------------------------------------
 {-| Provide a single lens to view the annotation inside a 'Tree'. -}
@@ -78,3 +84,9 @@ instance TreeAnnotation ReleaseGroup where
     where
       getter = releaseGroupAnnotation
       setter tree new = tree { releaseGroupAnnotation = new }
+
+instance TreeAnnotation Work where
+  annotation = lens getter setter
+    where
+      getter = workAnnotation
+      setter tree new = tree { workAnnotation = new }

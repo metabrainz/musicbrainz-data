@@ -36,6 +36,8 @@ import MusicBrainz.Data.Release ()
 import MusicBrainz.Data.ReleaseGroup ()
 import MusicBrainz.Data.ReleaseGroupType ()
 import MusicBrainz.Data.Script ()
+import MusicBrainz.Data.WorkType ()
+import MusicBrainz.Data.Work ()
 
 import MusicBrainz.Data.Add
 import MusicBrainz.Data.Alias

@@ -24,6 +24,10 @@ module MusicBrainz.Types
     , ReleaseGroup(..)
     , ReleaseGroupType(..), Primary, Secondary
 
+      -- *** Works
+    , Work(..)
+    , WorkType(..)
+
       -- ** Non-core entities
       -- | These are entities that are used by core-entities, but are not
       -- particularly interesting on their own.

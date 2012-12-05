@@ -111,6 +111,10 @@ instance FromField (Ref Script) where
   fromField f v = view reference <$> fromField f v
 
 
+instance FromField (Ref Work) where
+  fromField f v = view reference <$> fromField f v
+
+
 instance Typeable a => FromField (MBID a) where
   fromField f Nothing = returnError UnexpectedNull f "MBID cannot be null"
   fromField f (Just v) | typename f /= "uuid" = incompatible
@@ -132,6 +136,10 @@ instance FromField (Ref (Tree a)) where
 
 instance FromField VoteScore where
   fromField f v = toEnum <$> fromField f v
+
+
+instance FromField (Ref WorkType) where
+  fromField f v = view reference <$> fromField f v
 
 
 --------------------------------------------------------------------------------
@@ -240,6 +248,14 @@ instance FromRow Vote where
   fromRow = Vote <$> field <*> field <*> field
 
 
+instance FromRow Work where
+  fromRow = Work <$> field <*> field <*> field <*> field
+
+
+instance FromRow WorkType where
+  fromRow = WorkType <$> field
+
+
 --------------------------------------------------------------------------------
 instance ToField EditStatus where
   toField = toField . fromEnum
@@ -330,6 +346,14 @@ instance ToField (Ref Script) where
 
 
 instance ToField (Ref (Tree a)) where
+  toField = toField . dereference
+
+
+instance ToField (Ref Work) where
+  toField = toField . dereference
+
+
+instance ToField (Ref WorkType) where
   toField = toField . dereference
 
 
@@ -491,6 +515,19 @@ instance ToRow Script where
                      , toField scriptIsoNumber
                      , toField scriptName
                      ]
+
+
+instance ToRow Work where
+  toRow Work{..} = [ toField workName
+                   , toField workComment
+                   , toField workType
+                   , toField workLanguage
+                   ]
+
+
+instance ToRow WorkType where
+  toRow WorkType{..} = [ toField workTypeName
+                       ]
 
 
 instance ToRow PartialDate where
