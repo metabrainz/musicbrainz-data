@@ -39,21 +39,21 @@ testAddEditNote = testCase "Add & retrieve edit notes for edits" $ mbTest $ do
 --------------------------------------------------------------------------------
 testVoteOnEdit :: Test
 testVoteOnEdit = testCase "Can submit votes on edits" $ mbTest $ do
-  warp <- entityRef <$> register acid2 { editorName = "warp" }
-  acid2 <- entityRef <$> register acid2
+  warpId <- entityRef <$> register acid2 { editorName = "warp" }
+  acid2Id <- entityRef <$> register acid2
 
   editId <- openEdit
 
-  voteOnEdit acid2 editId Accept
-  voteOnEdit acid2 editId Reject
-  voteOnEdit warp editId Reject
+  voteOnEdit acid2Id editId Accept
+  voteOnEdit acid2Id editId Reject
+  voteOnEdit warpId editId Reject
 
   [v1, v2, v3] <- listVotes editId
   liftIO $ print [v1, v2, v3]
   liftIO $ do
-    assertVote v1 acid2 Accept True
-    assertVote v2 acid2 Reject False
-    assertVote v3 warp Reject False
+    assertVote v1 acid2Id Accept True
+    assertVote v2 acid2Id Reject False
+    assertVote v3 warpId Reject False
 
   where
     assertVote vote editor score superceded = do

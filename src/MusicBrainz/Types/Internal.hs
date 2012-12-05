@@ -446,6 +446,7 @@ data Tree a where
   RecordingTree :: {
     recordingData :: Recording
   , recordingAnnotation :: Text
+  , recordingIsrcs :: Set.Set ISRC
   } -> Tree Recording
 
   ReleaseTree :: {
@@ -597,4 +598,9 @@ data RelationshipTarget = ToArtist
 
 --------------------------------------------------------------------------------
 newtype ISWC = ISWC Text
+  deriving (Eq, Ord, Show)
+
+
+--------------------------------------------------------------------------------
+newtype ISRC = ISRC Text
   deriving (Eq, Ord, Show)

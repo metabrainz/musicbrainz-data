@@ -6,13 +6,16 @@ The majority of operations on recordings are common for all core entities, so yo
 should see the documentation on the 'Recording' type and notice all the type class
 instances. -}
 module MusicBrainz.Data.Recording
-    ( ) where
+    ( viewIsrcs ) where
 
 import Control.Applicative
-import Control.Monad
+import Control.Monad (void)
 import Control.Monad.IO.Class
+import Data.Foldable (forM_)
 import Database.PostgreSQL.Simple (Only(..))
 import Database.PostgreSQL.Simple.SqlQQ (sql)
+
+import qualified Data.Set as Set
 
 import MusicBrainz
 import MusicBrainz.Data.Annotation
@@ -62,7 +65,9 @@ instance MasterRevision Recording where
 instance RealiseTree Recording where
   realiseTree recording = do
     dataId <- insertRecordingData (recordingData recording)
-    insertRecordingTree (recordingAnnotation recording) dataId
+    treeId <- insertRecordingTree (recordingAnnotation recording) dataId
+    realiseIsrcs treeId
+    return treeId
     where
       insertRecordingData :: (Functor m, MonadIO m) => Recording -> MusicBrainzT m Int
       insertRecordingData data' = selectValue $
@@ -74,6 +79,10 @@ instance RealiseTree Recording where
                     VALUES (?, ?)
                     RETURNING recording_tree_id  |]
           (dataId, annotation)
+
+      realiseIsrcs treeId = forM_ (recordingIsrcs recording) $ \isrc ->
+        execute q (treeId, isrc)
+        where q = [sql| INSERT INTO isrc (recording_tree_id, isrc) VALUES (?, ?) |]
 
 
 --------------------------------------------------------------------------------
@@ -113,3 +122,15 @@ instance Editable Recording where
 instance ViewTree Recording where
   viewTree r = RecordingTree <$> fmap coreData (viewRevision r)
                              <*> viewAnnotation r
+                             <*> viewIsrcs r
+
+
+--------------------------------------------------------------------------------
+viewIsrcs :: (Functor m, Monad m, MonadIO m)
+  => Ref (Revision Recording) -> MusicBrainzT m (Set.Set ISRC)
+viewIsrcs revisionId = Set.fromList . map fromOnly <$> query q (Only revisionId)
+  where q = [sql| SELECT isrc
+                  FROM isrc
+                  JOIN recording_revision USING (recording_tree_id)
+                  WHERE revision_id = ?
+            |]

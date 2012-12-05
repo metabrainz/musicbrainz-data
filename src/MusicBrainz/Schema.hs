@@ -27,6 +27,10 @@ import qualified Data.ByteString.Char8 as LBS
 import qualified Data.UUID as UUID
 
 --------------------------------------------------------------------------------
+instance FromField ISRC where
+  fromField f v = ISRC <$> fromField f v
+
+
 instance FromField ISWC where
   fromField f v = ISWC <$> fromField f v
 
@@ -263,6 +267,10 @@ instance FromRow WorkType where
 --------------------------------------------------------------------------------
 instance ToField EditStatus where
   toField = toField . fromEnum
+
+
+instance ToField ISRC where
+  toField (ISRC isrc) = toField isrc
 
 
 instance ToField ISWC where
