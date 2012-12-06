@@ -3,7 +3,7 @@ module Main where
 
 import           Control.Monad (forM_)
 
-import           Test.Framework (defaultMain, testGroup)
+import           Test.Framework (buildTest, defaultMain, testGroup)
 
 import qualified MusicBrainz.Data.Artist.Tests
 import qualified MusicBrainz.Data.ArtistType.Tests
@@ -30,7 +30,7 @@ import           MusicBrainz
 import           Test.MusicBrainz (mbTest)
 
 main :: IO ()
-main = cleanState >> defaultMain tests
+main = defaultMain [buildTest (cleanState >> return (testGroup "All tests" tests))]
   where
     tests = [ testGroup "MusicBrainz.Data.Artist"
                 MusicBrainz.Data.Artist.Tests.tests
