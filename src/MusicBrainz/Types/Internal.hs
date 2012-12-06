@@ -9,7 +9,6 @@ module MusicBrainz.Types.Internal where
 
 import Control.Lens
 import Data.Text (Text)
-import Data.Typeable (Typeable)
 import Data.UUID
 import GHC.Enum (boundedEnumFrom)
 import Network.URI (URI)
@@ -162,7 +161,7 @@ data Artist = Artist
     , artistType :: Maybe (Ref ArtistType)
     , artistCountry :: Maybe (Ref Country)
     }
-  deriving (Eq, Show, Typeable)
+  deriving (Eq, Show)
 
 
 --------------------------------------------------------------------------------
@@ -247,7 +246,7 @@ data Label = Label { labelName :: Text
                    , labelType :: Maybe (Ref LabelType)
                    , labelCode :: Maybe Integer
                    }
-  deriving (Eq, Show, Typeable)
+  deriving (Eq, Show)
 
 
 --------------------------------------------------------------------------------
@@ -277,7 +276,7 @@ data Recording = Recording
     , recordingArtistCredit :: Ref ArtistCredit
     , recordingDuration :: Int
     }
-  deriving (Eq, Show, Typeable)
+  deriving (Eq, Show)
 
 
 --------------------------------------------------------------------------------
@@ -296,7 +295,7 @@ data Release = Release
     , releasePackaging :: Maybe (Ref ReleasePackaging)
     , releaseStatus :: Maybe (Ref ReleaseStatus)
     }
-  deriving (Eq, Show, Typeable)
+  deriving (Eq, Show)
 
 
 --------------------------------------------------------------------------------
@@ -311,7 +310,7 @@ data ReleaseGroup = ReleaseGroup
     , releaseGroupPrimaryType :: Maybe (Ref (ReleaseGroupType Primary))
     , releaseGroupSecondaryTypes :: Set.Set (Ref (ReleaseGroupType Secondary))
     }
-  deriving (Eq, Show, Typeable)
+  deriving (Eq, Show)
 
 
 --------------------------------------------------------------------------------
@@ -361,7 +360,7 @@ data Work = Work
     , workType :: Maybe (Ref WorkType)
     , workLanguage :: Maybe (Ref Language)
     }
-  deriving (Eq, Show, Typeable)
+  deriving (Eq, Show)
 
 
 --------------------------------------------------------------------------------
@@ -393,7 +392,7 @@ isEmpty = (== emptyDate)
 {-| A MusicBrainz MBID, which is a 'UUID' but scoped to a specific entity
 type. -}
 newtype MBID a = MBID UUID
-  deriving (Eq, Ord, Read, Show, Typeable)
+  deriving (Eq, Ord, Read, Show)
 
 
 {-| Inject a 'String' into an 'MBID', or extract a 'String' from an 'MBID'. To
@@ -455,6 +454,7 @@ data Tree a where
     recordingData :: Recording
   , recordingAnnotation :: Text
   , recordingIsrcs :: Set.Set ISRC
+  , recordingPuids :: Set.Set PUID
   } -> Tree Recording
 
   ReleaseTree :: {
@@ -623,7 +623,7 @@ newtype ISRC = ISRC Text
 
 --------------------------------------------------------------------------------
 data Url = Url { urlUrl :: URI }
-  deriving (Eq, Show, Typeable)
+  deriving (Eq, Show)
 
 
 --------------------------------------------------------------------------------
@@ -658,3 +658,14 @@ data Track = Track
     , trackPosition :: Text
     }
   deriving (Eq, Show)
+
+
+--------------------------------------------------------------------------------
+newtype PUID = PUID UUID
+  deriving (Eq, Ord, Show)
+
+puid :: SimpleProjection String PUID
+puid = projection puidToString parsePuid
+  where
+    parsePuid = fmap PUID . fromString
+    puidToString (PUID p) = toString p

@@ -47,6 +47,7 @@ module MusicBrainz.Types
     , Language(..)
     , Medium(..)
     , MediumFormat(..)
+    , PUID(..), puid
     , ReleaseLabel(..)
     , Script(..)
     , Track(..)

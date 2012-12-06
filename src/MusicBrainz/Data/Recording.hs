@@ -6,7 +6,9 @@ The majority of operations on recordings are common for all core entities, so yo
 should see the documentation on the 'Recording' type and notice all the type class
 instances. -}
 module MusicBrainz.Data.Recording
-    ( viewIsrcs ) where
+    ( viewIsrcs
+    , viewPuids
+    ) where
 
 import Control.Applicative
 import Control.Monad (void)
@@ -67,6 +69,7 @@ instance RealiseTree Recording where
     dataId <- insertRecordingData (recordingData recording)
     treeId <- insertRecordingTree (recordingAnnotation recording) dataId
     realiseIsrcs treeId
+    realisePuids treeId
     return treeId
     where
       insertRecordingData :: (Functor m, MonadIO m) => Recording -> MusicBrainzT m Int
@@ -83,6 +86,10 @@ instance RealiseTree Recording where
       realiseIsrcs treeId = forM_ (recordingIsrcs recording) $ \isrc ->
         execute q (treeId, isrc)
         where q = [sql| INSERT INTO isrc (recording_tree_id, isrc) VALUES (?, ?) |]
+
+      realisePuids treeId = forM_ (recordingPuids recording) $ \p ->
+        execute q (treeId, p)
+        where q = [sql| INSERT INTO puid (recording_tree_id, puid) VALUES (?, ?) |]
 
 
 --------------------------------------------------------------------------------
@@ -123,6 +130,7 @@ instance ViewTree Recording where
   viewTree r = RecordingTree <$> fmap coreData (viewRevision r)
                              <*> viewAnnotation r
                              <*> viewIsrcs r
+                             <*> viewPuids r
 
 
 --------------------------------------------------------------------------------
@@ -131,6 +139,17 @@ viewIsrcs :: (Functor m, Monad m, MonadIO m)
 viewIsrcs revisionId = Set.fromList . map fromOnly <$> query q (Only revisionId)
   where q = [sql| SELECT isrc
                   FROM isrc
+                  JOIN recording_revision USING (recording_tree_id)
+                  WHERE revision_id = ?
+            |]
+
+
+--------------------------------------------------------------------------------
+viewPuids :: (Functor m, Monad m, MonadIO m)
+  => Ref (Revision Recording) -> MusicBrainzT m (Set.Set PUID)
+viewPuids revisionId = Set.fromList . map fromOnly <$> query q (Only revisionId)
+  where q = [sql| SELECT puid
+                  FROM puid
                   JOIN recording_revision USING (recording_tree_id)
                   WHERE revision_id = ?
             |]

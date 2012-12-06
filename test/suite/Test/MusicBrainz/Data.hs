@@ -41,7 +41,7 @@ instance MinimalTree Label where
   minimalTree dat' = LabelTree dat' mempty mempty ""
 
 instance MinimalTree Recording where
-  minimalTree dat' = RecordingTree dat' "" mempty
+  minimalTree dat' = RecordingTree dat' "" mempty mempty
 
 instance MinimalTree Release where
   minimalTree dat' = ReleaseTree dat' "" mempty mempty

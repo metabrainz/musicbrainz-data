@@ -15,7 +15,7 @@ import Blaze.ByteString.Builder.Char8 (fromString)
 import Control.Applicative
 import Control.Lens
 import Data.Monoid (mempty)
-import Data.Typeable (Typeable)
+import Data.UUID (UUID)
 import Database.PostgreSQL.Simple.FromField (FromField(..), ResultError(..), returnError, typename)
 import Database.PostgreSQL.Simple.FromRow (FromRow(..), field)
 import Database.PostgreSQL.Simple.ToField (ToField(..), Action(..), inQuotes)
@@ -35,6 +35,14 @@ instance FromField ISRC where
 
 instance FromField ISWC where
   fromField f v = ISWC <$> fromField f v
+
+
+instance FromField (MBID a) where
+  fromField f v = MBID <$> fromField f v
+
+
+instance FromField PUID where
+  fromField f v = PUID <$> fromField f v
 
 
 instance FromField (Ref AliasType) where
@@ -133,17 +141,6 @@ instance FromField (Ref Work) where
   fromField f v = view reference <$> fromField f v
 
 
-instance Typeable a => FromField (MBID a) where
-  fromField f Nothing = returnError UnexpectedNull f "MBID cannot be null"
-  fromField f (Just v) | typename f /= "uuid" = incompatible
-                       | otherwise            = tryParse
-    where
-      incompatible = returnError Incompatible f "MBIDs must be PG type 'uuid'"
-      tryParse = case UUID.fromString (LBS.unpack v) of
-        Just uuid -> return $ MBID uuid
-        Nothing -> returnError ConversionFailed f "Not a valid MBID"
-
-
 instance FromField (Ref (Revision a)) where
   fromField f v = view reference <$> fromField f v
 
@@ -168,8 +165,20 @@ instance FromField URI where
       return
       attempt
 
+
+instance FromField UUID where
+  fromField f Nothing = returnError UnexpectedNull f "UUID cannot be null"
+  fromField f (Just v) | typename f /= "uuid" = incompatible
+                       | otherwise            = tryParse
+    where
+      incompatible = returnError Incompatible f "UUIDs must be PG type 'uuid'"
+      tryParse = case UUID.fromString (LBS.unpack v) of
+        Just uuid -> return uuid
+        Nothing -> returnError ConversionFailed f "Not a valid UUID"
+
+
 --------------------------------------------------------------------------------
-instance (FromField (Ref a), FromRow a, Typeable a) => FromRow (CoreEntity a) where
+instance (FromField (Ref a), FromRow a) => FromRow (CoreEntity a) where
   fromRow = CoreEntity     -- Core entity's MBID
                        <$> field
                            -- The revision reference
@@ -308,7 +317,11 @@ instance ToField ISWC where
 
 
 instance ToField (MBID a) where
-  toField id' = Plain $ inQuotes . fromString $ (id' ^. by mbid)
+  toField (MBID id') = toField id'
+
+
+instance ToField PUID where
+  toField (PUID id') = toField id'
 
 
 instance ToField (Ref AliasType) where
@@ -413,6 +426,11 @@ instance ToField (Ref WorkType) where
 
 instance ToField URI where
   toField = toField . show
+
+
+instance ToField UUID where
+  toField = Plain . inQuotes . fromString . UUID.toString
+
 
 instance ToField VoteScore where
   toField = toField . fromEnum

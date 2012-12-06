@@ -107,6 +107,7 @@ instance Mergeable (Tree Recording) where
     RecordingTree <$> recordingData `mergedVia` mergeRecordingData
                   <*> recordingAnnotation `mergedVia` mergeEq
                   <*> recordingIsrcs `mergedVia` merge
+                  <*> recordingPuids `mergedVia` merge
     where
       mergeRecordingData =
         Recording

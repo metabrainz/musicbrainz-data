@@ -22,7 +22,6 @@ import Data.Maybe (listToMaybe)
 import Data.String (fromString)
 import Data.Text (Text)
 import Data.Foldable (forM_)
-import Data.Typeable (Typeable)
 import Database.PostgreSQL.Simple (Only(..), (:.)(..))
 import Database.PostgreSQL.Simple.FromField (FromField)
 import Database.PostgreSQL.Simple.ToField (ToField)
@@ -67,7 +66,7 @@ viewAnnotation entityName r = fromOnly . head <$> query q (Only r)
 
 
 --------------------------------------------------------------------------------
-create :: (Editable a, FromField (Ref a), MasterRevision a, NewEntityRevision a, RealiseTree a, Typeable a)
+create :: (Editable a, FromField (Ref a), MasterRevision a, NewEntityRevision a, RealiseTree a)
   => String -> Ref Editor -> Tree a -> EditM (Ref (Revision a))
 create eName editor entity = do
   treeId <- realiseTree entity
@@ -80,7 +79,7 @@ create eName editor entity = do
 
 
 --------------------------------------------------------------------------------
-reserveEntityTable :: (Functor m, MonadIO m, Typeable a, FromField (Ref a)) => String -> MusicBrainzT m (Ref a)
+reserveEntityTable :: (Functor m, MonadIO m, FromField (Ref a)) => String -> MusicBrainzT m (Ref a)
 reserveEntityTable table = selectValue $ query_ $
   fromString ("INSERT INTO " ++ table ++ " (master_revision_id) VALUES (-1) RETURNING " ++ table  ++ "_id")
 

@@ -2112,34 +2112,12 @@ ALTER SEQUENCE medium_format_id_seq OWNED BY medium_format.id;
 --
 
 CREATE TABLE puid (
-    id integer NOT NULL,
-    puid uuid NOT NULL,
-    version integer NOT NULL
+    recording_tree_id integer NOT NULL,
+    puid uuid NOT NULL
 );
 
 
 ALTER TABLE musicbrainz.puid OWNER TO musicbrainz;
-
---
--- Name: puid_id_seq; Type: SEQUENCE; Schema: musicbrainz; Owner: musicbrainz
---
-
-CREATE SEQUENCE puid_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER TABLE musicbrainz.puid_id_seq OWNER TO musicbrainz;
-
---
--- Name: puid_id_seq; Type: SEQUENCE OWNED BY; Schema: musicbrainz; Owner: musicbrainz
---
-
-ALTER SEQUENCE puid_id_seq OWNED BY puid.id;
-
 
 --
 -- Name: recording; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
@@ -3745,13 +3723,6 @@ ALTER TABLE ONLY medium_format ALTER COLUMN id SET DEFAULT nextval('medium_forma
 
 
 --
--- Name: id; Type: DEFAULT; Schema: musicbrainz; Owner: musicbrainz
---
-
-ALTER TABLE ONLY puid ALTER COLUMN id SET DEFAULT nextval('puid_id_seq'::regclass);
-
-
---
 -- Name: recording_data_id; Type: DEFAULT; Schema: musicbrainz; Owner: musicbrainz
 --
 
@@ -4526,19 +4497,11 @@ ALTER TABLE ONLY medium
 
 
 --
--- Name: puid_id_key; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
---
-
-ALTER TABLE ONLY puid
-    ADD CONSTRAINT puid_id_key UNIQUE (id);
-
-
---
 -- Name: puid_pkey; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
 --
 
 ALTER TABLE ONLY puid
-    ADD CONSTRAINT puid_pkey PRIMARY KEY (puid);
+    ADD CONSTRAINT puid_pkey PRIMARY KEY (recording_tree_id, puid);
 
 
 --
@@ -5760,6 +5723,14 @@ ALTER TABLE ONLY medium
 
 
 --
+-- Name: puid_recording_tree_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY puid
+    ADD CONSTRAINT puid_recording_tree_id_fkey FOREIGN KEY (recording_tree_id) REFERENCES recording_tree(recording_tree_id);
+
+
+--
 -- Name: recording_data_artist_credit_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
 --
 
@@ -5797,14 +5768,6 @@ ALTER TABLE ONLY recording
 
 ALTER TABLE ONLY recording_meta
     ADD CONSTRAINT recording_meta_recording_id_fkey FOREIGN KEY (recording_id) REFERENCES recording(recording_id);
-
-
---
--- Name: recording_puid_puid_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
---
-
-ALTER TABLE ONLY recording_puid
-    ADD CONSTRAINT recording_puid_puid_id_fkey FOREIGN KEY (puid_id) REFERENCES puid(id);
 
 
 --
