@@ -146,3 +146,7 @@ instance Update ReleaseGroup where
     includeRevision revisionId
     return revisionId
 
+
+--------------------------------------------------------------------------------
+instance ResolveReference ReleaseGroup where
+  resolveReference = Generic.resolveMbid "release_group"

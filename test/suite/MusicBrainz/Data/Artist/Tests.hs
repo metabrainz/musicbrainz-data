@@ -149,18 +149,7 @@ testAnnotation = testCase "Can add and remove artist annotations" $ mbTest $ do
 --------------------------------------------------------------------------------
 testMerge :: Test
 testMerge = testCase "Can merge 2 distinct artists" $ mbTest $ do
-  editor <- entityRef <$> register acid2
-
-  a <- autoEdit $ create editor freddie >>= viewRevision
-  b <- autoEdit $ create editor (minimalTree portishead) >>= viewRevision
-
-  edit <- createEdit $
-    merge editor (coreRevision a) (coreRef b)
-
-  apply edit
-
-  aResolved <- resolveReference (dereference $ coreRef a)
-  liftIO $ aResolved @?= Just (coreRef b)
+  ClassTests.testMerge (pure . const (freddie, (minimalTree portishead)))
 
 
 --------------------------------------------------------------------------------

@@ -21,6 +21,7 @@ tests :: [Test]
 tests = [ testFindLatest
         , testAnnotation
         , testSecondaryTypes
+        , testMerge
         ]
 
 
@@ -52,6 +53,15 @@ testSecondaryTypes = testCase "Release groups can have secondary types" $ mbTest
   created <- autoEdit $ create editor tree >>= viewRevision
   liftIO $ releaseGroupSecondaryTypes (coreData created) @?= types
   where remix = ReleaseGroupType { releaseGroupTypeName = "Remix" }
+
+
+--------------------------------------------------------------------------------
+testMerge :: Test
+testMerge = testCase "Can merge two release groups" $ mbTest $ do
+  ClassTests.testMerge $ \editor -> do
+    treeA <- dummyTree editor
+    let treeB = minimalTree $ (treeData treeA) { releaseGroupName = "Lungbone" }
+    return (treeA, treeB)
 
 
 --------------------------------------------------------------------------------

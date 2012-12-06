@@ -54,7 +54,7 @@ testUpdate = testCase "update does change labels" $ mbTest $ do
 --------------------------------------------------------------------------------
 testMerge :: Test
 testMerge = testCase "can merge two labels" $ mbTest $ do
-  ClassTests.testMerge a b
+  ClassTests.testMerge (return . const (a, b))
   where
     a = revolutionRecords
     b = revolutionRecords { labelData = changedData }

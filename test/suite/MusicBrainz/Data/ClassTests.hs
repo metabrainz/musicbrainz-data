@@ -61,10 +61,11 @@ testUpdate start end = do
 
 --------------------------------------------------------------------------------
 testMerge :: (RefSpec a ~ MBID a, Merge a, Referenceable a, ResolveReference a, Create a, ViewRevision a)
-  => Tree a -> Tree a -> MusicBrainz ()
-testMerge treeA treeB = do
+  => (Ref Editor -> MusicBrainz (Tree a, Tree a)) -> MusicBrainz ()
+testMerge makeTrees = do
   editor <- entityRef <$> register acid2
 
+  (treeA, treeB) <- makeTrees editor
   a <- autoEdit $ create editor treeA >>= viewRevision
   b <- autoEdit $ create editor treeB >>= viewRevision
 
