@@ -8,8 +8,7 @@ import Data.Monoid (mempty)
 import qualified Data.Set as Set
 
 import Test.MusicBrainz
-import Test.MusicBrainz.Data
-import Test.MusicBrainz.Repository (portishead, acid2)
+import Test.MusicBrainz.Repository (acid2, mysterons)
 
 import qualified MusicBrainz.Data.ClassTests as ClassTests
 
@@ -65,15 +64,3 @@ testIsrc = testCase "Can add and remove ISRCs" $ mbTest $ do
   where
     isrc = ISRC "GBAAA9800322"
     withIsrc t = t { recordingIsrcs = Set.singleton isrc }
-
-
---------------------------------------------------------------------------------
-mysterons :: Ref Editor -> MusicBrainz (Tree Recording)
-mysterons editor = do
-  ac <- singleArtistAc editor portishead
-  return $ minimalTree $
-    Recording { recordingName = "Mysterons"
-              , recordingComment = ""
-              , recordingArtistCredit = ac
-              , recordingDuration = 64936
-              }

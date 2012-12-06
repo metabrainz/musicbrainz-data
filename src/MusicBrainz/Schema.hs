@@ -85,6 +85,10 @@ instance FromField (Ref Language) where
   fromField f v = view reference <$> fromField f v
 
 
+instance FromField (Ref MediumFormat) where
+  fromField f v = view reference <$> fromField f v
+
+
 instance FromField (Ref Recording) where
   fromField f v = view reference <$> fromField f v
 
@@ -347,6 +351,10 @@ instance ToField (Ref Language) where
   toField = toField . dereference
 
 
+instance ToField (Ref MediumFormat) where
+  toField = toField . dereference
+
+
 instance ToField (Ref Recording) where
   toField = toField . dereference
 
@@ -497,6 +505,13 @@ instance ToRow Language where
                        ]
 
 
+instance ToRow Medium where
+  toRow Medium{..} = [ toField mediumPosition
+                     , toField mediumName
+                     , toField mediumFormat
+                     ]
+
+
 instance ToRow RelationshipType where
   toRow RelationshipType{..} = [ toField relName ]
 
@@ -566,6 +581,16 @@ instance ToRow Script where
                      , toField scriptIsoNumber
                      , toField scriptName
                      ]
+
+
+instance ToRow Track where
+  toRow Track{..} = [ toField trackName
+                    , toField trackRecording
+                    , toField trackDuration
+                    , toField trackArtistCredit
+                    , toField trackPosition
+                    ]
+
 
 instance ToRow Url where
   toRow Url{..} = [ toField urlUrl ]

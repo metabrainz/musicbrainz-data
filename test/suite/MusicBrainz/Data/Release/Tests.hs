@@ -10,7 +10,7 @@ import qualified Data.Set as Set
 
 import Test.MusicBrainz
 import Test.MusicBrainz.Data
-import Test.MusicBrainz.Repository (portishead, dummy, uk, acid2, latin, english, revolutionRecords)
+import Test.MusicBrainz.Repository (portishead, dummy, uk, acid2, latin, english, revolutionRecords, mysterons)
 
 import qualified MusicBrainz.Data.ClassTests as ClassTests
 
@@ -28,6 +28,7 @@ tests :: [Test]
 tests = [ testCreateFindLatest
         , testAnnotation
         , testReleaseLabels
+        , testTrackLists
         ]
 
 
@@ -70,6 +71,35 @@ testReleaseLabels = testCase "Releases can have release labels" $ mbTest $ do
   liftIO $ releaseLabelsPostUpdate @?= mempty
 
   where releaseLabelsLens f t = f (releaseLabels t) <&> \b -> t { releaseLabels = b }
+
+
+--------------------------------------------------------------------------------
+testTrackLists :: Test
+testTrackLists = testCase "Releases can have track lists" $ mbTest $ do
+  editor <- entityRef <$> register acid2
+
+  mediums <- makeMediums editor
+  tree <- (\t -> t { releaseMediums = mediums }) <$> dummyTree editor
+
+  release <- autoEdit $ create editor tree >>= viewRevision
+  createdMediums <- viewMediums (coreRevision release)
+
+  liftIO $ createdMediums @?= mediums
+
+  where
+    makeMediums editor = do
+      t <- mysterons editor
+      mystRec <- autoEdit $ create editor t >>= viewRevision
+      return $ [ Medium { mediumName = "Live"
+                        , mediumFormat = Nothing
+                        , mediumPosition = 1
+                        , mediumTracks = [ Track { trackName = "Mysterons"
+                                                 , trackRecording = coreRef mystRec
+                                                 , trackDuration = Nothing
+                                                 , trackArtistCredit = (recordingArtistCredit (coreData mystRec))
+                                                 , trackPosition = "1"
+                                                 } ] } ]
+
 
 --------------------------------------------------------------------------------
 dummyTree :: Ref Editor -> MusicBrainz (Tree Release)

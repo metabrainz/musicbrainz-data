@@ -121,6 +121,7 @@ instance Mergeable (Tree Release) where
     ReleaseTree <$> releaseData `mergedVia` mergeReleaseData
                 <*> releaseAnnotation `mergedVia` mergeEq
                 <*> releaseLabels `mergedVia` merge
+                <*> releaseMediums `mergedVia` mergeEq
     where
       mergeReleaseData =
         Release

@@ -68,6 +68,9 @@ instance Referenceable LabelType where
 instance Referenceable Language where
   type RefSpec Language = Int
 
+instance Referenceable MediumFormat where
+  type RefSpec MediumFormat = Int
+
 instance Referenceable Recording where
   type RefSpec Recording = MBID Recording
 
@@ -458,6 +461,7 @@ data Tree a where
     releaseData :: Release
   , releaseAnnotation :: Text
   , releaseLabels :: Set.Set ReleaseLabel
+  , releaseMediums :: [Medium]
   } -> Tree Release
 
   ReleaseGroupTree :: {
@@ -628,3 +632,29 @@ data ReleaseLabel = ReleaseLabel
     , releaseCatalogNumber :: Maybe Text
     }
   deriving (Eq, Ord, Show)
+
+
+--------------------------------------------------------------------------------
+data Medium = Medium
+    { mediumName :: Text
+    , mediumFormat :: Maybe (Ref MediumFormat)
+    , mediumPosition :: Int
+    , mediumTracks :: [Track]
+    }
+  deriving (Eq, Show)
+
+
+--------------------------------------------------------------------------------
+data MediumFormat = MediumFormat { mediumFormatName :: Text }
+  deriving (Eq, Show)
+
+
+--------------------------------------------------------------------------------
+data Track = Track
+    { trackName :: Text
+    , trackRecording :: Ref Recording
+    , trackDuration :: Maybe Int
+    , trackArtistCredit :: Ref ArtistCredit
+    , trackPosition :: Text
+    }
+  deriving (Eq, Show)

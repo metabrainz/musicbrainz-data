@@ -67,3 +67,13 @@ revolutionRecords = minimalTree $
         , labelType = Nothing
         , labelCode = Nothing
         }
+
+mysterons :: Ref Editor -> MusicBrainz (Tree Recording)
+mysterons editor = do
+  ac <- singleArtistAc editor portishead
+  return $ minimalTree $
+    Recording { recordingName = "Mysterons"
+              , recordingComment = ""
+              , recordingArtistCredit = ac
+              , recordingDuration = 64936
+              }

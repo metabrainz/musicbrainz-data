@@ -45,8 +45,11 @@ module MusicBrainz.Types
     , ISRC(..)
     , ISWC(..)
     , Language(..)
+    , Medium(..)
+    , MediumFormat(..)
     , ReleaseLabel(..)
     , Script(..)
+    , Track(..)
 
       -- ** Relationships
     , LinkedRelationship(..)

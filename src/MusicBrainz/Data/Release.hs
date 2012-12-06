@@ -6,14 +6,22 @@ The majority of operations on releases are common for all core entities, so you
 should see the documentation on the 'Release' type and notice all the type class
 instances. -}
 module MusicBrainz.Data.Release
-    ( viewReleaseLabels ) where
+    ( viewMediums
+    , viewReleaseLabels
+    ) where
 
 import Control.Applicative
+import Control.Lens
 import Control.Monad
 import Control.Monad.IO.Class
-import Database.PostgreSQL.Simple (Only(..), (:.)(..))
+import Data.Function
+import Data.List
+import Data.Maybe (fromMaybe)
+import Data.Semigroup (First(..), sconcat)
+import Database.PostgreSQL.Simple (Only(..), (:.)(..), In(..))
 import Database.PostgreSQL.Simple.SqlQQ (sql)
 
+import qualified Data.List.NonEmpty as NonEmpty
 import qualified Data.Set as Set
 
 import MusicBrainz
@@ -68,6 +76,7 @@ instance RealiseTree Release where
     dataId <- insertReleaseData (releaseData release)
     treeId <- insertReleaseTree (releaseAnnotation release) (releaseReleaseGroup . releaseData $ release) dataId
     realiseReleaseLabels treeId
+    realiseMediums treeId
     return treeId
     where
       insertReleaseData :: (Functor m, MonadIO m) => Release -> MusicBrainzT m Int
@@ -86,6 +95,14 @@ instance RealiseTree Release where
           params = map (Only treeId :.) (Set.toList $ releaseLabels release)
           q = [sql| INSERT INTO release_label (release_tree_id, label_id, catalog_number)
                     VALUES (?, ?, ?) |]
+
+      realiseMediums treeId = forM_ (releaseMediums release) $ \medium -> do
+        tracklistId <- selectValue $ query_ "INSERT INTO tracklist DEFAULT VALUES RETURNING id"
+        execute [sql| INSERT INTO medium (position, name, medium_format_id, tracklist_id, release_tree_id) VALUES (?, ?, ?, ?, ?) |]
+          (medium :. (tracklistId :: Int, treeId))
+        forM_ (zip (mediumTracks medium) [1..]) $ \(track, n) -> do
+          execute [sql| INSERT INTO track (tracklist_id, name, recording_id, length, artist_credit_id, position, number) VALUES (?, (SELECT find_or_insert_track_name(?)), ?, ?, ?, ?, ?) |] $
+            (Only tracklistId :. track :. Only (n :: Int))
 
 
 --------------------------------------------------------------------------------
@@ -128,6 +145,7 @@ instance ViewTree Release where
   viewTree r = ReleaseTree <$> fmap coreData (viewRevision r)
                            <*> viewAnnotation r
                            <*> viewReleaseLabels r
+                           <*> viewMediums r
 
 
 --------------------------------------------------------------------------------
@@ -139,3 +157,50 @@ viewReleaseLabels r = Set.fromList <$> query q (Only r)
                   JOIN release_revision USING (release_tree_id)
                   WHERE revision_id = ? |]
 
+
+--------------------------------------------------------------------------------
+viewMediums :: (Applicative m, Functor m, Monad m, MonadIO m)
+  => Ref (Revision Release) -> MusicBrainzT m [Medium]
+viewMediums revisionId = do
+  mediums <- query selectMediums (Only revisionId)
+  tracks <- groupTracks <$>
+    query selectTracks (Only $ In (mediums ^.. traverse._1 :: [Int]))
+  pure $ associateMediums mediums tracks
+
+  where
+    selectMediums =
+      [sql| SELECT tracklist_id, name, medium_format_id, position
+            FROM medium
+            JOIN release_revision
+            USING (release_tree_id)
+            WHERE revision_id = ? |]
+
+    selectTracks =
+      [sql| SELECT tracklist_id, track_name.name, recording_id, length, artist_credit_id, number
+            FROM track
+            JOIN track_name ON (track_name.id = track.name)
+            WHERE tracklist_id IN ? |]
+
+    -- We group tracks by using a pair of semigroups. The first element uses the
+    -- 'First' semigroup to collapse a list of tracklist IDs into a single
+    -- tracklist ID -- we've guaranteed these are equal due to the groupBy.
+    -- The second semigroup is the list semigroup, so we simply concatenate all
+    -- tracks with the same tracklist ID together.
+    groupTracks =
+      let formTrack (tracklistId, name, recording, duration, ac, position) =
+            ( First (tracklistId :: Int)
+            , [Track name recording duration ac position]
+            )
+      in map (over _1 getFirst . sconcat . NonEmpty.fromList) .
+           groupBy ((==) `on` fst) . map formTrack
+
+    associateMediums mediums tracks =
+      let formMedium (tracklistId, name, format, position) =
+            Medium { mediumName = name
+                   , mediumFormat = format
+                   , mediumPosition = position
+                   , mediumTracks =
+                       fromMaybe (error "Tracklist association failed!") $
+                         tracklistId `lookup` tracks
+                   }
+      in map formMedium mediums
