@@ -3,6 +3,7 @@ module MusicBrainz.Data.Label.Tests ( tests ) where
 
 import Test.MusicBrainz
 import Test.MusicBrainz.Data
+import Test.MusicBrainz.Repository (revolutionRecords)
 
 import MusicBrainz
 
@@ -73,17 +74,3 @@ testAnnotation = testCase "Can add and remove label annotations" $ mbTest $ do
 testIpiCodes :: Test
 testIpiCodes = testCase "Can add and remove label IPI codes" $ mbTest $ do
   ClassTests.testIpiCodes revolutionRecords
-
-
---------------------------------------------------------------------------------
-revolutionRecords :: Tree Label
-revolutionRecords = minimalTree $
-  Label { labelName = "Revolution Records"
-        , labelSortName = "Records, Revolution"
-        , labelComment = ""
-        , labelBeginDate = emptyDate
-        , labelEndDate = emptyDate
-        , labelEnded = False
-        , labelType = Nothing
-        , labelCode = Nothing
-        }

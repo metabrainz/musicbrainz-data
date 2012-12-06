@@ -3,15 +3,22 @@ module MusicBrainz.Data.Release.Tests
     ( tests ) where
 
 import Control.Applicative
+import Control.Lens
+import Data.Monoid
+
+import qualified Data.Set as Set
+
 import Test.MusicBrainz
 import Test.MusicBrainz.Data
-import Test.MusicBrainz.Repository (portishead, dummy, uk, acid2, latin, english)
+import Test.MusicBrainz.Repository (portishead, dummy, uk, acid2, latin, english, revolutionRecords)
 
 import qualified MusicBrainz.Data.ClassTests as ClassTests
 
 import MusicBrainz
 import MusicBrainz.Data
+import MusicBrainz.Data.Edit
 import MusicBrainz.Data.Editor (register)
+import MusicBrainz.Data.Release
 
 import qualified MusicBrainz.Data.ReleasePackaging as ReleasePackaging
 import qualified MusicBrainz.Data.ReleaseStatus as ReleaseStatus
@@ -20,6 +27,7 @@ import qualified MusicBrainz.Data.ReleaseStatus as ReleaseStatus
 tests :: [Test]
 tests = [ testCreateFindLatest
         , testAnnotation
+        , testReleaseLabels
         ]
 
 
@@ -38,6 +46,30 @@ testAnnotation :: Test
 testAnnotation = testCase "Can add and remove artist annotations" $ mbTest $ do
   ClassTests.testAnnotation dummyTree
 
+
+--------------------------------------------------------------------------------
+testReleaseLabels :: Test
+testReleaseLabels = testCase "Releases can have release labels" $ mbTest $ do
+  editor <- entityRef <$> register acid2
+
+  tree <- dummyTree editor
+  revRecLabel <- coreRef <$> autoEdit (create editor revolutionRecords >>= viewRevision)
+  let revRec = ReleaseLabel { releaseLabel = Just revRecLabel, releaseCatalogNumber = Just "REVREC001" }
+
+  release <- autoEdit $ create editor (releaseLabelsLens .~ Set.singleton revRec $ tree) >>= viewRevision
+  releaseLabelsPreUpdate <- viewReleaseLabels (coreRevision release)
+  liftIO $ releaseLabelsPreUpdate @?= Set.singleton revRec
+
+  edit <- createEdit $
+    update editor (coreRevision release) tree
+
+  apply edit
+
+  latest <- findLatest (coreRef release)
+  releaseLabelsPostUpdate <- viewReleaseLabels (coreRevision latest)
+  liftIO $ releaseLabelsPostUpdate @?= mempty
+
+  where releaseLabelsLens f t = f (releaseLabels t) <&> \b -> t { releaseLabels = b }
 
 --------------------------------------------------------------------------------
 dummyTree :: Ref Editor -> MusicBrainz (Tree Release)

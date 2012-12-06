@@ -6,13 +6,15 @@ The majority of operations on releases are common for all core entities, so you
 should see the documentation on the 'Release' type and notice all the type class
 instances. -}
 module MusicBrainz.Data.Release
-    ( ) where
+    ( viewReleaseLabels ) where
 
 import Control.Applicative
 import Control.Monad
 import Control.Monad.IO.Class
-import Database.PostgreSQL.Simple (Only(..))
+import Database.PostgreSQL.Simple (Only(..), (:.)(..))
 import Database.PostgreSQL.Simple.SqlQQ (sql)
+
+import qualified Data.Set as Set
 
 import MusicBrainz
 import MusicBrainz.Data.Annotation
@@ -64,7 +66,9 @@ instance MasterRevision Release where
 instance RealiseTree Release where
   realiseTree release = do
     dataId <- insertReleaseData (releaseData release)
-    insertReleaseTree (releaseAnnotation release) (releaseReleaseGroup . releaseData $ release) dataId
+    treeId <- insertReleaseTree (releaseAnnotation release) (releaseReleaseGroup . releaseData $ release) dataId
+    realiseReleaseLabels treeId
+    return treeId
     where
       insertReleaseData :: (Functor m, MonadIO m) => Release -> MusicBrainzT m Int
       insertReleaseData data' = selectValue $
@@ -76,6 +80,12 @@ instance RealiseTree Release where
                     VALUES (?, ?, ?)
                     RETURNING release_tree_id  |]
           (dataId, releaseGroupId, annotation)
+
+      realiseReleaseLabels treeId = executeMany q params
+        where
+          params = map (Only treeId :.) (Set.toList $ releaseLabels release)
+          q = [sql| INSERT INTO release_label (release_tree_id, label_id, catalog_number)
+                    VALUES (?, ?, ?) |]
 
 
 --------------------------------------------------------------------------------
@@ -117,3 +127,15 @@ instance Editable Release where
 instance ViewTree Release where
   viewTree r = ReleaseTree <$> fmap coreData (viewRevision r)
                            <*> viewAnnotation r
+                           <*> viewReleaseLabels r
+
+
+--------------------------------------------------------------------------------
+viewReleaseLabels :: (Functor m, Monad m, MonadIO m)
+  => Ref (Revision Release) -> MusicBrainzT m (Set.Set ReleaseLabel)
+viewReleaseLabels r = Set.fromList <$> query q (Only r)
+  where q = [sql| SELECT label_id, catalog_number
+                  FROM release_label
+                  JOIN release_revision USING (release_tree_id)
+                  WHERE revision_id = ? |]
+

@@ -457,6 +457,7 @@ data Tree a where
   ReleaseTree :: {
     releaseData :: Release
   , releaseAnnotation :: Text
+  , releaseLabels :: Set.Set ReleaseLabel
   } -> Tree Release
 
   ReleaseGroupTree :: {
@@ -619,3 +620,11 @@ newtype ISRC = ISRC Text
 --------------------------------------------------------------------------------
 data Url = Url { urlUrl :: URI }
   deriving (Eq, Show, Typeable)
+
+
+--------------------------------------------------------------------------------
+data ReleaseLabel = ReleaseLabel
+    { releaseLabel :: Maybe (Ref Label)
+    , releaseCatalogNumber :: Maybe Text
+    }
+  deriving (Eq, Ord, Show)

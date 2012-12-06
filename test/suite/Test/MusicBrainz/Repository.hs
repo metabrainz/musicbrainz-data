@@ -3,6 +3,8 @@ module Test.MusicBrainz.Repository where
 
 import Data.Monoid
 
+import Test.MusicBrainz.Data
+
 import MusicBrainz
 
 portishead :: Artist
@@ -53,3 +55,15 @@ english = Language
 
 compilation :: ReleaseGroupType Secondary
 compilation = ReleaseGroupType { releaseGroupTypeName = "Compilation" }
+
+revolutionRecords :: Tree Label
+revolutionRecords = minimalTree $
+  Label { labelName = "Revolution Records"
+        , labelSortName = "Records, Revolution"
+        , labelComment = ""
+        , labelBeginDate = emptyDate
+        , labelEndDate = emptyDate
+        , labelEnded = False
+        , labelType = Nothing
+        , labelCode = Nothing
+        }

@@ -45,6 +45,7 @@ module MusicBrainz.Types
     , ISRC(..)
     , ISWC(..)
     , Language(..)
+    , ReleaseLabel(..)
     , Script(..)
 
       -- ** Relationships

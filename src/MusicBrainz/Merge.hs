@@ -120,6 +120,7 @@ instance Mergeable (Tree Release) where
   merge =
     ReleaseTree <$> releaseData `mergedVia` mergeReleaseData
                 <*> releaseAnnotation `mergedVia` mergeEq
+                <*> releaseLabels `mergedVia` merge
     where
       mergeReleaseData =
         Release

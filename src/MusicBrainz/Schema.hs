@@ -254,6 +254,10 @@ instance FromRow (ReleaseGroupType a) where
   fromRow = ReleaseGroupType <$> field
 
 
+instance FromRow ReleaseLabel where
+  fromRow = ReleaseLabel <$> field <*> field
+
+
 instance FromRow ReleasePackaging where
   fromRow = ReleasePackaging <$> field
 
@@ -539,6 +543,12 @@ instance ToRow ReleaseGroup where
 instance ToRow (ReleaseGroupType a) where
   toRow ReleaseGroupType{..} = [ toField releaseGroupTypeName
                                ]
+
+
+instance ToRow ReleaseLabel where
+  toRow ReleaseLabel{..} = [ toField releaseLabel
+                           , toField releaseCatalogNumber
+                           ]
 
 
 instance ToRow ReleasePackaging where
