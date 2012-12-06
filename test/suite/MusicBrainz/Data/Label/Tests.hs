@@ -2,7 +2,6 @@
 module MusicBrainz.Data.Label.Tests ( tests ) where
 
 import Test.MusicBrainz
-import Test.MusicBrainz.Data
 import Test.MusicBrainz.Repository (revolutionRecords)
 
 import MusicBrainz
