@@ -20,6 +20,7 @@ import Database.PostgreSQL.Simple.FromField (FromField(..), ResultError(..), ret
 import Database.PostgreSQL.Simple.FromRow (FromRow(..), field)
 import Database.PostgreSQL.Simple.ToField (ToField(..), Action(..), inQuotes)
 import Database.PostgreSQL.Simple.ToRow (ToRow(..))
+import Network.URI (URI, parseURI)
 
 import MusicBrainz.Edit
 import MusicBrainz.Types.Internal
@@ -120,6 +121,10 @@ instance FromField (Ref Script) where
   fromField f v = view reference <$> fromField f v
 
 
+instance FromField (Ref Url) where
+  fromField f v = view reference <$> fromField f v
+
+
 instance FromField (Ref Work) where
   fromField f v = view reference <$> fromField f v
 
@@ -150,6 +155,14 @@ instance FromField VoteScore where
 instance FromField (Ref WorkType) where
   fromField f v = view reference <$> fromField f v
 
+
+instance FromField URI where
+  fromField f v = do
+    attempt <- parseURI <$> fromField f v
+    maybe
+      (returnError ConversionFailed f "Failed to convert string to URI")
+      return
+      attempt
 
 --------------------------------------------------------------------------------
 instance (FromField (Ref a), FromRow a, Typeable a) => FromRow (CoreEntity a) where
@@ -251,6 +264,10 @@ instance FromRow ReleaseStatus where
 
 instance FromRow Script where
   fromRow = Script <$> field <*> field <*> field
+
+
+instance FromRow Url where
+  fromRow = Url <$> field
 
 
 instance FromRow Vote where
@@ -366,6 +383,10 @@ instance ToField (Ref (Tree a)) where
   toField = toField . dereference
 
 
+instance ToField (Ref Url) where
+  toField = toField . dereference
+
+
 instance ToField (Ref Work) where
   toField = toField . dereference
 
@@ -373,6 +394,9 @@ instance ToField (Ref Work) where
 instance ToField (Ref WorkType) where
   toField = toField . dereference
 
+
+instance ToField URI where
+  toField = toField . show
 
 instance ToField VoteScore where
   toField = toField . fromEnum
@@ -532,6 +556,9 @@ instance ToRow Script where
                      , toField scriptIsoNumber
                      , toField scriptName
                      ]
+
+instance ToRow Url where
+  toRow Url{..} = [ toField urlUrl ]
 
 
 instance ToRow Work where

@@ -20,6 +20,7 @@ import qualified MusicBrainz.Data.Release.Tests
 import qualified MusicBrainz.Data.ReleaseGroup.Tests
 import qualified MusicBrainz.Data.ReleaseGroupType.Tests
 import qualified MusicBrainz.Data.Script.Tests
+import qualified MusicBrainz.Data.Url.Tests
 import qualified MusicBrainz.Data.Work.Tests
 import qualified MusicBrainz.Data.WorkType.Tests
 import qualified MusicBrainz.Schema.Tests
@@ -61,6 +62,8 @@ main = cleanState >> defaultMain tests
                 MusicBrainz.Data.ReleaseGroupType.Tests.tests
             , testGroup "MusicBrainz.Data.Script.Tests"
                 MusicBrainz.Data.Script.Tests.tests
+            , testGroup "MusicBrainz.Data.Url.Tests"
+                MusicBrainz.Data.Url.Tests.tests
             , testGroup "MusicBrainz.Data.Work.Tests"
                 MusicBrainz.Data.Work.Tests.tests
             , testGroup "MusicBrainz.Data.WorkType.Tests"

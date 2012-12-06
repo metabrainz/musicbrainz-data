@@ -12,6 +12,7 @@ import Data.Text (Text)
 import Data.Typeable (Typeable)
 import Data.UUID
 import GHC.Enum (boundedEnumFrom)
+import Network.URI (URI)
 
 import qualified Data.Set as Set
 
@@ -99,6 +100,9 @@ instance Referenceable Script where
 
 instance Referenceable (Tree a) where
   type RefSpec (Tree a) = Int
+
+instance Referenceable Url where
+  type RefSpec Url = MBID Url
 
 instance Referenceable Work where
   type RefSpec Work = MBID Work
@@ -460,6 +464,10 @@ data Tree a where
   , releaseGroupAnnotation :: Text
   } -> Tree ReleaseGroup
 
+  UrlTree :: {
+    urlData :: Url
+  } -> Tree Url
+
   WorkTree :: {
     workData :: Work
   , workAliases :: Set.Set Alias
@@ -478,6 +486,7 @@ treeData LabelTree{..} = labelData
 treeData RecordingTree{..} = recordingData
 treeData ReleaseTree{..} = releaseData
 treeData ReleaseGroupTree{..} = releaseGroupData
+treeData UrlTree{..} = urlData
 treeData WorkTree{..} = workData
 
 --------------------------------------------------------------------------------
@@ -605,3 +614,8 @@ newtype ISWC = ISWC Text
 --------------------------------------------------------------------------------
 newtype ISRC = ISRC Text
   deriving (Eq, Ord, Show)
+
+
+--------------------------------------------------------------------------------
+data Url = Url { urlUrl :: URI }
+  deriving (Eq, Show, Typeable)

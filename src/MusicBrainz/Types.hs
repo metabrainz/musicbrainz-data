@@ -24,6 +24,9 @@ module MusicBrainz.Types
     , ReleaseGroup(..)
     , ReleaseGroupType(..), Primary, Secondary
 
+      -- *** URLs
+    , Url(..)
+
       -- *** Works
     , Work(..)
     , WorkType(..)

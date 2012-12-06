@@ -148,6 +148,13 @@ instance Mergeable (Tree ReleaseGroup) where
               <*> releaseGroupPrimaryType `mergedVia` mergeEq
               <*> releaseGroupSecondaryTypes `mergedVia` merge
 
+instance Mergeable (Tree Url) where
+  merge =
+    UrlTree <$> urlData `mergedVia` mergeUrlData
+    where
+      mergeUrlData =
+        Url <$> urlUrl `mergedVia` mergeEq
+
 instance Mergeable (Tree Work) where
   merge =
     WorkTree <$> workData `mergedVia` mergeWorkData

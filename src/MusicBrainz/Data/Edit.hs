@@ -33,6 +33,7 @@ import MusicBrainz.Data.ReleaseGroup ()
 import MusicBrainz.Data.Revision (mergeBase)
 import MusicBrainz.Data.Revision.Internal (addChild, newChildRevision)
 import MusicBrainz.Data.Tree (viewTree, ViewTree)
+import MusicBrainz.Data.Url ()
 import MusicBrainz.Data.Work ()
 import MusicBrainz.Edit
 import MusicBrainz.Merge
@@ -56,8 +57,10 @@ apply editId = do
       UNION ALL
       SELECT 'release_group'::text, revision_id FROM edit_release_group WHERE edit_id = ?
       UNION ALL
+      SELECT 'url'::text, revision_id FROM edit_url WHERE edit_id = ?
+      UNION ALL
       SELECT 'work'::text, revision_id FROM edit_work WHERE edit_id = ?
-    |] (editId, editId, editId, editId, editId, editId)
+    |] (editId, editId, editId, editId, editId, editId, editId)
     mergeUpstream (Change r) = mergeRevisionUpstream r
 
     toChange :: (String, Int) -> Change
@@ -68,6 +71,7 @@ apply editId = do
         "recording" -> Change (Ref revisionId :: Ref (Revision Recording))
         "release" -> Change (Ref revisionId :: Ref (Revision Release))
         "release_group" -> Change (Ref revisionId :: Ref (Revision ReleaseGroup))
+        "url" -> Change (Ref revisionId :: Ref (Revision Url))
         "work" -> Change (Ref revisionId :: Ref (Revision Work))
         _ -> error $ "Attempt to load an edit with revision of unknown kind '" ++ kind ++ "'"
 

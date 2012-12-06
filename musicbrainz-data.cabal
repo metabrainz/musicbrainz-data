@@ -18,6 +18,7 @@ Library
     lens >= 3.4 && < 3.7,
     MonadCatchIO-mtl >= 0.3.0.0 && <0.4,
     mtl >= 2.1.1 && < 2.2,
+    network >= 2.3,
     postgresql-simple >= 0.2.4.1 && < 0.3,
     semigroups >= 0.7,
     text >= 0.11 && < 0.12,
@@ -54,6 +55,7 @@ Library
     MusicBrainz.Data.Script
     MusicBrainz.Data.Tree
     MusicBrainz.Data.Update
+    MusicBrainz.Data.Url
     MusicBrainz.Data.Work
     MusicBrainz.Data.WorkType
     MusicBrainz.Edit
@@ -82,6 +84,7 @@ Test-Suite integration-tests
     lens >= 3.4 && < 3.7,
     MonadCatchIO-mtl >= 0.3.0.0 && <0.4,
     musicbrainz-data,
+    network >= 2.3,
     postgresql-simple >= 0.2.4.1 && < 0.3,
     QuickCheck >= 2.4.2 && < 2.6,
     test-framework >= 0.6.1 && <0.7,

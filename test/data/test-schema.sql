@@ -692,6 +692,35 @@ $$;
 ALTER FUNCTION musicbrainz.find_or_insert_track_name(in_name text) OWNER TO musicbrainz;
 
 --
+-- Name: find_or_insert_url_data(text); Type: FUNCTION; Schema: musicbrainz; Owner: musicbrainz
+--
+
+CREATE FUNCTION find_or_insert_url_data(in_url text) RETURNS integer
+    LANGUAGE plpgsql
+    AS $$
+  DECLARE
+    found_id INT;
+  BEGIN
+    SELECT url_data_id INTO found_id
+    FROM url_data
+    WHERE url = in_url;
+
+    IF FOUND
+    THEN
+      RETURN found_id;
+    ELSE
+      INSERT INTO url_data (url)
+      VALUES (in_url)
+      RETURNING url_data_id INTO found_id;
+      RETURN found_id;
+    END IF;
+  END;
+$$;
+
+
+ALTER FUNCTION musicbrainz.find_or_insert_url_data(in_url text) OWNER TO musicbrainz;
+
+--
 -- Name: find_or_insert_work_data(text, text, integer, integer); Type: FUNCTION; Schema: musicbrainz; Owner: musicbrainz
 --
 
@@ -1328,6 +1357,18 @@ CREATE TABLE edit_release_group (
 
 
 ALTER TABLE musicbrainz.edit_release_group OWNER TO musicbrainz;
+
+--
+-- Name: edit_url; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE edit_url (
+    edit_id integer NOT NULL,
+    revision_id integer NOT NULL
+);
+
+
+ALTER TABLE musicbrainz.edit_url OWNER TO musicbrainz;
 
 --
 -- Name: edit_work; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
@@ -3147,7 +3188,7 @@ ALTER TABLE musicbrainz.tracklist_index OWNER TO musicbrainz;
 --
 
 CREATE TABLE url (
-    url_id uuid NOT NULL,
+    url_id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
     master_revision_id integer NOT NULL,
     merged_into uuid
 );
@@ -3214,6 +3255,27 @@ CREATE TABLE url_tree (
 
 
 ALTER TABLE musicbrainz.url_tree OWNER TO musicbrainz;
+
+--
+-- Name: url_tree_id_seq; Type: SEQUENCE; Schema: musicbrainz; Owner: musicbrainz
+--
+
+CREATE SEQUENCE url_tree_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE musicbrainz.url_tree_id_seq OWNER TO musicbrainz;
+
+--
+-- Name: url_tree_id_seq; Type: SEQUENCE OWNED BY; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER SEQUENCE url_tree_id_seq OWNED BY url_tree.url_tree_id;
+
 
 --
 -- Name: vote; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
@@ -3827,6 +3889,13 @@ ALTER TABLE ONLY tracklist ALTER COLUMN id SET DEFAULT nextval('tracklist_id_seq
 --
 
 ALTER TABLE ONLY url_data ALTER COLUMN url_data_id SET DEFAULT nextval('url_data_url_data_id_seq'::regclass);
+
+
+--
+-- Name: url_tree_id; Type: DEFAULT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY url_tree ALTER COLUMN url_tree_id SET DEFAULT nextval('url_tree_id_seq'::regclass);
 
 
 --
@@ -5379,6 +5448,22 @@ ALTER TABLE ONLY edit_release
 
 
 --
+-- Name: edit_url_edit_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY edit_url
+    ADD CONSTRAINT edit_url_edit_id_fkey FOREIGN KEY (edit_id) REFERENCES edit(edit_id);
+
+
+--
+-- Name: edit_url_revision_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY edit_url
+    ADD CONSTRAINT edit_url_revision_id_fkey FOREIGN KEY (revision_id) REFERENCES url_revision(revision_id);
+
+
+--
 -- Name: edit_work_edit_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
 --
 
@@ -6143,7 +6228,7 @@ ALTER TABLE ONLY tracklist_index
 --
 
 ALTER TABLE ONLY url
-    ADD CONSTRAINT url_master_revision_id_fkey FOREIGN KEY (master_revision_id) REFERENCES url_revision(revision_id);
+    ADD CONSTRAINT url_master_revision_id_fkey FOREIGN KEY (master_revision_id) REFERENCES url_revision(revision_id) DEFERRABLE INITIALLY DEFERRED;
 
 
 --
