@@ -233,6 +233,10 @@ instance FromRow Language where
   fromRow = Language <$> field <*> field <*> field <*> field <*> field
 
 
+instance FromRow MediumFormat where
+  fromRow = MediumFormat <$> field
+
+
 instance FromRow PartialDate where
   fromRow = PartialDate <$> field <*> field <*> field
 
@@ -510,6 +514,10 @@ instance ToRow Medium where
                      , toField mediumName
                      , toField mediumFormat
                      ]
+
+
+instance ToRow MediumFormat where
+  toRow MediumFormat{..} = [ toField mediumFormatName ]
 
 
 instance ToRow RelationshipType where

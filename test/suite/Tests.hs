@@ -14,6 +14,7 @@ import qualified MusicBrainz.Data.Gender.Tests
 import qualified MusicBrainz.Data.Label.Tests
 import qualified MusicBrainz.Data.LabelType.Tests
 import qualified MusicBrainz.Data.Language.Tests
+import qualified MusicBrainz.Data.MediumFormat.Tests
 import qualified MusicBrainz.Data.Recording.Tests
 import qualified MusicBrainz.Data.Relationship.Tests
 import qualified MusicBrainz.Data.Release.Tests
@@ -50,6 +51,8 @@ main = defaultMain [buildTest (cleanState >> return (testGroup "All tests" tests
                 MusicBrainz.Data.LabelType.Tests.tests
             , testGroup "MusicBrainz.Data.Language"
                 MusicBrainz.Data.Language.Tests.tests
+            , testGroup "MusicBrainz.Data.MediumFormat"
+                MusicBrainz.Data.MediumFormat.Tests.tests
             , testGroup "MusicBrainz.Data.Recording"
                 MusicBrainz.Data.Recording.Tests.tests
             , testGroup "MusicBrainz.Data.Relationship.Tests"

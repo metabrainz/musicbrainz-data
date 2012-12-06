@@ -43,6 +43,7 @@ Library
     MusicBrainz.Data.Label
     MusicBrainz.Data.LabelType
     MusicBrainz.Data.Language
+    MusicBrainz.Data.MediumFormat
     MusicBrainz.Data.Merge
     MusicBrainz.Data.Recording
     MusicBrainz.Data.Relationship
