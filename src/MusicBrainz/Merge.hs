@@ -55,7 +55,7 @@ valid in the current environment.
 Less technically, this lets you merge values inside a larger structure (for
 example, to merge records). -}
 mergedVia :: (e -> e') -> Merge e' a -> Merge e a
-mergedVia l m = Merge $ Compose $ (getCompose $ getMerge m) . fmap l
+mergedVia l m = Merge $ Compose $ getCompose (getMerge m) . fmap l
 
 --------------------------------------------------------------------------------
 {-| The 'Mergeable' class lets you define a merge strategy for a specific

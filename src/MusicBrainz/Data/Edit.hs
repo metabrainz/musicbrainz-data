@@ -146,13 +146,12 @@ mergeRevisionUpstream new = do
   let artistId = coreRef newVer
 
   current <- findLatest artistId
-  case coreRevision current == new of
+  if coreRevision current == new
     -- We aren't doing a merge at all, but we're simply 'creating' this
     -- entity (by setting an upstream revision).
-    True -> do
-      setMasterRevision artistId new
+    then setMasterRevision artistId new
 
-    False -> do
+    else do
       ancestor' <- mergeBase new (coreRevision current) >>= traverse viewRevision
       case ancestor' of
         Nothing -> error "Unable to merge: no common ancestor"

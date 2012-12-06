@@ -192,7 +192,7 @@ newEntityRevision entityName revisionId entityId entityTreeId = void $
 
 --------------------------------------------------------------------------------
 realiseAliases :: (Functor m, MonadIO m, TreeAliases a) => String -> Ref (Tree a) -> Tree a -> MusicBrainzT m ()
-realiseAliases eName treeId tree = forM_ (Set.toList $ tree^.aliases) $ \alias -> do
+realiseAliases eName treeId tree = forM_ (Set.toList $ tree^.aliases) $ \alias ->
   execute q (Only treeId :. alias)
   where q = fromString $ unlines
           [ "INSERT INTO " ++ eName ++ "_alias (" ++ eName ++ "_tree_id, name, sort_name, "

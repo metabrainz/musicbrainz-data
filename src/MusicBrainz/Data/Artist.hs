@@ -11,7 +11,7 @@ import Prelude hiding (mapM_)
 
 import Control.Applicative
 import Control.Lens hiding (by)
-import Control.Monad (when)
+import Control.Monad (unless)
 import Control.Monad.IO.Class (MonadIO)
 import Data.Foldable (mapM_, forM_)
 import Database.PostgreSQL.Simple (Only(..))
@@ -138,10 +138,10 @@ instance Update Artist where
 
     -- Reflect relationship changes against other entities
     oldRelationships <- viewRelationships baseRev
-    let additions = (artistRelationships artist) `Set.difference` oldRelationships
-    let deletions = oldRelationships `Set.difference` (artistRelationships artist)
+    let additions = artistRelationships artist `Set.difference` oldRelationships
+    let deletions = oldRelationships `Set.difference` artistRelationships artist
 
-    when (not $ Set.null additions && Set.null deletions) $ do
+    unless (Set.null additions && Set.null deletions) $ do
       self <- viewRevision baseRev
 
       forM_ additions $

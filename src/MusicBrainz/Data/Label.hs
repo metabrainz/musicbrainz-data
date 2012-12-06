@@ -135,9 +135,7 @@ instance CloneRevision Label where
 
 --------------------------------------------------------------------------------
 instance Update Label where
-  update editor baseRev label = do
-    revisionId <- runUpdate label baseRev
-    return revisionId
+  update editor baseRev label = runUpdate label baseRev
     where
       runUpdate tree base = do
         treeId <- realiseTree tree

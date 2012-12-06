@@ -129,9 +129,7 @@ instance CloneRevision Work where
 
 --------------------------------------------------------------------------------
 instance Update Work where
-  update editor baseRev work = do
-    revisionId <- runUpdate work baseRev
-    return revisionId
+  update editor baseRev work = runUpdate work baseRev
     where
       runUpdate tree base = do
         treeId <- realiseTree tree

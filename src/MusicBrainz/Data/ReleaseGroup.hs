@@ -33,7 +33,7 @@ addSecondaryTypes :: (Functor m, Monad m, MonadIO m)
   => CoreEntity ReleaseGroup -> MusicBrainzT m (CoreEntity ReleaseGroup)
 addSecondaryTypes rg = augment <$> query q (Only $ coreRevision rg)
   where
-    augment types = rg { coreData = (coreData rg) { releaseGroupSecondaryTypes = Set.fromList $ map fromOnly $ types } }
+    augment types = rg { coreData = (coreData rg) { releaseGroupSecondaryTypes = Set.fromList $ map fromOnly types } }
     q = [sql| SELECT release_group_secondary_type_id
               FROM release_group_tree_secondary_type
               JOIN release_group_revision USING (release_group_tree_id)

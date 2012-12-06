@@ -100,8 +100,8 @@ instance RealiseTree Release where
         tracklistId <- selectValue $ query_ "INSERT INTO tracklist DEFAULT VALUES RETURNING id"
         execute [sql| INSERT INTO medium (position, name, medium_format_id, tracklist_id, release_tree_id) VALUES (?, ?, ?, ?, ?) |]
           (medium :. (tracklistId :: Int, treeId))
-        forM_ (zip (mediumTracks medium) [1..]) $ \(track, n) -> do
-          execute [sql| INSERT INTO track (tracklist_id, name, recording_id, length, artist_credit_id, position, number) VALUES (?, (SELECT find_or_insert_track_name(?)), ?, ?, ?, ?, ?) |] $
+        forM_ (zip (mediumTracks medium) [1..]) $ \(track, n) ->
+          execute [sql| INSERT INTO track (tracklist_id, name, recording_id, length, artist_credit_id, position, number) VALUES (?, (SELECT find_or_insert_track_name(?)), ?, ?, ?, ?, ?) |]
             (Only tracklistId :. track :. Only (n :: Int))
 
 
