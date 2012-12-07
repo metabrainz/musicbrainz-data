@@ -351,7 +351,7 @@ data Recording = Recording
     { recordingName :: Text
     , recordingComment :: Text
     , recordingArtistCredit :: Ref ArtistCredit
-    , recordingDuration :: Int
+    , recordingDuration :: Maybe Int
     }
   deriving (Eq, Show)
 

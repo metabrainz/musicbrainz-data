@@ -75,5 +75,5 @@ mysterons editor = do
     Recording { recordingName = "Mysterons"
               , recordingComment = ""
               , recordingArtistCredit = ac
-              , recordingDuration = 64936
+              , recordingDuration = Just 64936
               }
