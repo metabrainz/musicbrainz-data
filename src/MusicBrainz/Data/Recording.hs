@@ -23,6 +23,7 @@ import MusicBrainz hiding (isrc)
 import MusicBrainz.Data.Annotation
 import MusicBrainz.Data.Create
 import MusicBrainz.Data.FindLatest
+import MusicBrainz.Data.Merge
 import MusicBrainz.Data.Revision.Internal
 import MusicBrainz.Data.Update
 import MusicBrainz.Data.Tree
@@ -158,3 +159,12 @@ viewPuids revisionId = Set.fromList . map fromOnly <$> query q (Only revisionId)
 --------------------------------------------------------------------------------
 instance ResolveReference Recording where
   resolveReference = Generic.resolveMbid "recording"
+
+
+--------------------------------------------------------------------------------
+instance Merge Recording
+
+
+--------------------------------------------------------------------------------
+instance CloneRevision Recording where
+  cloneRevision = Generic.cloneRevision "recording"

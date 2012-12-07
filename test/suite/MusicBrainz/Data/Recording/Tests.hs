@@ -9,7 +9,8 @@ import Data.Monoid (mempty)
 import qualified Data.Set as Set
 
 import Test.MusicBrainz
-import Test.MusicBrainz.Repository (acid2, mysterons)
+import Test.MusicBrainz.Data (singleArtistAc, minimalTree)
+import Test.MusicBrainz.Repository (acid2, mysterons, portishead)
 
 import qualified MusicBrainz.Data.ClassTests as ClassTests
 
@@ -25,6 +26,7 @@ tests = [ testCreateFindLatest
         , testAnnotation
         , testIsrc
         , testPuid
+        , testMerge
         ]
 
 
@@ -39,7 +41,7 @@ testCreateFindLatest = testCase "findLatest when recording exists" $ mbTest $ do
 
 --------------------------------------------------------------------------------
 testAnnotation :: Test
-testAnnotation = testCase "Can add and remove artist annotations" $ mbTest $ do
+testAnnotation = testCase "Can add and remove recording annotations" $ mbTest $ do
   ClassTests.testAnnotation mysterons
 
 
@@ -91,3 +93,25 @@ testPuid = testCase "Can add and remove PUIDs" $ mbTest $ do
   where
     expected = fromJust ("3893a0d0-3fd1-11e2-a25f-0800200c9a66" ^? puid)
     withPuid t = t { recordingPuids = Set.singleton expected }
+
+
+--------------------------------------------------------------------------------
+testMerge :: Test
+testMerge = testCase "Can merge 2 distinct recordings" $ mbTest $ do
+  ClassTests.testMerge createRecordings
+  where
+    createRecordings editor = do
+      a <- mysterons editor
+      b <- strangers editor
+      return (a, b)
+
+
+strangers :: Ref Editor -> MusicBrainz (Tree Recording)
+strangers editor = do
+  ac <- singleArtistAc editor portishead
+  return $ minimalTree $
+    Recording { recordingName = "Strangers"
+              , recordingComment = ""
+              , recordingArtistCredit = ac
+              , recordingDuration = Nothing
+              }
