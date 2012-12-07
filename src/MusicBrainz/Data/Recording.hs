@@ -153,3 +153,8 @@ viewPuids revisionId = Set.fromList . map fromOnly <$> query q (Only revisionId)
                   JOIN recording_revision USING (recording_tree_id)
                   WHERE revision_id = ?
             |]
+
+
+--------------------------------------------------------------------------------
+instance ResolveReference Recording where
+  resolveReference = Generic.resolveMbid "recording"
