@@ -785,6 +785,7 @@ uuid = prism toString parseUUID
           Just u -> Right u
           Nothing -> Left s
 
+
 --------------------------------------------------------------------------------
 parsecPrism :: Stream a Identity Char => (c -> a) -> Parsec a () c -> SimplePrism a c
 parsecPrism extract parser = prism extract runParse
