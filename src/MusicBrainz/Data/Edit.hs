@@ -15,11 +15,11 @@ module MusicBrainz.Data.Edit
     ) where
 
 import Control.Applicative
+import Control.Lens
 import Control.Monad
 import Control.Monad.Trans
 import Control.Monad.Trans.Writer
 import Data.Maybe (listToMaybe)
-import Data.Traversable (traverse)
 import Database.PostgreSQL.Simple (Only(..), (:.)(..))
 import Database.PostgreSQL.Simple.SqlQQ (sql)
 
@@ -66,14 +66,14 @@ apply editId = do
     toChange :: (String, Int) -> Change
     toChange (kind, revisionId) =
       case kind of
-        "artist" -> Change (Ref revisionId :: Ref (Revision Artist))
-        "label" -> Change (Ref revisionId :: Ref (Revision Label))
-        "recording" -> Change (Ref revisionId :: Ref (Revision Recording))
-        "release" -> Change (Ref revisionId :: Ref (Revision Release))
-        "release_group" -> Change (Ref revisionId :: Ref (Revision ReleaseGroup))
-        "url" -> Change (Ref revisionId :: Ref (Revision Url))
-        "work" -> Change (Ref revisionId :: Ref (Revision Work))
-        _ -> error $ "Attempt to load an edit with revision of unknown kind '" ++ kind ++ "'"
+        "artist"        -> Change (revisionId ^. reference :: Ref (Revision Artist))
+        "label"         -> Change (revisionId ^. reference :: Ref (Revision Label))
+        "recording"     -> Change (revisionId ^. reference :: Ref (Revision Recording))
+        "release"       -> Change (revisionId ^. reference :: Ref (Revision Release))
+        "release_group" -> Change (revisionId ^. reference :: Ref (Revision ReleaseGroup))
+        "url"           -> Change (revisionId ^. reference :: Ref (Revision Url))
+        "work"          -> Change (revisionId ^. reference :: Ref (Revision Work))
+        _               -> error $ "Attempt to load an edit with revision of unknown kind '" ++ kind ++ "'"
 
     closeEdit = void $ execute
       [sql| UPDATE edit SET status = ? WHERE edit_id = ? |] (Closed, editId)

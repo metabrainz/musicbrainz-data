@@ -2,8 +2,9 @@
 module MusicBrainz.Data.Work.Tests ( tests ) where
 
 import Control.Applicative
-
+import Control.Lens
 import Data.Monoid (mempty)
+
 import qualified Data.Set as Set
 
 import Test.MusicBrainz
@@ -98,7 +99,7 @@ testIswc = testCase "Can add and remove ISWCs" $ mbTest $ do
 
   work <- autoEdit $ create editor wildRoseWithIswc >>= viewRevision
   iswcPreUpdate <- viewIswcs (coreRevision work)
-  liftIO $ iswcPreUpdate @?= Set.singleton iswc
+  liftIO $ iswcPreUpdate @?= Set.singleton expected
 
   edit <- createEdit $
     update editor (coreRevision work) wildRose
@@ -110,8 +111,8 @@ testIswc = testCase "Can add and remove ISWCs" $ mbTest $ do
   liftIO $ iswcsPostUpdate @?= mempty
 
   where
-    iswc = ISWC "T-070.116.442-2"
-    wildRoseWithIswc = wildRose { workIswcs = Set.singleton iswc }
+    expected = "T-070.116.442-2" ^?! iswc
+    wildRoseWithIswc = wildRose { workIswcs = Set.singleton expected }
 
 
 --------------------------------------------------------------------------------

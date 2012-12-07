@@ -145,7 +145,7 @@ withTransactionRollBack :: (MonadIO m, Applicative m, MonadCatchIO m) => MusicBr
 withTransactionRollBack = withTransaction' rollback
 
 withTransaction' :: (MonadIO m, Applicative m, MonadCatchIO m) => MusicBrainzT m () -> MusicBrainzT m a -> MusicBrainzT m a
-withTransaction' conclude action = peruse transactionDepth >>= runAt
+withTransaction' conclude action = view transactionDepth >>= runAt
   where
     action' = local (transactionDepth +~ 1) action
     runAt depth
@@ -171,5 +171,5 @@ rollback = withMBConn PG.rollback
 
 
 withMBConn :: MonadIO m => (Connection -> IO a) -> MusicBrainzT m a
-withMBConn action = peruse mbDb >>= liftIO . action
+withMBConn action = view mbDb >>= liftIO . action
 

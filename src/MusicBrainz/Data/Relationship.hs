@@ -8,7 +8,7 @@ module MusicBrainz.Data.Relationship
     ) where
 
 import Control.Applicative
-import Control.Lens hiding (by)
+import Control.Lens
 import Control.Monad.IO.Class (MonadIO)
 import Data.Monoid (mappend, mempty)
 import Database.PostgreSQL.Simple (Only(..), In(..))

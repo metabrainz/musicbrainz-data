@@ -145,9 +145,9 @@ testIpiCodes :: (Create a, FindLatest a, TreeIPICodes a, Update a, ViewIPICodes 
 testIpiCodes startTree = do
   editor <- entityRef <$> register acid2
 
-  entity <- autoEdit $ create editor (ipiCodes .~ Set.singleton ipi $ startTree) >>= viewRevision
+  entity <- autoEdit $ create editor (ipiCodes .~ Set.singleton expected $ startTree) >>= viewRevision
   ipiPreUpdate <- viewIpiCodes (coreRevision entity)
-  liftIO $ ipiPreUpdate @?= Set.singleton ipi
+  liftIO $ ipiPreUpdate @?= Set.singleton expected
 
   edit <- createEdit $
     update editor (coreRevision entity) startTree
@@ -159,4 +159,4 @@ testIpiCodes startTree = do
   liftIO $ ipiPostUpdate @?= mempty
 
   where
-    ipi = IPI "12345678912"
+    expected = "12345678912" ^?! ipi

@@ -1,19 +1,89 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE GADTs #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TypeFamilies #-}
-{-| Definitions of all types used within MusicBrainz. -}
-module MusicBrainz.Types.Internal where
+{-| Definitions of all types used within MusicBrainz. This exports *almost*
+everything, but not actually everything. For example, we definitely want to
+always go through 'ipi' and 'iswc' to construct 'ISWC's.-}
+module MusicBrainz.Types.Internal
+    (
+      Artist(..)
+    , Alias(..)
+    , AliasType(..)
+    , ArtistCredit
+    , ArtistCreditName(..)
+    , ArtistType(..)
+    , CoreEntity(..)
+    , Country(..)
+    , Edit(..)
+    , EditNote(..)
+    , EditStatus(..)
+    , Editor(..)
+    , Entity(..)
+    , Gender(..)
+    , IPI, ipi
+    , ISRC, isrc
+    , ISWC, iswc
+    , Label(..)
+    , LabelType(..)
+    , Language(..)
+    , LinkedRelationship(..)
+    , MBID(..), mbid
+    , Medium(..)
+    , MediumFormat(..)
+    , PUID(..), puid
+    , PartialDate(..)
+    , Recording(..)
+    , Ref
+    , RefSpec
+    , Referenceable
+    , Relationship(..)
+    , RelationshipAttribute(..)
+    , RelationshipTarget(..)
+    , RelationshipType(..)
+    , Release(..)
+    , ReleaseGroup(..)
+    , ReleaseGroupType(..), Primary, Secondary
+    , ReleaseLabel(..)
+    , ReleasePackaging(..)
+    , ReleaseStatus(..)
+    , Revision
+    , Script(..)
+    , Track(..)
+    , Tree(..)
+    , Url(..)
+    , Vote(..)
+    , VoteScore(..)
+    , Work(..)
+    , WorkType(..)
+    , reference, dereference
+    , emptyDate, isEmpty
+    , treeData
+    ) where
 
+import Prelude hiding ((.))
+
+import Control.Applicative hiding (optional)
+import Control.Category ((.))
 import Control.Lens
+import Control.Monad (mfilter)
+import Data.Functor.Identity (Identity)
+import Data.Monoid (mconcat, (<>))
 import Data.Text (Text)
+import Data.Typeable (Typeable)
 import Data.UUID
 import GHC.Enum (boundedEnumFrom)
 import Network.URI (URI)
+import Text.Parsec hiding ((<|>))
+import Text.Parsec.Text ()
 
 import qualified Data.Set as Set
+import qualified Data.Text as T
 
 --------------------------------------------------------------------------------
 {-| A reference to a specific entity. In the database, this a foreign key
@@ -230,9 +300,16 @@ data Gender = Gender
 --------------------------------------------------------------------------------
 {-| An \'Interested Parties Information Code\' that can be attached to various
 entities. -}
-data IPI = IPI
-    { ipiCode :: Text }
-  deriving (Eq, Ord, Show)
+newtype IPI = IPI Text
+  deriving (Eq, Ord, Show, Typeable)
+
+ipi :: SimplePrism Text IPI
+ipi = parsecPrism (\(IPI i) -> i) ipiParser
+  where
+    ipiParser = IPI . T.pack <$> (try parseIpi <|> parseCae)
+      where
+        parseCae = ("00" ++) <$> count 9 digit <* eof
+        parseIpi = count 11 digit <* eof
 
 
 --------------------------------------------------------------------------------
@@ -394,20 +471,20 @@ type. -}
 newtype MBID a = MBID UUID
   deriving (Eq, Ord, Read, Show)
 
+instance Wrapped UUID UUID (MBID a) (MBID a) where
+  wrapped = iso MBID $ \(MBID a) -> a
 
 {-| Inject a 'String' into an 'MBID', or extract a 'String' from an 'MBID'. To
-work with this projection, you should use '^?' (to inject with a chance of
-failure) and '^.' / 'by' (to extract):
+work with this 'Prism', you should use '^?' to convert strings to MBIDs (there
+is a chance of failure) and '^.' / 'remit' to extract the 'String' from an
+'MBID':
 
 > "10adbe5e-a2c0-4bf3-8249-2b4cbf6e6ca8" ^? mbid :: Maybe (MBID a)
 
-> aValidMbidValue ^. by mbid :: String
+> aValidMbidValue ^. remit mbid :: String
 -}
-mbid :: SimpleProjection String (MBID a)
-mbid = projection mbidToString parseMbid
-  where
-    parseMbid = fmap MBID . fromString
-    mbidToString (MBID m) = toString m
+mbid :: SimplePrism String (MBID a)
+mbid = uuid.wrapped
 
 
 --------------------------------------------------------------------------------
@@ -556,6 +633,7 @@ data Vote = Vote { voteVote :: VoteScore
                  }
   deriving (Eq, Show)
 
+
 --------------------------------------------------------------------------------
 {-| An edit note is a comment that can be left by editors on edit notes, to
 have a discussion about the changes being made, or to provide references for
@@ -613,12 +691,41 @@ data RelationshipTarget = ToArtist
 
 --------------------------------------------------------------------------------
 newtype ISWC = ISWC Text
-  deriving (Eq, Ord, Show)
+  deriving (Eq, Ord, Show, Typeable)
+
+iswc :: SimplePrism Text ISWC
+iswc = parsecPrism (\(ISWC t) -> t) iswcParser
+  where
+    iswcParser = do
+      char 'T' *> dash
+      digits <- sequence [ count 3 digit <* dot
+                         , count 3 digit <* dot
+                         , count 3 digit <* oneOf ".-"
+                         ]
+      fin <- digit <* eof
+      pure $ ISWC $ formatIswc digits fin
+      where
+        optChar = optional . char
+        dash = optChar '-'
+        dot  = optChar '.'
+        formatIswc digits fin =
+          let digits' = T.intercalate "." (map T.pack digits)
+          in "T-" <> digits' <> "-" <> T.pack [fin]
 
 
 --------------------------------------------------------------------------------
 newtype ISRC = ISRC Text
-  deriving (Eq, Ord, Show)
+  deriving (Eq, Ord, Show, Typeable)
+
+isrc :: SimplePrism Text ISRC
+isrc = parsecPrism (\(ISRC i) -> i) isrcParser
+  where
+    isrcParser = do
+      ISRC . mconcat . map T.pack <$>
+        sequence [ countryCode, count 3 upperNum, count 7 digit ] <* eof
+      where
+        countryCode = mfilter (/= "TC") $ count 2 upper
+        upperNum = upper <|> digit
 
 
 --------------------------------------------------------------------------------
@@ -664,8 +771,23 @@ data Track = Track
 newtype PUID = PUID UUID
   deriving (Eq, Ord, Show)
 
-puid :: SimpleProjection String PUID
-puid = projection puidToString parsePuid
+instance Wrapped UUID UUID PUID PUID where
+  wrapped = iso PUID $ \(PUID p) -> p
+
+puid :: SimplePrism String PUID
+puid = uuid.wrapped
+
+
+--------------------------------------------------------------------------------
+uuid :: SimplePrism String UUID
+uuid = prism toString parseUUID
+  where parseUUID s = case fromString s of
+          Just u -> Right u
+          Nothing -> Left s
+
+--------------------------------------------------------------------------------
+parsecPrism :: Stream a Identity Char => (c -> a) -> Parsec a () c -> SimplePrism a c
+parsecPrism extract parser = prism extract runParse
   where
-    parsePuid = fmap PUID . fromString
-    puidToString (PUID p) = toString p
+    runParse t = either (const $ Left t) Right $
+      parse parser "" t

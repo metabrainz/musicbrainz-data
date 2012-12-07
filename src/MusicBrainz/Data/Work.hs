@@ -16,7 +16,7 @@ import Database.PostgreSQL.Simple.SqlQQ
 
 import qualified Data.Set as Set
 
-import MusicBrainz
+import MusicBrainz hiding (iswc)
 import MusicBrainz.Data.Alias
 import MusicBrainz.Data.Annotation
 import MusicBrainz.Data.Create

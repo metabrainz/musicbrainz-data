@@ -52,7 +52,7 @@ testIsrc = testCase "Can add and remove ISRCs" $ mbTest $ do
 
   recording <- autoEdit $ create editor (withIsrc tree) >>= viewRevision
   isrcPreUpdate <- viewIsrcs (coreRevision recording)
-  liftIO $ isrcPreUpdate @?= Set.singleton isrc
+  liftIO $ isrcPreUpdate @?= Set.singleton expected
 
   edit <- createEdit $
     update editor (coreRevision recording) tree
@@ -64,8 +64,8 @@ testIsrc = testCase "Can add and remove ISRCs" $ mbTest $ do
   liftIO $ isrcsPostUpdate @?= mempty
 
   where
-    isrc = ISRC "GBAAA9800322"
-    withIsrc t = t { recordingIsrcs = Set.singleton isrc }
+    expected = "GBAAA9800322" ^?! isrc
+    withIsrc t = t { recordingIsrcs = Set.singleton expected }
 
 
 --------------------------------------------------------------------------------

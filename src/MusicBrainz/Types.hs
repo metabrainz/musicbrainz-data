@@ -41,9 +41,9 @@ module MusicBrainz.Types
     , Country(..)
     , Editor(..)
     , Gender(..)
-    , IPI(..)
-    , ISRC(..)
-    , ISWC(..)
+    , IPI, ipi
+    , ISRC, isrc
+    , ISWC, iswc
     , Language(..)
     , Medium(..)
     , MediumFormat(..)

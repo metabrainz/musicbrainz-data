@@ -10,7 +10,7 @@ module MusicBrainz.Data.Artist () where
 import Prelude hiding (mapM_)
 
 import Control.Applicative
-import Control.Lens hiding (by)
+import Control.Lens
 import Control.Monad (unless)
 import Control.Monad.IO.Class (MonadIO)
 import Data.Foldable (mapM_, forM_)

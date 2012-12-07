@@ -2,6 +2,7 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-| Contains instances of 'FromField', 'FromRow', 'ToField' and 'ToRow' to
@@ -16,7 +17,8 @@ import Control.Applicative
 import Control.Lens
 import Data.Monoid (mempty)
 import Data.UUID (UUID)
-import Database.PostgreSQL.Simple.FromField (FromField(..), ResultError(..), returnError, typename)
+import Data.Typeable (Typeable)
+import Database.PostgreSQL.Simple.FromField (FieldParser, FromField(..), ResultError(..), returnError, typename)
 import Database.PostgreSQL.Simple.FromRow (FromRow(..), field)
 import Database.PostgreSQL.Simple.ToField (ToField(..), Action(..), inQuotes)
 import Database.PostgreSQL.Simple.ToRow (ToRow(..))
@@ -29,12 +31,24 @@ import qualified Data.ByteString.Char8 as LBS
 import qualified Data.UUID as UUID
 
 --------------------------------------------------------------------------------
+fieldFromPrism :: (FromField s, Typeable a) => Prism s t a b -> FieldParser a
+fieldFromPrism p f v = do
+  fromField f v >>= maybe conversionFailure return . preview p
+  where
+    conversionFailure =
+      returnError ConversionFailed f "Failed to parse field"
+
+
+instance FromField IPI where
+  fromField = fieldFromPrism ipi
+
+
 instance FromField ISRC where
-  fromField f v = ISRC <$> fromField f v
+  fromField = fieldFromPrism isrc
 
 
 instance FromField ISWC where
-  fromField f v = ISWC <$> fromField f v
+  fromField = fieldFromPrism iswc
 
 
 instance FromField (MBID a) where
@@ -226,7 +240,7 @@ instance FromRow Gender where
 
 
 instance FromRow IPI where
-  fromRow = IPI <$> field
+  fromRow = field
 
 
 instance FromRow Label where
@@ -309,11 +323,11 @@ instance ToField EditStatus where
 
 
 instance ToField ISRC where
-  toField (ISRC isrc) = toField isrc
+  toField = toField . view (remit isrc)
 
 
 instance ToField ISWC where
-  toField (ISWC iswc) = toField iswc
+  toField = toField . view (remit iswc)
 
 
 instance ToField (MBID a) where
@@ -494,8 +508,7 @@ instance ToRow Gender where
 
 
 instance ToRow IPI where
-  toRow IPI{..} = [ toField ipiCode
-                  ]
+  toRow = pure . toField . view (remit ipi)
 
 
 instance ToRow Label where

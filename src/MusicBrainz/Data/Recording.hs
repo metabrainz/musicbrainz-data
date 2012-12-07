@@ -19,7 +19,7 @@ import Database.PostgreSQL.Simple.SqlQQ (sql)
 
 import qualified Data.Set as Set
 
-import MusicBrainz
+import MusicBrainz hiding (isrc)
 import MusicBrainz.Data.Annotation
 import MusicBrainz.Data.Create
 import MusicBrainz.Data.FindLatest
