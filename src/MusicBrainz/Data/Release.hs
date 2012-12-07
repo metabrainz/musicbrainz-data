@@ -28,6 +28,7 @@ import MusicBrainz
 import MusicBrainz.Data.Annotation
 import MusicBrainz.Data.Create
 import MusicBrainz.Data.FindLatest
+import MusicBrainz.Data.Merge
 import MusicBrainz.Data.Revision.Internal
 import MusicBrainz.Data.Update
 import MusicBrainz.Data.Tree
@@ -204,3 +205,17 @@ viewMediums revisionId = do
                          tracklistId `lookup` tracks
                    }
       in map formMedium mediums
+
+
+--------------------------------------------------------------------------------
+instance ResolveReference Release where
+  resolveReference = Generic.resolveMbid "release"
+
+
+--------------------------------------------------------------------------------
+instance CloneRevision Release where
+  cloneRevision = Generic.cloneRevision "release"
+
+
+--------------------------------------------------------------------------------
+instance Merge Release

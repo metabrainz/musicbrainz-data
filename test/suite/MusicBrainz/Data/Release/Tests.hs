@@ -29,6 +29,7 @@ tests = [ testCreateFindLatest
         , testAnnotation
         , testReleaseLabels
         , testTrackLists
+        , testMerge
         ]
 
 
@@ -99,6 +100,17 @@ testTrackLists = testCase "Releases can have track lists" $ mbTest $ do
                                                  , trackArtistCredit = (recordingArtistCredit (coreData mystRec))
                                                  , trackPosition = "1"
                                                  } ] } ]
+
+
+--------------------------------------------------------------------------------
+testMerge :: Test
+testMerge = testCase "Can merge 2 distinct releases" $ mbTest $ do
+  ClassTests.testMerge createRecordings
+  where
+    createRecordings editor = do
+      a <- dummyTree editor
+      return (a, modTree a)
+    modTree t = t { releaseData = (releaseData t) { releaseName = "Blue Lines" } }
 
 
 --------------------------------------------------------------------------------

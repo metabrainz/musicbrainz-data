@@ -106,6 +106,7 @@ testMerge = testCase "Can merge 2 distinct recordings" $ mbTest $ do
       return (a, b)
 
 
+--------------------------------------------------------------------------------
 strangers :: Ref Editor -> MusicBrainz (Tree Recording)
 strangers editor = do
   ac <- singleArtistAc editor portishead
