@@ -285,10 +285,10 @@ $$;
 ALTER FUNCTION musicbrainz.find_or_insert_artist_name(in_name text) OWNER TO musicbrainz;
 
 --
--- Name: find_or_insert_label_data(text, text, text, integer, integer, integer, integer, integer, integer, boolean, integer, integer); Type: FUNCTION; Schema: musicbrainz; Owner: musicbrainz
+-- Name: find_or_insert_label_data(text, text, text, integer, integer, integer, integer, integer, integer, boolean, integer, integer, integer); Type: FUNCTION; Schema: musicbrainz; Owner: musicbrainz
 --
 
-CREATE FUNCTION find_or_insert_label_data(in_name text, in_sort_name text, in_comment text, in_b_year integer, in_b_month integer, in_b_day integer, in_e_year integer, in_e_month integer, in_e_day integer, in_ended boolean, in_type_id integer, in_code integer) RETURNS integer
+CREATE FUNCTION find_or_insert_label_data(in_name text, in_sort_name text, in_comment text, in_b_year integer, in_b_month integer, in_b_day integer, in_e_year integer, in_e_month integer, in_e_day integer, in_ended boolean, in_type_id integer, in_code integer, in_country integer) RETURNS integer
     LANGUAGE plpgsql
     AS $$
   DECLARE
@@ -310,7 +310,8 @@ CREATE FUNCTION find_or_insert_label_data(in_name text, in_sort_name text, in_co
       end_date_day IS NOT DISTINCT FROM in_b_day AND
       ended = in_ended AND
       label_type_id IS NOT DISTINCT FROM in_type_id AND
-      label_code IS NOT DISTINCT FROM in_code;
+      label_code IS NOT DISTINCT FROM in_code AND
+      country_id IS NOT DISTINCT FROM in_country;
 
     IF FOUND
     THEN
@@ -319,11 +320,11 @@ CREATE FUNCTION find_or_insert_label_data(in_name text, in_sort_name text, in_co
       INSERT INTO label_data (name, sort_name, comment,
         begin_date_year, begin_date_month, begin_date_day,
         end_date_year, end_date_month, end_date_day,
-        ended, label_type_id, label_code)
+        ended, label_type_id, label_code, country_id)
       VALUES (name_id, sort_name_id, in_comment,
         in_b_year, in_b_month, in_b_day,
         in_e_year, in_e_month, in_e_day,
-        in_ended, in_type_id, in_code)
+        in_ended, in_type_id, in_code, in_country)
       RETURNING label_data_id INTO found_id;
       RETURN found_id;
     END IF;
@@ -331,7 +332,7 @@ CREATE FUNCTION find_or_insert_label_data(in_name text, in_sort_name text, in_co
 $$;
 
 
-ALTER FUNCTION musicbrainz.find_or_insert_label_data(in_name text, in_sort_name text, in_comment text, in_b_year integer, in_b_month integer, in_b_day integer, in_e_year integer, in_e_month integer, in_e_day integer, in_ended boolean, in_type_id integer, in_code integer) OWNER TO musicbrainz;
+ALTER FUNCTION musicbrainz.find_or_insert_label_data(in_name text, in_sort_name text, in_comment text, in_b_year integer, in_b_month integer, in_b_day integer, in_e_year integer, in_e_month integer, in_e_day integer, in_ended boolean, in_type_id integer, in_code integer, in_country integer) OWNER TO musicbrainz;
 
 --
 -- Name: find_or_insert_label_name(text); Type: FUNCTION; Schema: musicbrainz; Owner: musicbrainz

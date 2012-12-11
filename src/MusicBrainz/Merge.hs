@@ -100,6 +100,7 @@ instance Mergeable (Tree Label) where
               <*> labelEnded `mergedVia` mergeEq
               <*> labelType `mergedVia` mergeEq
               <*> labelCode `mergedVia` mergeEq
+              <*> labelCountry `mergedVia` mergeEq
 
 
 instance Mergeable (Tree Recording) where

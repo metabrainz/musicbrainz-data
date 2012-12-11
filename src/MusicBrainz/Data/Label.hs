@@ -35,7 +35,7 @@ instance FindLatest Label where
         name.name, sort_name.name, comment,
         begin_date_year, begin_date_month, begin_date_day,
         end_date_year, end_date_month, end_date_day,
-        ended, label_type_id, label_code
+        ended, label_type_id, label_code, country_id
       FROM label
       JOIN label_revision USING (label_id)
       JOIN label_tree USING (label_tree_id)
@@ -72,7 +72,7 @@ instance RealiseTree Label where
     where
       insertLabelData :: (Functor m, MonadIO m) => Label -> MusicBrainzT m Int
       insertLabelData data' = selectValue $
-        query [sql| SELECT find_or_insert_label_data(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) |]
+        query [sql| SELECT find_or_insert_label_data(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) |]
           data'
 
       insertLabelTree annotation dataId = selectValue $
@@ -90,7 +90,7 @@ instance ViewRevision Label where
         name.name, sort_name.name, comment,
         begin_date_year, begin_date_month, begin_date_day,
         end_date_year, end_date_month, end_date_day,
-        ended, label_type_id, label_code
+        ended, label_type_id, label_code, country_id
       FROM label
       JOIN label_revision USING (label_id)
       JOIN label_tree USING (label_tree_id)

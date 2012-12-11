@@ -321,7 +321,8 @@ data Label = Label { labelName :: Text
                    , labelEndDate :: PartialDate
                    , labelEnded :: Bool
                    , labelType :: Maybe (Ref LabelType)
-                   , labelCode :: Maybe Integer
+                   , labelCode :: Maybe Int
+                   , labelCountry :: Maybe (Ref Country)
                    }
   deriving (Eq, Show)
 

@@ -66,6 +66,7 @@ revolutionRecords = minimalTree $
         , labelEnded = False
         , labelType = Nothing
         , labelCode = Nothing
+        , labelCountry = Nothing
         }
 
 mysterons :: Ref Editor -> MusicBrainz (Tree Recording)

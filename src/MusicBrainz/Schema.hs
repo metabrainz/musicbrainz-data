@@ -245,7 +245,7 @@ instance FromRow IPI where
 
 instance FromRow Label where
   fromRow = Label <$> field <*> field <*> field <*> fromRow <*> fromRow
-                  <*> field <*> field <*> field
+                  <*> field <*> field <*> field <*> field
 
 
 instance FromRow LabelType where
@@ -523,6 +523,7 @@ instance ToRow Label where
                       toField labelEnded
                     , toField labelType
                     , toField labelCode
+                    , toField labelCountry
                     ]
 
 
