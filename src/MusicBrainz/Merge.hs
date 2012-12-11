@@ -16,6 +16,7 @@ import Data.Text (Text)
 import GHC.Exts
 import Network.URI (URI)
 
+import qualified Data.Algorithm.Diff3 as Diff3
 import qualified Data.Set as Set
 
 import MusicBrainz.Types
@@ -183,6 +184,20 @@ instance Mergeable (Tree Label) where
 
 
 --------------------------------------------------------------------------------
+instance Mergeable Medium where
+  type MergeRender Medium mo =
+    ( Render Int mo
+    , Render (Maybe (Ref MediumFormat)) mo
+    , Render [Track] mo
+    , Render Text mo
+    )
+  merge = Medium <$> mediumName `mergedVia` mergeEq
+                 <*> mediumFormat `mergedVia` mergeEq
+                 <*> mediumPosition `mergedVia` mergeEq
+                 <*> mediumTracks `mergedVia` merge
+
+
+--------------------------------------------------------------------------------
 instance Mergeable (Tree Recording) where
   type MergeRender (Tree Recording) mo =
     ( Render (Maybe Int) mo
@@ -265,6 +280,21 @@ instance Mergeable (Tree ReleaseGroup) where
 
 
 --------------------------------------------------------------------------------
+instance Mergeable Track where
+  type MergeRender Track mo =
+    ( Render (Maybe Int) mo
+    , Render (Ref ArtistCredit) mo
+    , Render (Ref Recording) mo
+    , Render Text mo
+    )
+  merge = Track <$> trackName `mergedVia` mergeEq
+                <*> trackRecording `mergedVia` mergeEq
+                <*> trackDuration `mergedVia` mergeEq
+                <*> trackArtistCredit `mergedVia` mergeEq
+                <*> trackPosition `mergedVia` mergeEq
+
+
+--------------------------------------------------------------------------------
 instance Mergeable (Tree Url) where
   type MergeRender (Tree Url) mo =
     ( Render URI mo )
@@ -308,3 +338,22 @@ instance Ord a => Mergeable (Set.Set a) where
         let removed = ancestor `Set.difference` current
             added = current `Set.difference` ancestor
         in emit scope $ Just $ new `Set.difference` (removed `Set.intersection` added)
+
+
+--------------------------------------------------------------------------------
+instance (Eq a, Mergeable a) => Mergeable [a] where
+  type MergeRender [a] mo = (Render [a] mo)
+  merge = Merge $ Compose go
+    where
+      go scope@MergeScope{..} =
+        emit scope . sequence . concatMap processHunk $
+          Diff3.diff3 new ancestor current
+
+      processHunk (Diff3.Conflict ls os rs)  = resolveConflicts ls os rs
+      processHunk (Diff3.Unchanged os)   = map Just os
+      processHunk (Diff3.LeftChange ls)  = map Just ls
+      processHunk (Diff3.RightChange rs) = map Just rs
+
+      resolveConflicts [] [] []             = []
+      resolveConflicts (l:ls) (o:os) (r:rs) = runMerge l r o merge : resolveConflicts ls os rs
+      resolveConflicts _ _ _                = [Nothing]
