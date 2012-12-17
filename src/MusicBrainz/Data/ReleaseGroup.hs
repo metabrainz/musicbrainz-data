@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-| Functions for interacting with 'ReleaseGroup's in the MusicBrainz database.
@@ -150,3 +151,8 @@ instance Update ReleaseGroup where
 --------------------------------------------------------------------------------
 instance ResolveReference ReleaseGroup where
   resolveReference = Generic.resolveMbid "release_group"
+
+
+--------------------------------------------------------------------------------
+instance ResolveReference (Revision ReleaseGroup) where
+  resolveReference = Generic.resolveRevision "release_group"

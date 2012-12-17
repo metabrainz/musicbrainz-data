@@ -9,6 +9,7 @@ module MusicBrainz.Data.Generic
     , MusicBrainz.Data.Generic.linkRevisionToEdit
     , MusicBrainz.Data.Generic.newEntityRevision
     , resolveMbid
+    , resolveRevision
     , MusicBrainz.Data.Generic.setMasterRevision
     , realiseAliases
     , realiseIpiCodes
@@ -148,6 +149,19 @@ resolveMbid eName entityMbid =
         , "WHERE is_master_revision_id "
         , "ORDER BY created_at, revision_id DESC "
         , "LIMIT 1 "
+        ]
+
+
+--------------------------------------------------------------------------------
+resolveRevision :: (Functor m, MonadIO m, FromField (Ref a))
+  => String -> RefSpec (Revision a) -> MusicBrainzT m (Maybe (Ref a))
+resolveRevision eName revisionId =
+  listToMaybe . map fromOnly <$> query q (Only revisionId)
+  where
+    q = fromString $ unlines
+        [ "SELECT revision_id "
+        , "FROM " ++ eName ++ "_revision "
+        , "WHERE revision_id = ?"
         ]
 
 

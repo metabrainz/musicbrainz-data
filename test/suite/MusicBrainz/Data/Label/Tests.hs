@@ -16,6 +16,7 @@ tests = [ testAliases
         , testIpiCodes
         , testMerge
         , testUpdate
+        , testResolveRevisionReference
         ]
 
 
@@ -73,3 +74,9 @@ testAnnotation = testCase "Can add and remove label annotations" $ mbTest $ do
 testIpiCodes :: Test
 testIpiCodes = testCase "Can add and remove label IPI codes" $ mbTest $ do
   ClassTests.testIpiCodes revolutionRecords
+
+
+--------------------------------------------------------------------------------
+testResolveRevisionReference :: Test
+testResolveRevisionReference = testCase "Resolve revision reference" $ mbTest $ do
+  ClassTests.testResolveRevisionReference (return . const revolutionRecords)

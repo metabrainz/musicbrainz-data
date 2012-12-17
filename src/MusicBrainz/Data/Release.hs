@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-| Functions for interacting with 'Release's in the MusicBrainz database.
@@ -210,6 +211,11 @@ viewMediums revisionId = do
 --------------------------------------------------------------------------------
 instance ResolveReference Release where
   resolveReference = Generic.resolveMbid "release"
+
+
+--------------------------------------------------------------------------------
+instance ResolveReference (Revision Release) where
+  resolveReference = Generic.resolveRevision "release"
 
 
 --------------------------------------------------------------------------------

@@ -27,6 +27,7 @@ tests = [ testCreateFindLatest
         , testAnnotation
         , testMerge
         , testIswc
+        , testResolveRevisionReference
         ]
 
 --------------------------------------------------------------------------------
@@ -113,6 +114,12 @@ testIswc = testCase "Can add and remove ISWCs" $ mbTest $ do
   where
     expected = "T-070.116.442-2" ^?! iswc
     wildRoseWithIswc = wildRose { workIswcs = Set.singleton expected }
+
+
+--------------------------------------------------------------------------------
+testResolveRevisionReference :: Test
+testResolveRevisionReference = testCase "Resolve revision reference" $ mbTest $ do
+  ClassTests.testResolveRevisionReference (return . const wildRose)
 
 
 --------------------------------------------------------------------------------

@@ -20,6 +20,7 @@ tests :: [Test]
 tests = [ testCreateFindLatest
         , testUpdate
         , testMerge
+        , testResolveRevisionReference
         ]
 
 --------------------------------------------------------------------------------
@@ -48,6 +49,12 @@ testMerge = testCase "Can merge 2 distinct urls" $ mbTest $ do
 
   aResolved <- resolveReference (dereference $ coreRef a)
   liftIO $ aResolved @?= Just (coreRef b)
+
+
+--------------------------------------------------------------------------------
+testResolveRevisionReference :: Test
+testResolveRevisionReference = testCase "Resolve revision reference" $ mbTest $ do
+  ClassTests.testResolveRevisionReference (return . const musicBrainz)
 
 
 --------------------------------------------------------------------------------

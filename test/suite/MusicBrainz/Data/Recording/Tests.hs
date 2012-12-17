@@ -27,6 +27,7 @@ tests = [ testCreateFindLatest
         , testIsrc
         , testPuid
         , testMerge
+        , testResolveRevisionReference
         ]
 
 
@@ -116,3 +117,9 @@ strangers editor = do
               , recordingArtistCredit = ac
               , recordingDuration = Nothing
               }
+
+
+--------------------------------------------------------------------------------
+testResolveRevisionReference :: Test
+testResolveRevisionReference = testCase "Resolve revision reference" $ mbTest $ do
+  ClassTests.testResolveRevisionReference mysterons

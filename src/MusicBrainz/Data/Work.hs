@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-| Functions for interacting with MusicBrainz works in the database.
@@ -141,6 +142,11 @@ instance Update Work where
 --------------------------------------------------------------------------------
 instance ResolveReference Work where
   resolveReference = Generic.resolveMbid "work"
+
+
+--------------------------------------------------------------------------------
+instance ResolveReference (Revision Work) where
+  resolveReference = Generic.resolveRevision "work"
 
 
 --------------------------------------------------------------------------------

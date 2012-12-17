@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-| Functions for interacting with MusicBrainz artists in the database.
@@ -209,6 +210,11 @@ instance RealiseTree Artist where
 --------------------------------------------------------------------------------
 instance ResolveReference Artist where
   resolveReference = Generic.resolveMbid "artist"
+
+
+--------------------------------------------------------------------------------
+instance ResolveReference (Revision Artist) where
+  resolveReference = Generic.resolveRevision "artist"
 
 
 --------------------------------------------------------------------------------

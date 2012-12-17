@@ -30,6 +30,7 @@ tests = [ testCreateFindLatest
         , testReleaseLabels
         , testTrackLists
         , testMerge
+        , testResolveRevisionReference
         ]
 
 
@@ -111,6 +112,12 @@ testMerge = testCase "Can merge 2 distinct releases" $ mbTest $ do
       a <- dummyTree editor
       return (a, modTree a)
     modTree t = t { releaseData = (releaseData t) { releaseName = "Blue Lines" } }
+
+
+--------------------------------------------------------------------------------
+testResolveRevisionReference :: Test
+testResolveRevisionReference = testCase "Resolve revision reference" $ mbTest $ do
+  ClassTests.testResolveRevisionReference dummyTree
 
 
 --------------------------------------------------------------------------------

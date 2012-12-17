@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-| Functions for interacting with MusicBrainz labels in the database.
@@ -147,6 +148,11 @@ instance Update Label where
 --------------------------------------------------------------------------------
 instance ResolveReference Label where
   resolveReference = Generic.resolveMbid "label"
+
+
+--------------------------------------------------------------------------------
+instance ResolveReference (Revision Label) where
+  resolveReference = Generic.resolveRevision "label"
 
 
 --------------------------------------------------------------------------------

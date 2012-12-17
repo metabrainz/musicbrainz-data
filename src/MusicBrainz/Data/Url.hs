@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
 module MusicBrainz.Data.Url () where
@@ -103,3 +104,8 @@ instance Update Url where
 --------------------------------------------------------------------------------
 instance ResolveReference Url where
   resolveReference = Generic.resolveMbid "url"
+
+
+--------------------------------------------------------------------------------
+instance ResolveReference (Revision Url) where
+  resolveReference = Generic.resolveRevision "url"

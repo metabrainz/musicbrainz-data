@@ -28,6 +28,7 @@ tests = [ testCreateFindLatest
         , testIpiCodes
         , testAnnotation
         , testMerge
+        , testResolveRevisionReference
         ]
 
 --------------------------------------------------------------------------------
@@ -58,6 +59,12 @@ testCreateFindLatest = testCase "create >>= findLatest == create" $ mbTest $ do
                  , artistRelationships = mempty
                  , artistAnnotation = ""
                  }
+
+
+--------------------------------------------------------------------------------
+testResolveRevisionReference :: Test
+testResolveRevisionReference = testCase "Resolve revision reference" $ mbTest $ do
+  ClassTests.testResolveRevisionReference (return . const freddie)
 
 
 --------------------------------------------------------------------------------

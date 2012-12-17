@@ -22,6 +22,7 @@ tests = [ testFindLatest
         , testAnnotation
         , testSecondaryTypes
         , testMerge
+        , testResolveRevisionReference
         ]
 
 
@@ -62,6 +63,12 @@ testMerge = testCase "Can merge two release groups" $ mbTest $ do
     treeA <- dummyTree editor
     let treeB = minimalTree $ (treeData treeA) { releaseGroupName = "Lungbone" }
     return (treeA, treeB)
+
+
+--------------------------------------------------------------------------------
+testResolveRevisionReference :: Test
+testResolveRevisionReference = testCase "Resolve revision reference" $ mbTest $ do
+  ClassTests.testResolveRevisionReference dummyTree
 
 
 --------------------------------------------------------------------------------

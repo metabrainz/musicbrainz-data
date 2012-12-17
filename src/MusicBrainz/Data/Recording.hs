@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-| Functions for interacting with 'Recording's in the MusicBrainz database.
@@ -159,6 +160,11 @@ viewPuids revisionId = Set.fromList . map fromOnly <$> query q (Only revisionId)
 --------------------------------------------------------------------------------
 instance ResolveReference Recording where
   resolveReference = Generic.resolveMbid "recording"
+
+
+--------------------------------------------------------------------------------
+instance ResolveReference (Revision Recording) where
+  resolveReference = Generic.resolveRevision "recording"
 
 
 --------------------------------------------------------------------------------

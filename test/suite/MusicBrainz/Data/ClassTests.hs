@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeFamilies #-}
 module MusicBrainz.Data.ClassTests
@@ -8,6 +9,7 @@ module MusicBrainz.Data.ClassTests
     , testIpiCodes
     , testMerge
     , testResolveReference
+    , testResolveRevisionReference
     , testUpdate
     ) where
 
@@ -34,6 +36,17 @@ testCreateFindLatest tree = do
   created <- autoEdit $ create (entityRef editor) tree >>= viewRevision
   found <- findLatest (coreRef created)
   liftIO $ found @?= created
+
+
+--------------------------------------------------------------------------------
+testResolveRevisionReference :: (Create a, ResolveReference (Revision a))
+  => (Ref Editor -> MusicBrainz (Tree a)) -> MusicBrainz ()
+testResolveRevisionReference makeTree = do
+  editor <- entityRef <$> register acid2
+  tree <- makeTree editor
+  createdRev <- autoEdit $ create editor tree
+  found <- resolveReference (dereference createdRev)
+  liftIO $ found @?= Just createdRev
 
 
 --------------------------------------------------------------------------------
