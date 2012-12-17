@@ -30,10 +30,11 @@ tests = [ testCreateFindLatest
         , testResolveRevisionReference
         ]
 
+
 --------------------------------------------------------------------------------
 testCreateFindLatest :: Test
 testCreateFindLatest = testCase "create >>= findLatest == create" $ mbTest $ do
-  ClassTests.testCreateFindLatest tree
+  ClassTests.testCreateFindLatest (return . const tree)
   where
     tree = minimalTree Work
              { workName = "Freddie Mercury"

@@ -33,11 +33,8 @@ tests = [ testCreateFindLatest
 
 --------------------------------------------------------------------------------
 testCreateFindLatest :: Test
-testCreateFindLatest = testCase "findLatest when recording exists" $ mbTest $ do
-  editor <- entityRef <$> register acid2
-  created <- mysterons editor >>= \t -> autoEdit $ create editor t >>= viewRevision
-  found <- findLatest (coreRef created)
-  liftIO $ found @?= created
+testCreateFindLatest = testCase "findLatest when recording exists" $ mbTest $
+  ClassTests.testCreateFindLatest mysterons
 
 
 --------------------------------------------------------------------------------

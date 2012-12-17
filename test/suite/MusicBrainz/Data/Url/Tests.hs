@@ -26,7 +26,7 @@ tests = [ testCreateFindLatest
 --------------------------------------------------------------------------------
 testCreateFindLatest :: Test
 testCreateFindLatest = testCase "create >>= findLatest == create" $ mbTest $ do
-  ClassTests.testCreateFindLatest musicBrainz
+  ClassTests.testCreateFindLatest (return . const musicBrainz)
 
 
 --------------------------------------------------------------------------------

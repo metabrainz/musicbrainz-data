@@ -33,32 +33,33 @@ tests = [ testCreateFindLatest
 
 --------------------------------------------------------------------------------
 testCreateFindLatest :: Test
-testCreateFindLatest = testCase "create >>= findLatest == create" $ mbTest $ do
-  tree' <- tree <$> (entityRef <$> add uk)
-                <*> (entityRef <$> add male)
-                <*> (entityRef <$> add person)
-  ClassTests.testCreateFindLatest tree'
+testCreateFindLatest = testCase "create >>= findLatest == create" $ mbTest $
+  ClassTests.testCreateFindLatest (const tree)
 
   where
-    tree country maleRef personRef =
-      ArtistTree { artistData = Artist
-                     { artistName = "Freddie Mercury"
-                     , artistSortName = "Mercury, Freddie"
-                     , artistComment = "Of queen"
-                     , artistBeginDate =
-                         PartialDate (Just 1946) (Just 9) (Just 5)
-                     , artistEndDate =
-                         PartialDate (Just 1991) (Just 11) (Just 24)
-                     , artistEnded = True
-                     , artistGender = Just maleRef
-                     , artistCountry = Just country
-                     , artistType = Just personRef
-                     }
-                 , artistAliases = mempty
-                 , artistIpiCodes = mempty
-                 , artistRelationships = mempty
-                 , artistAnnotation = ""
-                 }
+    tree = do
+      country <- entityRef <$> add uk
+      maleRef <- entityRef <$> add male
+      personRef <- entityRef <$> add person
+      return $
+        ArtistTree { artistData = Artist
+                       { artistName = "Freddie Mercury"
+                       , artistSortName = "Mercury, Freddie"
+                       , artistComment = "Of queen"
+                       , artistBeginDate =
+                           PartialDate (Just 1946) (Just 9) (Just 5)
+                       , artistEndDate =
+                           PartialDate (Just 1991) (Just 11) (Just 24)
+                       , artistEnded = True
+                       , artistGender = Just maleRef
+                       , artistCountry = Just country
+                       , artistType = Just personRef
+                       }
+                   , artistAliases = mempty
+                   , artistIpiCodes = mempty
+                   , artistRelationships = mempty
+                   , artistAnnotation = ""
+                   }
 
 
 --------------------------------------------------------------------------------

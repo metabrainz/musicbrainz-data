@@ -38,7 +38,7 @@ testAliases = testCase "Can add and remove aliases" $ mbTest $ do
 --------------------------------------------------------------------------------
 testCreateFindLatest :: Test
 testCreateFindLatest = testCase "create >>= findLatest == create" $ mbTest $ do
-  ClassTests.testCreateFindLatest revolutionRecords
+  ClassTests.testCreateFindLatest (return . const revolutionRecords)
 
 
 --------------------------------------------------------------------------------

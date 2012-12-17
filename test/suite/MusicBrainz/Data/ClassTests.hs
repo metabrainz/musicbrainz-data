@@ -30,10 +30,11 @@ import           MusicBrainz.Data.Editor (register)
 
 --------------------------------------------------------------------------------
 testCreateFindLatest :: (Eq a, Show a, FindLatest a, Create a, ViewRevision a)
-  => Tree a -> MusicBrainz ()
-testCreateFindLatest tree = do
-  editor <- register acid2
-  created <- autoEdit $ create (entityRef editor) tree >>= viewRevision
+  => (Ref Editor -> MusicBrainz (Tree a)) -> MusicBrainz ()
+testCreateFindLatest makeTree = do
+  editor <- entityRef <$> register acid2
+  tree <- makeTree editor
+  created <- autoEdit $ create editor tree >>= viewRevision
   found <- findLatest (coreRef created)
   liftIO $ found @?= created
 

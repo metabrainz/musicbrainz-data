@@ -36,12 +36,8 @@ tests = [ testCreateFindLatest
 
 --------------------------------------------------------------------------------
 testCreateFindLatest :: Test
-testCreateFindLatest = testCase "findLatest when release exists" $ mbTest $ do
-  editor <- entityRef <$> register acid2
-  created <- dummyTree editor >>= \t -> autoEdit (create editor t >>= viewRevision)
-
-  found <- findLatest (coreRef created)
-  liftIO $ found @?= created
+testCreateFindLatest = testCase "findLatest when release exists" $ mbTest $
+  ClassTests.testCreateFindLatest dummyTree
 
 
 --------------------------------------------------------------------------------

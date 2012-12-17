@@ -7,3 +7,5 @@ cabal-dev
 *.chs.h
 *.tix
 *-boot
+*.p_o
+*.p_hi
