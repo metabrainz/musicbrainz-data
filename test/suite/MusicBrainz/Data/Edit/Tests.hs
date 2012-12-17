@@ -7,11 +7,11 @@ import Control.Applicative
 import Test.MusicBrainz
 import Test.MusicBrainz.Repository
 
+import qualified Test.MusicBrainz.CommonTests as CommonTests
+
 import MusicBrainz
 import MusicBrainz.Data.Edit
 import MusicBrainz.Data.Editor
-
-import qualified MusicBrainz.Data.ClassTests as ClassTests
 
 --------------------------------------------------------------------------------
 tests :: [Test]
@@ -65,4 +65,4 @@ testVoteOnEdit = testCase "Can submit votes on edits" $ mbTest $ do
 --------------------------------------------------------------------------------
 testResolveReference :: Test
 testResolveReference = testCase "Can resolve edit references" $ mbTest $ do
-  ClassTests.testResolveReference openEdit id
+  CommonTests.testResolveReference openEdit id

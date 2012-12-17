@@ -4,10 +4,10 @@ module MusicBrainz.Data.ArtistType.Tests ( tests ) where
 import Test.MusicBrainz
 import Test.MusicBrainz.Repository (person)
 
+import qualified Test.MusicBrainz.CommonTests as CommonTests
+
 import MusicBrainz
 import MusicBrainz.Data
-
-import qualified MusicBrainz.Data.ClassTests as ClassTests
 
 --------------------------------------------------------------------------------
 tests :: [Test]
@@ -18,10 +18,10 @@ tests = [ testAddArtistType
 --------------------------------------------------------------------------------
 testAddArtistType :: Test
 testAddArtistType = testCase "Can add ArtistTypes" $ mbTest $ do
-  ClassTests.testAdd person
+  CommonTests.testAdd person
 
 
 --------------------------------------------------------------------------------
 testResolveReference :: Test
 testResolveReference = testCase "Can resolve ArtistTypes" $ mbTest $ do
-  ClassTests.testResolveReference (add person) entityRef
+  CommonTests.testResolveReference (add person) entityRef

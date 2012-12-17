@@ -1,7 +1,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeFamilies #-}
-module MusicBrainz.Data.ClassTests
+module Test.MusicBrainz.CommonTests
     ( testAdd
     , testAliases
     , testAnnotation
@@ -11,6 +11,8 @@ module MusicBrainz.Data.ClassTests
     , testResolveReference
     , testResolveRevisionReference
     , testUpdate
+
+    , createAndUpdateSubtree
     ) where
 
 import           Control.Applicative
@@ -27,6 +29,35 @@ import           MusicBrainz.Lens
 import           MusicBrainz.Data
 import           MusicBrainz.Data.Edit
 import           MusicBrainz.Data.Editor (register)
+
+--------------------------------------------------------------------------------
+createAndUpdateSubtree ::
+  (Create a, FindLatest a, Update a, ViewRevision a, Eq b, Show b)
+  => (Ref Editor -> MusicBrainz (Tree a))
+  -> (Tree a -> Tree a)
+  -> (Tree a -> b)
+  -> (Ref (Revision a) -> MusicBrainz b)
+  -> MusicBrainz ()
+createAndUpdateSubtree makeInitialTree modifyTree extractSubtree viewSubtree = do
+  editor <- entityRef <$> register acid2
+
+  tree <- makeInitialTree editor
+
+  let creationTree = modifyTree tree
+  entity <- autoEdit $ create editor creationTree >>= viewRevision
+
+  preUpdate <- viewSubtree (coreRevision entity)
+  liftIO $ preUpdate @?= extractSubtree creationTree
+
+  edit <- createEdit $
+    update editor (coreRevision entity) tree
+
+  apply edit
+
+  latest <- findLatest (coreRef entity)
+  postUpdate <- viewSubtree (coreRevision latest)
+  liftIO $ postUpdate @?= extractSubtree tree
+
 
 --------------------------------------------------------------------------------
 testCreateFindLatest :: (Eq a, Show a, FindLatest a, Create a, ViewRevision a)

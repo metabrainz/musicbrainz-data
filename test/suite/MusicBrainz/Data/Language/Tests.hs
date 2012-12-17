@@ -4,10 +4,10 @@ module MusicBrainz.Data.Language.Tests ( tests ) where
 import Test.MusicBrainz
 import Test.MusicBrainz.Repository (english)
 
+import qualified Test.MusicBrainz.CommonTests as CommonTests
+
 import MusicBrainz
 import MusicBrainz.Data
-
-import qualified MusicBrainz.Data.ClassTests as ClassTests
 
 --------------------------------------------------------------------------------
 tests :: [Test]
@@ -18,10 +18,10 @@ tests = [ testAddLanguage
 --------------------------------------------------------------------------------
 testAddLanguage :: Test
 testAddLanguage = testCase "Can add Languages" $ mbTest $ do
-  ClassTests.testAdd english
+  CommonTests.testAdd english
 
 
 --------------------------------------------------------------------------------
 testResolveReference :: Test
 testResolveReference = testCase "Can resolve Languages" $ mbTest $ do
-  ClassTests.testResolveReference (add english) entityRef
+  CommonTests.testResolveReference (add english) entityRef

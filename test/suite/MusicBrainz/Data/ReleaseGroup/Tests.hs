@@ -8,13 +8,12 @@ import qualified Data.Set as Set
 
 import Test.MusicBrainz
 import Test.MusicBrainz.Data
-import Test.MusicBrainz.Repository (portishead, dummy, acid2, compilation)
+import Test.MusicBrainz.Repository (portishead, dummy, compilation, minimalTree)
 
-import qualified MusicBrainz.Data.ClassTests as ClassTests
+import qualified Test.MusicBrainz.CommonTests as CommonTests
 
 import MusicBrainz
 import MusicBrainz.Data
-import MusicBrainz.Data.Editor
 
 --------------------------------------------------------------------------------
 tests :: [Test]
@@ -29,34 +28,43 @@ tests = [ testCreateFindLatest
 --------------------------------------------------------------------------------
 testCreateFindLatest :: Test
 testCreateFindLatest = testCase "create/findLatest" $ mbTest $
-  ClassTests.testCreateFindLatest dummyTree
+  CommonTests.testCreateFindLatest dummyTree
 
 
 --------------------------------------------------------------------------------
 testAnnotation :: Test
 testAnnotation = testCase "Can add and remove artist annotations" $ mbTest $ do
-  ClassTests.testAnnotation dummyTree
+  CommonTests.testAnnotation dummyTree
 
 
 --------------------------------------------------------------------------------
 testSecondaryTypes :: Test
 testSecondaryTypes = testCase "Release groups can have secondary types" $ mbTest $ do
-  editor <- entityRef <$> register acid2
-
   types <- Set.fromList . map entityRef <$> sequence [ add compilation, add remix ]
-  tree <- do
-    ac <- singleArtistAc editor portishead
-    return $ minimalTree (dummy ac) { releaseGroupSecondaryTypes = types }
 
-  created <- autoEdit $ create editor tree >>= viewRevision
-  liftIO $ releaseGroupSecondaryTypes (coreData created) @?= types
-  where remix = ReleaseGroupType { releaseGroupTypeName = "Remix" }
+  CommonTests.createAndUpdateSubtree
+    makeTree
+    (withTypes types)
+    (releaseGroupSecondaryTypes . treeData)
+    (fmap (releaseGroupSecondaryTypes . coreData) . viewRevision)
+
+  where
+    remix = ReleaseGroupType { releaseGroupTypeName = "Remix" }
+
+    makeTree editor = do
+      ac <- singleArtistAc editor portishead
+      return $ minimalTree (dummy ac)
+
+    withTypes types t = t {
+        releaseGroupData = (releaseGroupData t)
+          { releaseGroupSecondaryTypes = types }
+      }
 
 
 --------------------------------------------------------------------------------
 testMerge :: Test
 testMerge = testCase "Can merge two release groups" $ mbTest $ do
-  ClassTests.testMerge $ \editor -> do
+  CommonTests.testMerge $ \editor -> do
     treeA <- dummyTree editor
     let treeB = minimalTree $ (treeData treeA) { releaseGroupName = "Lungbone" }
     return (treeA, treeB)
@@ -65,7 +73,7 @@ testMerge = testCase "Can merge two release groups" $ mbTest $ do
 --------------------------------------------------------------------------------
 testResolveRevisionReference :: Test
 testResolveRevisionReference = testCase "Resolve revision reference" $ mbTest $ do
-  ClassTests.testResolveRevisionReference dummyTree
+  CommonTests.testResolveRevisionReference dummyTree
 
 
 --------------------------------------------------------------------------------

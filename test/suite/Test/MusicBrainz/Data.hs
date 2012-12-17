@@ -3,10 +3,10 @@ module Test.MusicBrainz.Data where
 
 import Data.Monoid (mempty)
 
-import           MusicBrainz
-
+import MusicBrainz
 import MusicBrainz.Data
 import MusicBrainz.Data.Edit
+
 import qualified MusicBrainz.Data.ArtistCredit as ArtistCredit
 
 --------------------------------------------------------------------------------
@@ -29,25 +29,3 @@ singleArtistAc editor artist = do
                         , artistIpiCodes = mempty
                         , artistAnnotation = ""
                         }
-
---------------------------------------------------------------------------------
-class MinimalTree a where
-  minimalTree :: a -> Tree a
-
-instance MinimalTree Artist where
-  minimalTree dat' = ArtistTree dat' mempty mempty mempty ""
-
-instance MinimalTree Label where
-  minimalTree dat' = LabelTree dat' mempty mempty ""
-
-instance MinimalTree Recording where
-  minimalTree dat' = RecordingTree dat' "" mempty mempty
-
-instance MinimalTree Release where
-  minimalTree dat' = ReleaseTree dat' "" mempty mempty
-
-instance MinimalTree ReleaseGroup where
-  minimalTree dat' = ReleaseGroupTree dat' ""
-
-instance MinimalTree Work where
-  minimalTree dat' = WorkTree dat' mempty "" mempty

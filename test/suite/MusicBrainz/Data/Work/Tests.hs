@@ -3,21 +3,19 @@ module MusicBrainz.Data.Work.Tests ( tests ) where
 
 import Control.Applicative
 import Control.Lens
-import Data.Monoid (mempty)
 
 import qualified Data.Set as Set
 
 import Test.MusicBrainz
-import Test.MusicBrainz.Data
-import Test.MusicBrainz.Repository (acid2)
+import Test.MusicBrainz.Repository (acid2, minimalTree)
+
+import qualified Test.MusicBrainz.CommonTests as CommonTests
 
 import MusicBrainz
 import MusicBrainz.Data
 import MusicBrainz.Data.Edit
 import MusicBrainz.Data.Editor
 import MusicBrainz.Data.Work
-
-import qualified MusicBrainz.Data.ClassTests as ClassTests
 
 --------------------------------------------------------------------------------
 tests :: [Test]
@@ -34,7 +32,7 @@ tests = [ testCreateFindLatest
 --------------------------------------------------------------------------------
 testCreateFindLatest :: Test
 testCreateFindLatest = testCase "create >>= findLatest == create" $ mbTest $ do
-  ClassTests.testCreateFindLatest (return . const tree)
+  CommonTests.testCreateFindLatest (return . const tree)
   where
     tree = minimalTree Work
              { workName = "Freddie Mercury"
@@ -47,7 +45,7 @@ testCreateFindLatest = testCase "create >>= findLatest == create" $ mbTest $ do
 --------------------------------------------------------------------------------
 testUpdate :: Test
 testUpdate = testCase "update does change work" $ mbTest $ do
-  ClassTests.testUpdate wildRose expected
+  CommonTests.testUpdate wildRose expected
    where
     expected = wildRose { workData = (workData wildRose)
                             { workName = "TO A WILD ROSE"
@@ -59,7 +57,7 @@ testUpdate = testCase "update does change work" $ mbTest $ do
 --------------------------------------------------------------------------------
 testAliases :: Test
 testAliases = testCase "Can add and remove aliases" $ mbTest $ do
-  ClassTests.testAliases wildRose alias
+  CommonTests.testAliases wildRose alias
   where
     alias = Alias { aliasName = "T⊙ Å w¥ł≙ ℜøßė"
                   , aliasSortName = "toawildrose"
@@ -74,7 +72,7 @@ testAliases = testCase "Can add and remove aliases" $ mbTest $ do
 --------------------------------------------------------------------------------
 testAnnotation :: Test
 testAnnotation = testCase "Can add and remove work annotations" $ mbTest $ do
-  ClassTests.testAnnotation (return . const wildRose)
+  CommonTests.testAnnotation (return . const wildRose)
 
 
 --------------------------------------------------------------------------------
@@ -96,31 +94,22 @@ testMerge = testCase "Can merge 2 distinct works" $ mbTest $ do
 
 --------------------------------------------------------------------------------
 testIswc :: Test
-testIswc = testCase "Can add and remove ISWCs" $ mbTest $ do
-  editor <- entityRef <$> register acid2
-
-  work <- autoEdit $ create editor wildRoseWithIswc >>= viewRevision
-  iswcPreUpdate <- viewIswcs (coreRevision work)
-  liftIO $ iswcPreUpdate @?= Set.singleton expected
-
-  edit <- createEdit $
-    update editor (coreRevision work) wildRose
-
-  apply edit
-
-  latest <- findLatest (coreRef work)
-  iswcsPostUpdate <- viewIswcs (coreRevision latest)
-  liftIO $ iswcsPostUpdate @?= mempty
+testIswc = testCase "Can add and remove ISWCs" $ mbTest $
+  CommonTests.createAndUpdateSubtree
+    (return . const wildRose)
+    withIswc
+    workIswcs
+    viewIswcs
 
   where
     expected = "T-070.116.442-2" ^?! iswc
-    wildRoseWithIswc = wildRose { workIswcs = Set.singleton expected }
+    withIswc x = x { workIswcs = Set.singleton expected }
 
 
 --------------------------------------------------------------------------------
 testResolveRevisionReference :: Test
 testResolveRevisionReference = testCase "Resolve revision reference" $ mbTest $ do
-  ClassTests.testResolveRevisionReference (return . const wildRose)
+  CommonTests.testResolveRevisionReference (return . const wildRose)
 
 
 --------------------------------------------------------------------------------

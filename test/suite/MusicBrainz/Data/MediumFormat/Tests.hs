@@ -3,10 +3,10 @@ module MusicBrainz.Data.MediumFormat.Tests ( tests ) where
 
 import Test.MusicBrainz
 
+import qualified Test.MusicBrainz.CommonTests as CommonTests
+
 import MusicBrainz
 import MusicBrainz.Data
-
-import qualified MusicBrainz.Data.ClassTests as ClassTests
 
 --------------------------------------------------------------------------------
 tests :: [Test]
@@ -17,13 +17,13 @@ tests = [ testAddMediumFormat
 --------------------------------------------------------------------------------
 testAddMediumFormat :: Test
 testAddMediumFormat = testCase "Can add MediumFormats" $ mbTest $ do
-  ClassTests.testAdd digitalMedia
+  CommonTests.testAdd digitalMedia
 
 
 --------------------------------------------------------------------------------
 testResolveReference :: Test
 testResolveReference = testCase "Can resolve MediumFormats" $ mbTest $ do
-  ClassTests.testResolveReference (add digitalMedia) entityRef
+  CommonTests.testResolveReference (add digitalMedia) entityRef
 
 
 --------------------------------------------------------------------------------

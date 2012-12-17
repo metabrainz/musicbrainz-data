@@ -8,12 +8,12 @@ import Network.URI (parseURI)
 import Test.MusicBrainz
 import Test.MusicBrainz.Repository (acid2)
 
+import qualified Test.MusicBrainz.CommonTests as CommonTests
+
 import MusicBrainz
 import MusicBrainz.Data
 import MusicBrainz.Data.Edit
 import MusicBrainz.Data.Editor
-
-import qualified MusicBrainz.Data.ClassTests as ClassTests
 
 --------------------------------------------------------------------------------
 tests :: [Test]
@@ -26,13 +26,13 @@ tests = [ testCreateFindLatest
 --------------------------------------------------------------------------------
 testCreateFindLatest :: Test
 testCreateFindLatest = testCase "create >>= findLatest == create" $ mbTest $ do
-  ClassTests.testCreateFindLatest (return . const musicBrainz)
+  CommonTests.testCreateFindLatest (return . const musicBrainz)
 
 
 --------------------------------------------------------------------------------
 testUpdate :: Test
 testUpdate = testCase "update does change url" $ mbTest $ do
-  ClassTests.testUpdate musicBrainz google
+  CommonTests.testUpdate musicBrainz google
 
 --------------------------------------------------------------------------------
 testMerge :: Test
@@ -54,7 +54,7 @@ testMerge = testCase "Can merge 2 distinct urls" $ mbTest $ do
 --------------------------------------------------------------------------------
 testResolveRevisionReference :: Test
 testResolveRevisionReference = testCase "Resolve revision reference" $ mbTest $ do
-  ClassTests.testResolveRevisionReference (return . const musicBrainz)
+  CommonTests.testResolveRevisionReference (return . const musicBrainz)
 
 
 --------------------------------------------------------------------------------

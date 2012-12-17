@@ -3,10 +3,10 @@ module MusicBrainz.Data.WorkType.Tests ( tests ) where
 
 import Test.MusicBrainz
 
+import qualified Test.MusicBrainz.CommonTests as CommonTests
+
 import MusicBrainz
 import MusicBrainz.Data
-
-import qualified MusicBrainz.Data.ClassTests as ClassTests
 
 --------------------------------------------------------------------------------
 tests :: [Test]
@@ -17,13 +17,13 @@ tests = [ testAddWorkType
 --------------------------------------------------------------------------------
 testAddWorkType :: Test
 testAddWorkType = testCase "Can add WorkTypes" $ mbTest $ do
-  ClassTests.testAdd ballet
+  CommonTests.testAdd ballet
 
 
 --------------------------------------------------------------------------------
 testResolveReference :: Test
 testResolveReference = testCase "Can resolve WorkTypes" $ mbTest $ do
-  ClassTests.testResolveReference (add ballet) entityRef
+  CommonTests.testResolveReference (add ballet) entityRef
 
 
 --------------------------------------------------------------------------------

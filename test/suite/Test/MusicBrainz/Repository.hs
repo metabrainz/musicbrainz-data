@@ -3,9 +3,9 @@ module Test.MusicBrainz.Repository where
 
 import Data.Monoid
 
-import Test.MusicBrainz.Data
-
 import MusicBrainz
+
+import Test.MusicBrainz.Data
 
 portishead :: Artist
 portishead = Artist { artistName = "Portishead"
@@ -78,3 +78,25 @@ mysterons editor = do
               , recordingArtistCredit = ac
               , recordingDuration = Just 64936
               }
+
+--------------------------------------------------------------------------------
+class MinimalTree a where
+  minimalTree :: a -> Tree a
+
+instance MinimalTree Artist where
+  minimalTree dat' = ArtistTree dat' mempty mempty mempty ""
+
+instance MinimalTree Label where
+  minimalTree dat' = LabelTree dat' mempty mempty ""
+
+instance MinimalTree Recording where
+  minimalTree dat' = RecordingTree dat' "" mempty mempty
+
+instance MinimalTree Release where
+  minimalTree dat' = ReleaseTree dat' "" mempty mempty
+
+instance MinimalTree ReleaseGroup where
+  minimalTree dat' = ReleaseGroupTree dat' ""
+
+instance MinimalTree Work where
+  minimalTree dat' = WorkTree dat' mempty "" mempty

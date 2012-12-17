@@ -7,8 +7,9 @@ import Data.Monoid (mempty)
 import qualified Data.Set as Set
 
 import Test.MusicBrainz
-import Test.MusicBrainz.Data
-import Test.MusicBrainz.Repository (uk, acid2, male, person, portishead)
+import Test.MusicBrainz.Repository (uk, acid2, male, person, portishead, minimalTree)
+
+import qualified Test.MusicBrainz.CommonTests as CommonTests
 
 import MusicBrainz
 import MusicBrainz.Data
@@ -16,8 +17,6 @@ import MusicBrainz.Data.Edit
 import MusicBrainz.Data.Editor
 
 import qualified MusicBrainz.Data.Relationship as Relationship
-
-import qualified MusicBrainz.Data.ClassTests as ClassTests
 
 --------------------------------------------------------------------------------
 tests :: [Test]
@@ -34,7 +33,7 @@ tests = [ testCreateFindLatest
 --------------------------------------------------------------------------------
 testCreateFindLatest :: Test
 testCreateFindLatest = testCase "create >>= findLatest == create" $ mbTest $
-  ClassTests.testCreateFindLatest (const tree)
+  CommonTests.testCreateFindLatest (const tree)
 
   where
     tree = do
@@ -65,13 +64,13 @@ testCreateFindLatest = testCase "create >>= findLatest == create" $ mbTest $
 --------------------------------------------------------------------------------
 testResolveRevisionReference :: Test
 testResolveRevisionReference = testCase "Resolve revision reference" $ mbTest $ do
-  ClassTests.testResolveRevisionReference (return . const freddie)
+  CommonTests.testResolveRevisionReference (return . const freddie)
 
 
 --------------------------------------------------------------------------------
 testUpdate :: Test
 testUpdate = testCase "update does change artist" $ mbTest $ do
-  ClassTests.testUpdate freddie expected
+  CommonTests.testUpdate freddie expected
   where
     expected = freddie { artistData = (artistData freddie)
                            { artistName = "LAX is boring"
@@ -130,7 +129,7 @@ testRelationships = testCase "Relationships are bidirectional over addition and 
 --------------------------------------------------------------------------------
 testAliases :: Test
 testAliases = testCase "Can add and remove aliases" $ mbTest $ do
-  ClassTests.testAliases freddie alias
+  CommonTests.testAliases freddie alias
   where
     alias = Alias { aliasName = "Freddie"
                   , aliasSortName = "eidderF"
@@ -145,19 +144,19 @@ testAliases = testCase "Can add and remove aliases" $ mbTest $ do
 --------------------------------------------------------------------------------
 testIpiCodes :: Test
 testIpiCodes = testCase "Can add and remove artist IPI codes" $ mbTest $ do
-  ClassTests.testIpiCodes freddie
+  CommonTests.testIpiCodes freddie
 
 
 --------------------------------------------------------------------------------
 testAnnotation :: Test
 testAnnotation = testCase "Can add and remove artist annotations" $ mbTest $ do
-  ClassTests.testAnnotation (return . const freddie)
+  CommonTests.testAnnotation (return . const freddie)
 
 
 --------------------------------------------------------------------------------
 testMerge :: Test
 testMerge = testCase "Can merge 2 distinct artists" $ mbTest $ do
-  ClassTests.testMerge (pure . const (freddie, (minimalTree portishead)))
+  CommonTests.testMerge (pure . const (freddie, (minimalTree portishead)))
 
 
 --------------------------------------------------------------------------------
