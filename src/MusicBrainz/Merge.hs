@@ -70,7 +70,7 @@ mergeEq = Merge $ Compose go
       | current == ancestor = emit scope (Just new)
       | new == ancestor     = emit scope (Just current)
       | new == current      = emit scope (Just current)
-      | otherwise           = Pair (Const []) Nothing
+      | otherwise           = emit scope Nothing
 
 
 --------------------------------------------------------------------------------
