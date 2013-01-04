@@ -32,7 +32,7 @@ tests = [ testCreateFindLatest
 
 --------------------------------------------------------------------------------
 testCreateFindLatest :: Test
-testCreateFindLatest = testCase "create >>= findLatest == create" $ mbTest $
+testCreateFindLatest = testCase "create >>= findLatest == create" $ do
   CommonTests.testCreateFindLatest (const tree)
 
   where
@@ -63,13 +63,13 @@ testCreateFindLatest = testCase "create >>= findLatest == create" $ mbTest $
 
 --------------------------------------------------------------------------------
 testResolveRevisionReference :: Test
-testResolveRevisionReference = testCase "Resolve revision reference" $ mbTest $ do
+testResolveRevisionReference = testCase "Resolve revision reference" $ do
   CommonTests.testResolveRevisionReference (return . const freddie)
 
 
 --------------------------------------------------------------------------------
 testUpdate :: Test
-testUpdate = testCase "update does change artist" $ mbTest $ do
+testUpdate = testCase "update does change artist" $ do
   CommonTests.testUpdate freddie expected
   where
     expected = freddie { artistData = (artistData freddie)
@@ -81,7 +81,7 @@ testUpdate = testCase "update does change artist" $ mbTest $ do
 
 --------------------------------------------------------------------------------
 testRelationships :: Test
-testRelationships = testCase "Relationships are bidirectional over addition and deletion" $ mbTest $ do
+testRelationships = testCase "Relationships are bidirectional over addition and deletion" $ do
   editor <- entityRef <$> register acid2
   rel <- expectedRel
 
@@ -128,7 +128,7 @@ testRelationships = testCase "Relationships are bidirectional over addition and 
 
 --------------------------------------------------------------------------------
 testAliases :: Test
-testAliases = testCase "Can add and remove aliases" $ mbTest $ do
+testAliases = testCase "Can add and remove aliases" $ do
   CommonTests.testAliases freddie alias
   where
     alias = Alias { aliasName = "Freddie"
@@ -143,19 +143,19 @@ testAliases = testCase "Can add and remove aliases" $ mbTest $ do
 
 --------------------------------------------------------------------------------
 testIpiCodes :: Test
-testIpiCodes = testCase "Can add and remove artist IPI codes" $ mbTest $ do
+testIpiCodes = testCase "Can add and remove artist IPI codes" $ do
   CommonTests.testIpiCodes freddie
 
 
 --------------------------------------------------------------------------------
 testAnnotation :: Test
-testAnnotation = testCase "Can add and remove artist annotations" $ mbTest $ do
+testAnnotation = testCase "Can add and remove artist annotations" $ do
   CommonTests.testAnnotation (return . const freddie)
 
 
 --------------------------------------------------------------------------------
 testMerge :: Test
-testMerge = testCase "Can merge 2 distinct artists" $ mbTest $ do
+testMerge = testCase "Can merge 2 distinct artists" $ do
   CommonTests.testMerge (pure . const (freddie, (minimalTree portishead)))
 
 

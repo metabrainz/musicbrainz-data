@@ -16,13 +16,13 @@ tests = [ testAddMediumFormat
 
 --------------------------------------------------------------------------------
 testAddMediumFormat :: Test
-testAddMediumFormat = testCase "Can add MediumFormats" $ mbTest $ do
+testAddMediumFormat = testCase "Can add MediumFormats" $ do
   CommonTests.testAdd digitalMedia
 
 
 --------------------------------------------------------------------------------
 testResolveReference :: Test
-testResolveReference = testCase "Can resolve MediumFormats" $ mbTest $ do
+testResolveReference = testCase "Can resolve MediumFormats" $ do
   CommonTests.testResolveReference (add digitalMedia) entityRef
 
 

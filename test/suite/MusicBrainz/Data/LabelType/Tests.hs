@@ -16,13 +16,13 @@ tests = [ testAddLabelType
 
 --------------------------------------------------------------------------------
 testAddLabelType :: Test
-testAddLabelType = testCase "Can add LabelTypes" $ mbTest $ do
+testAddLabelType = testCase "Can add LabelTypes" $ do
   CommonTests.testAdd originalProduction
 
 
 --------------------------------------------------------------------------------
 testResolveReference :: Test
-testResolveReference = testCase "Can resolve LabelTypes" $ mbTest $ do
+testResolveReference = testCase "Can resolve LabelTypes" $ do
   CommonTests.testResolveReference (add originalProduction) entityRef
 
 

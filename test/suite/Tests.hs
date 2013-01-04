@@ -1,9 +1,12 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Main where
 
-import           Control.Monad (forM_)
+import Control.Applicative
+import Control.Monad (forM_)
+import Data.Configurator
+import System.IO.Error
 
-import           Test.Framework (buildTest, defaultMain, testGroup)
+import Test.Framework (buildTest, defaultMain)
 
 import qualified MusicBrainz.Data.Artist.Tests
 import qualified MusicBrainz.Data.ArtistType.Tests
@@ -27,12 +30,30 @@ import qualified MusicBrainz.Data.WorkType.Tests
 import qualified MusicBrainz.Schema.Tests
 import qualified MusicBrainz.Types.Tests
 
-import           MusicBrainz
-import           Test.MusicBrainz (mbTest)
+import MusicBrainz
+import Test.MusicBrainz (TestEnvironment(..), execTest, testGroup)
 
 main :: IO ()
-main = defaultMain [buildTest (cleanState >> return (testGroup "All tests" tests))]
+main = defaultMain [buildTest (testRunner (testGroup "All tests" tests))]
   where
+    testRunner t = do
+      testConfig <- load [ Required "test.cfg" ] `catchIOError`
+        (\e -> if isDoesNotExistError e
+                 then error "test.cfg not found. Please add a test.cfg file, see test.cfg.example for more information."
+                 else ioError e)
+
+      let opt key def = lookupDefault (def defaultConnectInfo) testConfig key
+      conn <- ConnectInfo
+                <$> opt "host" connectHost
+                <*> opt "port" connectPort
+                <*> opt "user" connectUser
+                <*> opt "password" connectPassword
+                <*> opt "database" connectDatabase
+
+      ctx <- openContext conn
+      runMbContext ctx cleanState
+      execTest t (TestEnvironment ctx)
+
     tests = [ testGroup "MusicBrainz.Data.Artist"
                 MusicBrainz.Data.Artist.Tests.tests
             , testGroup "MusicBrainz.Data.ArtistType.Tests"
@@ -76,12 +97,20 @@ main = defaultMain [buildTest (cleanState >> return (testGroup "All tests" tests
             , testGroup "MusicBrainz.Types"
                 MusicBrainz.Types.Tests.tests
             ]
-    cleanState = mbTest $ forM_
+
+    cleanState = forM_
       [ "SET client_min_messages TO warning"
       , "TRUNCATE artist_type CASCADE"
       , "TRUNCATE country CASCADE"
       , "TRUNCATE editor CASCADE"
       , "TRUNCATE gender CASCADE"
+      , "TRUNCATE label_type CASCADE"
+      , "TRUNCATE language CASCADE"
+      , "TRUNCATE medium_format CASCADE"
+      , "TRUNCATE release_group_primary_type CASCADE"
+      , "TRUNCATE release_group_secondary_type CASCADE"
+      , "TRUNCATE script CASCADE"
+      , "TRUNCATE track CASCADE"
+      , "TRUNCATE work_type CASCADE"
       , "ALTER SEQUENCE revision_revision_id_seq RESTART 1"
-      , "COMMIT"
       ] $ \q -> execute q ()

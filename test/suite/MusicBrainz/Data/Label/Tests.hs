@@ -22,7 +22,7 @@ tests = [ testAliases
 
 --------------------------------------------------------------------------------
 testAliases :: Test
-testAliases = testCase "Can add and remove aliases" $ mbTest $ do
+testAliases = testCase "Can add and remove aliases" $ do
   CommonTests.testAliases revolutionRecords alias
   where
     alias = Alias { aliasName = "Rev Recs"
@@ -37,13 +37,13 @@ testAliases = testCase "Can add and remove aliases" $ mbTest $ do
 
 --------------------------------------------------------------------------------
 testCreateFindLatest :: Test
-testCreateFindLatest = testCase "create >>= findLatest == create" $ mbTest $ do
+testCreateFindLatest = testCase "create >>= findLatest == create" $ do
   CommonTests.testCreateFindLatest (return . const revolutionRecords)
 
 
 --------------------------------------------------------------------------------
 testUpdate :: Test
-testUpdate = testCase "update does change labels" $ mbTest $ do
+testUpdate = testCase "update does change labels" $ do
   CommonTests.testUpdate revolutionRecords updated
   where
     updated = revolutionRecords { labelData = changedData }
@@ -54,7 +54,7 @@ testUpdate = testCase "update does change labels" $ mbTest $ do
 
 --------------------------------------------------------------------------------
 testMerge :: Test
-testMerge = testCase "can merge two labels" $ mbTest $ do
+testMerge = testCase "can merge two labels" $ do
   CommonTests.testMerge (return . const (a, b))
   where
     a = revolutionRecords
@@ -66,17 +66,17 @@ testMerge = testCase "can merge two labels" $ mbTest $ do
 
 --------------------------------------------------------------------------------
 testAnnotation :: Test
-testAnnotation = testCase "Can add and remove label annotations" $ mbTest $ do
+testAnnotation = testCase "Can add and remove label annotations" $ do
   CommonTests.testAnnotation (return . const revolutionRecords)
 
 
 --------------------------------------------------------------------------------
 testIpiCodes :: Test
-testIpiCodes = testCase "Can add and remove label IPI codes" $ mbTest $ do
+testIpiCodes = testCase "Can add and remove label IPI codes" $ do
   CommonTests.testIpiCodes revolutionRecords
 
 
 --------------------------------------------------------------------------------
 testResolveRevisionReference :: Test
-testResolveRevisionReference = testCase "Resolve revision reference" $ mbTest $ do
+testResolveRevisionReference = testCase "Resolve revision reference" $ do
   CommonTests.testResolveRevisionReference (return . const revolutionRecords)

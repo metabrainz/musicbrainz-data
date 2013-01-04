@@ -17,11 +17,11 @@ tests = [ testAddArtistType
 
 --------------------------------------------------------------------------------
 testAddArtistType :: Test
-testAddArtistType = testCase "Can add ArtistTypes" $ mbTest $ do
+testAddArtistType = testCase "Can add ArtistTypes" $ do
   CommonTests.testAdd person
 
 
 --------------------------------------------------------------------------------
 testResolveReference :: Test
-testResolveReference = testCase "Can resolve ArtistTypes" $ mbTest $ do
+testResolveReference = testCase "Can resolve ArtistTypes" $ do
   CommonTests.testResolveReference (add person) entityRef

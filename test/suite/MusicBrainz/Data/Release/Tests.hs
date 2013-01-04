@@ -34,19 +34,19 @@ tests = [ testCreateFindLatest
 
 --------------------------------------------------------------------------------
 testCreateFindLatest :: Test
-testCreateFindLatest = testCase "findLatest when release exists" $ mbTest $
+testCreateFindLatest = testCase "findLatest when release exists" $
   CommonTests.testCreateFindLatest dummyTree
 
 
 --------------------------------------------------------------------------------
 testAnnotation :: Test
-testAnnotation = testCase "Can add and remove artist annotations" $ mbTest $ do
+testAnnotation = testCase "Can add and remove artist annotations" $ do
   CommonTests.testAnnotation dummyTree
 
 
 --------------------------------------------------------------------------------
 testReleaseLabels :: Test
-testReleaseLabels = testCase "Releases can have release labels" $ mbTest $ do
+testReleaseLabels = testCase "Releases can have release labels" $ do
   editor <- entityRef <$> register acid2
   revRecLabel <- coreRef <$> autoEdit (create editor revolutionRecords >>= viewRevision)
   let revRec = ReleaseLabel { releaseLabel = Just revRecLabel, releaseCatalogNumber = Just "REVREC001" }
@@ -63,7 +63,7 @@ testReleaseLabels = testCase "Releases can have release labels" $ mbTest $ do
 
 --------------------------------------------------------------------------------
 testTrackLists :: Test
-testTrackLists = testCase "Releases can have track lists" $ mbTest $ do
+testTrackLists = testCase "Releases can have track lists" $ do
   editor <- entityRef <$> register acid2
 
   mediums <- makeMediums editor
@@ -91,7 +91,7 @@ testTrackLists = testCase "Releases can have track lists" $ mbTest $ do
 
 --------------------------------------------------------------------------------
 testMerge :: Test
-testMerge = testCase "Can merge 2 distinct releases" $ mbTest $ do
+testMerge = testCase "Can merge 2 distinct releases" $ do
   CommonTests.testMerge createRecordings
   where
     createRecordings editor = do
@@ -102,7 +102,7 @@ testMerge = testCase "Can merge 2 distinct releases" $ mbTest $ do
 
 --------------------------------------------------------------------------------
 testResolveRevisionReference :: Test
-testResolveRevisionReference = testCase "Resolve revision reference" $ mbTest $ do
+testResolveRevisionReference = testCase "Resolve revision reference" $ do
   CommonTests.testResolveRevisionReference dummyTree
 
 

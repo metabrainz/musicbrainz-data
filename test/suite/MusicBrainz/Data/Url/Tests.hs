@@ -25,18 +25,18 @@ tests = [ testCreateFindLatest
 
 --------------------------------------------------------------------------------
 testCreateFindLatest :: Test
-testCreateFindLatest = testCase "create >>= findLatest == create" $ mbTest $ do
+testCreateFindLatest = testCase "create >>= findLatest == create" $ do
   CommonTests.testCreateFindLatest (return . const musicBrainz)
 
 
 --------------------------------------------------------------------------------
 testUpdate :: Test
-testUpdate = testCase "update does change url" $ mbTest $ do
+testUpdate = testCase "update does change url" $ do
   CommonTests.testUpdate musicBrainz google
 
 --------------------------------------------------------------------------------
 testMerge :: Test
-testMerge = testCase "Can merge 2 distinct urls" $ mbTest $ do
+testMerge = testCase "Can merge 2 distinct urls" $ do
   editor <- entityRef <$> register acid2
 
   a <- autoEdit $ create editor musicBrainz >>= viewRevision
@@ -53,7 +53,7 @@ testMerge = testCase "Can merge 2 distinct urls" $ mbTest $ do
 
 --------------------------------------------------------------------------------
 testResolveRevisionReference :: Test
-testResolveRevisionReference = testCase "Resolve revision reference" $ mbTest $ do
+testResolveRevisionReference = testCase "Resolve revision reference" $ do
   CommonTests.testResolveRevisionReference (return . const musicBrainz)
 
 

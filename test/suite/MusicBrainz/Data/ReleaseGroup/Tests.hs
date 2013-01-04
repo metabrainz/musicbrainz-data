@@ -27,19 +27,19 @@ tests = [ testCreateFindLatest
 
 --------------------------------------------------------------------------------
 testCreateFindLatest :: Test
-testCreateFindLatest = testCase "create/findLatest" $ mbTest $
+testCreateFindLatest = testCase "create/findLatest" $
   CommonTests.testCreateFindLatest dummyTree
 
 
 --------------------------------------------------------------------------------
 testAnnotation :: Test
-testAnnotation = testCase "Can add and remove artist annotations" $ mbTest $ do
+testAnnotation = testCase "Can add and remove artist annotations" $ do
   CommonTests.testAnnotation dummyTree
 
 
 --------------------------------------------------------------------------------
 testSecondaryTypes :: Test
-testSecondaryTypes = testCase "Release groups can have secondary types" $ mbTest $ do
+testSecondaryTypes = testCase "Release groups can have secondary types" $ do
   types <- Set.fromList . map entityRef <$> sequence [ add compilation, add remix ]
 
   CommonTests.createAndUpdateSubtree
@@ -63,7 +63,7 @@ testSecondaryTypes = testCase "Release groups can have secondary types" $ mbTest
 
 --------------------------------------------------------------------------------
 testMerge :: Test
-testMerge = testCase "Can merge two release groups" $ mbTest $ do
+testMerge = testCase "Can merge two release groups" $ do
   CommonTests.testMerge $ \editor -> do
     treeA <- dummyTree editor
     let treeB = minimalTree $ (treeData treeA) { releaseGroupName = "Lungbone" }
@@ -72,7 +72,7 @@ testMerge = testCase "Can merge two release groups" $ mbTest $ do
 
 --------------------------------------------------------------------------------
 testResolveRevisionReference :: Test
-testResolveRevisionReference = testCase "Resolve revision reference" $ mbTest $ do
+testResolveRevisionReference = testCase "Resolve revision reference" $ do
   CommonTests.testResolveRevisionReference dummyTree
 
 

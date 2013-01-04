@@ -28,19 +28,19 @@ tests = [ testCreateFindLatest
 
 --------------------------------------------------------------------------------
 testCreateFindLatest :: Test
-testCreateFindLatest = testCase "findLatest when recording exists" $ mbTest $
+testCreateFindLatest = testCase "findLatest when recording exists" $
   CommonTests.testCreateFindLatest mysterons
 
 
 --------------------------------------------------------------------------------
 testAnnotation :: Test
-testAnnotation = testCase "Can add and remove recording annotations" $ mbTest $ do
+testAnnotation = testCase "Can add and remove recording annotations" $ do
   CommonTests.testAnnotation mysterons
 
 
 --------------------------------------------------------------------------------
 testIsrc :: Test
-testIsrc = testCase "Can add and remove ISRCs" $ mbTest $
+testIsrc = testCase "Can add and remove ISRCs" $
   CommonTests.createAndUpdateSubtree
     mysterons
     withIsrc
@@ -54,7 +54,7 @@ testIsrc = testCase "Can add and remove ISRCs" $ mbTest $
 
 --------------------------------------------------------------------------------
 testPuid :: Test
-testPuid = testCase "Can add and remove PUIDs" $ mbTest $
+testPuid = testCase "Can add and remove PUIDs" $
   CommonTests.createAndUpdateSubtree
     mysterons
     withPuid
@@ -68,7 +68,7 @@ testPuid = testCase "Can add and remove PUIDs" $ mbTest $
 
 --------------------------------------------------------------------------------
 testMerge :: Test
-testMerge = testCase "Can merge 2 distinct recordings" $ mbTest $ do
+testMerge = testCase "Can merge 2 distinct recordings" $ do
   CommonTests.testMerge createRecordings
   where
     createRecordings editor = do
@@ -91,5 +91,5 @@ strangers editor = do
 
 --------------------------------------------------------------------------------
 testResolveRevisionReference :: Test
-testResolveRevisionReference = testCase "Resolve revision reference" $ mbTest $ do
+testResolveRevisionReference = testCase "Resolve revision reference" $ do
   CommonTests.testResolveRevisionReference mysterons

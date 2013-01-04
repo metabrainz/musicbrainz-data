@@ -17,11 +17,11 @@ tests = [ testAddCountry
 
 --------------------------------------------------------------------------------
 testAddCountry :: Test
-testAddCountry = testCase "Can add Countrys" $ mbTest $ do
+testAddCountry = testCase "Can add Countrys" $ do
   CommonTests.testAdd uk
 
 
 --------------------------------------------------------------------------------
 testResolveReference :: Test
-testResolveReference = testCase "Can resolve Countrys" $ mbTest $ do
+testResolveReference = testCase "Can resolve Countrys" $ do
   CommonTests.testResolveReference (add uk) entityRef

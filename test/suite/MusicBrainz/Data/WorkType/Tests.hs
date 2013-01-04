@@ -16,13 +16,13 @@ tests = [ testAddWorkType
 
 --------------------------------------------------------------------------------
 testAddWorkType :: Test
-testAddWorkType = testCase "Can add WorkTypes" $ mbTest $ do
+testAddWorkType = testCase "Can add WorkTypes" $ do
   CommonTests.testAdd ballet
 
 
 --------------------------------------------------------------------------------
 testResolveReference :: Test
-testResolveReference = testCase "Can resolve WorkTypes" $ mbTest $ do
+testResolveReference = testCase "Can resolve WorkTypes" $ do
   CommonTests.testResolveReference (add ballet) entityRef
 
 

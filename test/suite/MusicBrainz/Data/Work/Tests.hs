@@ -31,7 +31,7 @@ tests = [ testCreateFindLatest
 
 --------------------------------------------------------------------------------
 testCreateFindLatest :: Test
-testCreateFindLatest = testCase "create >>= findLatest == create" $ mbTest $ do
+testCreateFindLatest = testCase "create >>= findLatest == create" $ do
   CommonTests.testCreateFindLatest (return . const tree)
   where
     tree = minimalTree Work
@@ -44,7 +44,7 @@ testCreateFindLatest = testCase "create >>= findLatest == create" $ mbTest $ do
 
 --------------------------------------------------------------------------------
 testUpdate :: Test
-testUpdate = testCase "update does change work" $ mbTest $ do
+testUpdate = testCase "update does change work" $ do
   CommonTests.testUpdate wildRose expected
    where
     expected = wildRose { workData = (workData wildRose)
@@ -56,7 +56,7 @@ testUpdate = testCase "update does change work" $ mbTest $ do
 
 --------------------------------------------------------------------------------
 testAliases :: Test
-testAliases = testCase "Can add and remove aliases" $ mbTest $ do
+testAliases = testCase "Can add and remove aliases" $ do
   CommonTests.testAliases wildRose alias
   where
     alias = Alias { aliasName = "T⊙ Å w¥ł≙ ℜøßė"
@@ -71,13 +71,13 @@ testAliases = testCase "Can add and remove aliases" $ mbTest $ do
 
 --------------------------------------------------------------------------------
 testAnnotation :: Test
-testAnnotation = testCase "Can add and remove work annotations" $ mbTest $ do
+testAnnotation = testCase "Can add and remove work annotations" $ do
   CommonTests.testAnnotation (return . const wildRose)
 
 
 --------------------------------------------------------------------------------
 testMerge :: Test
-testMerge = testCase "Can merge 2 distinct works" $ mbTest $ do
+testMerge = testCase "Can merge 2 distinct works" $ do
   editor <- entityRef <$> register acid2
 
   a <- autoEdit $ create editor wildRose >>= viewRevision
@@ -94,7 +94,7 @@ testMerge = testCase "Can merge 2 distinct works" $ mbTest $ do
 
 --------------------------------------------------------------------------------
 testIswc :: Test
-testIswc = testCase "Can add and remove ISWCs" $ mbTest $
+testIswc = testCase "Can add and remove ISWCs" $
   CommonTests.createAndUpdateSubtree
     (return . const wildRose)
     withIswc
@@ -108,7 +108,7 @@ testIswc = testCase "Can add and remove ISWCs" $ mbTest $
 
 --------------------------------------------------------------------------------
 testResolveRevisionReference :: Test
-testResolveRevisionReference = testCase "Resolve revision reference" $ mbTest $ do
+testResolveRevisionReference = testCase "Resolve revision reference" $ do
   CommonTests.testResolveRevisionReference (return . const wildRose)
 
 

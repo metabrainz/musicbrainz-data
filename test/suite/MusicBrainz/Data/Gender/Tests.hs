@@ -17,11 +17,11 @@ tests = [ testAddGender
 
 --------------------------------------------------------------------------------
 testAddGender :: Test
-testAddGender = testCase "Can add Genders" $ mbTest $ do
+testAddGender = testCase "Can add Genders" $ do
   CommonTests.testAdd male
 
 
 --------------------------------------------------------------------------------
 testResolveReference :: Test
-testResolveReference = testCase "Can resolve Genders" $ mbTest $ do
+testResolveReference = testCase "Can resolve Genders" $ do
   CommonTests.testResolveReference (add male) entityRef

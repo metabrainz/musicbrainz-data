@@ -17,11 +17,11 @@ tests = [ testAddScript
 
 --------------------------------------------------------------------------------
 testAddScript :: Test
-testAddScript = testCase "Can add Scripts" $ mbTest $ do
+testAddScript = testCase "Can add Scripts" $ do
   CommonTests.testAdd latin
 
 
 --------------------------------------------------------------------------------
 testResolveReference :: Test
-testResolveReference = testCase "Can resolve Scripts" $ mbTest $ do
+testResolveReference = testCase "Can resolve Scripts" $ do
   CommonTests.testResolveReference (add latin) entityRef

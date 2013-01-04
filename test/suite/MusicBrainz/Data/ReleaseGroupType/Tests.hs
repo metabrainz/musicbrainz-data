@@ -19,13 +19,13 @@ tests = [ testAddPrimaryReleaseGroupType
 
 --------------------------------------------------------------------------------
 testAddPrimaryReleaseGroupType :: Test
-testAddPrimaryReleaseGroupType = testCase "Can add ReleaseGroupTypes" $ mbTest $ do
+testAddPrimaryReleaseGroupType = testCase "Can add ReleaseGroupTypes" $ do
   CommonTests.testAdd album
 
 
 --------------------------------------------------------------------------------
 testResolvePrimaryReference :: Test
-testResolvePrimaryReference = testCase "Can resolve ReleaseGroupTypes" $ mbTest $ do
+testResolvePrimaryReference = testCase "Can resolve ReleaseGroupTypes" $ do
   CommonTests.testResolveReference (add album) entityRef
 
 
@@ -36,12 +36,12 @@ album = ReleaseGroupType { releaseGroupTypeName = "Album" }
 
 --------------------------------------------------------------------------------
 testAddSecondaryReleaseGroupType :: Test
-testAddSecondaryReleaseGroupType = testCase "Can add ReleaseGroupTypes" $ mbTest $ do
+testAddSecondaryReleaseGroupType = testCase "Can add ReleaseGroupTypes" $ do
   CommonTests.testAdd compilation
 
 
 --------------------------------------------------------------------------------
 testResolveSecondaryReference :: Test
-testResolveSecondaryReference = testCase "Can resolve ReleaseGroupTypes" $ mbTest $ do
+testResolveSecondaryReference = testCase "Can resolve ReleaseGroupTypes" $ do
   CommonTests.testResolveReference (add compilation) entityRef
 

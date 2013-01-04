@@ -23,7 +23,7 @@ tests = [ testAddEditNote
 
 --------------------------------------------------------------------------------
 testAddEditNote :: Test
-testAddEditNote = testCase "Add & retrieve edit notes for edits" $ mbTest $ do
+testAddEditNote = testCase "Add & retrieve edit notes for edits" $ do
   editor <- entityRef <$> register acid2
   editId <- openEdit
   addEditNote editId (expected editor)
@@ -38,7 +38,7 @@ testAddEditNote = testCase "Add & retrieve edit notes for edits" $ mbTest $ do
 
 --------------------------------------------------------------------------------
 testVoteOnEdit :: Test
-testVoteOnEdit = testCase "Can submit votes on edits" $ mbTest $ do
+testVoteOnEdit = testCase "Can submit votes on edits" $ do
   warpId <- entityRef <$> register acid2 { editorName = "warp" }
   acid2Id <- entityRef <$> register acid2
 
@@ -64,5 +64,5 @@ testVoteOnEdit = testCase "Can submit votes on edits" $ mbTest $ do
 
 --------------------------------------------------------------------------------
 testResolveReference :: Test
-testResolveReference = testCase "Can resolve edit references" $ mbTest $ do
+testResolveReference = testCase "Can resolve edit references" $ do
   CommonTests.testResolveReference openEdit id

@@ -14,5 +14,5 @@ tests = [ testAddRelationshipType
 
 --------------------------------------------------------------------------------
 testAddRelationshipType :: Test
-testAddRelationshipType = testCase "Can add RelationshipTypes" $ mbTest $ do
+testAddRelationshipType = testCase "Can add RelationshipTypes" $ do
   CommonTests.testAdd RelationshipType { relName = "member of" }

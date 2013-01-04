@@ -20,7 +20,7 @@ tests = [ testGroup "MBID Parsing"
 
 testSelectNullMBID :: Test
 testSelectNullMBID = testCase "An MBID field must be not-null" $
-  assertException expectNull $ mbTest nullQuery
+  assertException expectNull $ nullQuery
   where nullQuery :: MusicBrainz [Only (MBID Artist)]
         nullQuery = query_ "SELECT null"
         expectNull (UnexpectedNull _ _ _) = Just True
@@ -28,7 +28,7 @@ testSelectNullMBID = testCase "An MBID field must be not-null" $
 
 testSelectNonUuidMBID :: Test
 testSelectNonUuidMBID = testCase "An MBID field must be a PostgreSQL uuid" $
-  assertException expectIncompatible $ mbTest incompatQuery
+  assertException expectIncompatible $ incompatQuery
   where incompatQuery :: MusicBrainz [Only (MBID Artist)]
         incompatQuery = query_ "SELECT 5"
         expectIncompatible (Incompatible _ _ _) = Just True

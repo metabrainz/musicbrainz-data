@@ -17,11 +17,11 @@ tests = [ testAddLanguage
 
 --------------------------------------------------------------------------------
 testAddLanguage :: Test
-testAddLanguage = testCase "Can add Languages" $ mbTest $ do
+testAddLanguage = testCase "Can add Languages" $ do
   CommonTests.testAdd english
 
 
 --------------------------------------------------------------------------------
 testResolveReference :: Test
-testResolveReference = testCase "Can resolve Languages" $ mbTest $ do
+testResolveReference = testCase "Can resolve Languages" $ do
   CommonTests.testResolveReference (add english) entityRef

@@ -9,3 +9,4 @@ cabal-dev
 *-boot
 *.p_o
 *.p_hi
+/test.cfg

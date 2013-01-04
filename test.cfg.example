@@ -1,0 +1,8 @@
+# This file defines the configuration for running tests.
+
+# The database to use for testing. You should create a fresh test database as
+# this may truncate all data!
+database = "musicbrainz"
+
+# Database user to connect as
+user = "musicbrainz"
