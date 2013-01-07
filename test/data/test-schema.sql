@@ -1535,13 +1535,637 @@ ALTER SEQUENCE iswc_id_seq OWNED BY iswc.id;
 --
 
 CREATE TABLE l_artist_artist (
-    source_id integer NOT NULL,
-    target_id uuid NOT NULL,
+    artist_tree_id integer NOT NULL,
+    artist_id uuid NOT NULL,
     relationship_id integer NOT NULL
 );
 
 
 ALTER TABLE musicbrainz.l_artist_artist OWNER TO musicbrainz;
+
+--
+-- Name: l_artist_label; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE l_artist_label (
+    artist_tree_id integer NOT NULL,
+    label_id uuid NOT NULL,
+    relationship_id integer NOT NULL
+);
+
+
+ALTER TABLE musicbrainz.l_artist_label OWNER TO musicbrainz;
+
+--
+-- Name: l_artist_recording; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE l_artist_recording (
+    artist_tree_id integer NOT NULL,
+    recording_id uuid NOT NULL,
+    relationship_id integer NOT NULL
+);
+
+
+ALTER TABLE musicbrainz.l_artist_recording OWNER TO musicbrainz;
+
+--
+-- Name: l_artist_release; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE l_artist_release (
+    artist_tree_id integer NOT NULL,
+    release_id uuid NOT NULL,
+    relationship_id integer NOT NULL
+);
+
+
+ALTER TABLE musicbrainz.l_artist_release OWNER TO musicbrainz;
+
+--
+-- Name: l_artist_release_group; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE l_artist_release_group (
+    artist_tree_id integer NOT NULL,
+    release_group_id uuid NOT NULL,
+    relationship_id integer NOT NULL
+);
+
+
+ALTER TABLE musicbrainz.l_artist_release_group OWNER TO musicbrainz;
+
+--
+-- Name: l_artist_url; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE l_artist_url (
+    artist_tree_id integer NOT NULL,
+    url_id uuid NOT NULL,
+    relationship_id integer NOT NULL
+);
+
+
+ALTER TABLE musicbrainz.l_artist_url OWNER TO musicbrainz;
+
+--
+-- Name: l_artist_work; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE l_artist_work (
+    artist_tree_id integer NOT NULL,
+    work_id uuid NOT NULL,
+    relationship_id integer NOT NULL
+);
+
+
+ALTER TABLE musicbrainz.l_artist_work OWNER TO musicbrainz;
+
+--
+-- Name: l_label_artist; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE l_label_artist (
+    label_tree_id integer NOT NULL,
+    artist_id uuid NOT NULL,
+    relationship_id integer NOT NULL
+);
+
+
+ALTER TABLE musicbrainz.l_label_artist OWNER TO musicbrainz;
+
+--
+-- Name: l_label_label; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE l_label_label (
+    label_tree_id integer NOT NULL,
+    label_id uuid NOT NULL,
+    relationship_id integer NOT NULL
+);
+
+
+ALTER TABLE musicbrainz.l_label_label OWNER TO musicbrainz;
+
+--
+-- Name: l_label_recording; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE l_label_recording (
+    label_tree_id integer NOT NULL,
+    recording_id uuid NOT NULL,
+    relationship_id integer NOT NULL
+);
+
+
+ALTER TABLE musicbrainz.l_label_recording OWNER TO musicbrainz;
+
+--
+-- Name: l_label_release; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE l_label_release (
+    label_tree_id integer NOT NULL,
+    release_id uuid NOT NULL,
+    relationship_id integer NOT NULL
+);
+
+
+ALTER TABLE musicbrainz.l_label_release OWNER TO musicbrainz;
+
+--
+-- Name: l_label_release_group; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE l_label_release_group (
+    label_tree_id integer NOT NULL,
+    release_group_id uuid NOT NULL,
+    relationship_id integer NOT NULL
+);
+
+
+ALTER TABLE musicbrainz.l_label_release_group OWNER TO musicbrainz;
+
+--
+-- Name: l_label_url; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE l_label_url (
+    label_tree_id integer NOT NULL,
+    url_id uuid NOT NULL,
+    relationship_id integer NOT NULL
+);
+
+
+ALTER TABLE musicbrainz.l_label_url OWNER TO musicbrainz;
+
+--
+-- Name: l_label_work; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE l_label_work (
+    label_tree_id integer NOT NULL,
+    work_id uuid NOT NULL,
+    relationship_id integer NOT NULL
+);
+
+
+ALTER TABLE musicbrainz.l_label_work OWNER TO musicbrainz;
+
+--
+-- Name: l_recording_artist; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE l_recording_artist (
+    recording_tree_id integer NOT NULL,
+    artist_id uuid NOT NULL,
+    relationship_id integer NOT NULL
+);
+
+
+ALTER TABLE musicbrainz.l_recording_artist OWNER TO musicbrainz;
+
+--
+-- Name: l_recording_label; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE l_recording_label (
+    recording_tree_id integer NOT NULL,
+    label_id uuid NOT NULL,
+    relationship_id integer NOT NULL
+);
+
+
+ALTER TABLE musicbrainz.l_recording_label OWNER TO musicbrainz;
+
+--
+-- Name: l_recording_recording; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE l_recording_recording (
+    recording_tree_id integer NOT NULL,
+    recording_id uuid NOT NULL,
+    relationship_id integer NOT NULL
+);
+
+
+ALTER TABLE musicbrainz.l_recording_recording OWNER TO musicbrainz;
+
+--
+-- Name: l_recording_release; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE l_recording_release (
+    recording_tree_id integer NOT NULL,
+    release_id uuid NOT NULL,
+    relationship_id integer NOT NULL
+);
+
+
+ALTER TABLE musicbrainz.l_recording_release OWNER TO musicbrainz;
+
+--
+-- Name: l_recording_release_group; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE l_recording_release_group (
+    recording_tree_id integer NOT NULL,
+    release_group_id uuid NOT NULL,
+    relationship_id integer NOT NULL
+);
+
+
+ALTER TABLE musicbrainz.l_recording_release_group OWNER TO musicbrainz;
+
+--
+-- Name: l_recording_url; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE l_recording_url (
+    recording_tree_id integer NOT NULL,
+    url_id uuid NOT NULL,
+    relationship_id integer NOT NULL
+);
+
+
+ALTER TABLE musicbrainz.l_recording_url OWNER TO musicbrainz;
+
+--
+-- Name: l_recording_work; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE l_recording_work (
+    recording_tree_id integer NOT NULL,
+    work_id uuid NOT NULL,
+    relationship_id integer NOT NULL
+);
+
+
+ALTER TABLE musicbrainz.l_recording_work OWNER TO musicbrainz;
+
+--
+-- Name: l_release_artist; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE l_release_artist (
+    release_tree_id integer NOT NULL,
+    artist_id uuid NOT NULL,
+    relationship_id integer NOT NULL
+);
+
+
+ALTER TABLE musicbrainz.l_release_artist OWNER TO musicbrainz;
+
+--
+-- Name: l_release_group_artist; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE l_release_group_artist (
+    release_group_tree_id integer NOT NULL,
+    artist_id uuid NOT NULL,
+    relationship_id integer NOT NULL
+);
+
+
+ALTER TABLE musicbrainz.l_release_group_artist OWNER TO musicbrainz;
+
+--
+-- Name: l_release_group_label; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE l_release_group_label (
+    release_group_tree_id integer NOT NULL,
+    label_id uuid NOT NULL,
+    relationship_id integer NOT NULL
+);
+
+
+ALTER TABLE musicbrainz.l_release_group_label OWNER TO musicbrainz;
+
+--
+-- Name: l_release_group_recording; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE l_release_group_recording (
+    release_group_tree_id integer NOT NULL,
+    recording_id uuid NOT NULL,
+    relationship_id integer NOT NULL
+);
+
+
+ALTER TABLE musicbrainz.l_release_group_recording OWNER TO musicbrainz;
+
+--
+-- Name: l_release_group_release; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE l_release_group_release (
+    release_group_tree_id integer NOT NULL,
+    release_id uuid NOT NULL,
+    relationship_id integer NOT NULL
+);
+
+
+ALTER TABLE musicbrainz.l_release_group_release OWNER TO musicbrainz;
+
+--
+-- Name: l_release_group_release_group; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE l_release_group_release_group (
+    release_group_tree_id integer NOT NULL,
+    release_group_id uuid NOT NULL,
+    relationship_id integer NOT NULL
+);
+
+
+ALTER TABLE musicbrainz.l_release_group_release_group OWNER TO musicbrainz;
+
+--
+-- Name: l_release_group_url; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE l_release_group_url (
+    release_group_tree_id integer NOT NULL,
+    url_id uuid NOT NULL,
+    relationship_id integer NOT NULL
+);
+
+
+ALTER TABLE musicbrainz.l_release_group_url OWNER TO musicbrainz;
+
+--
+-- Name: l_release_group_work; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE l_release_group_work (
+    release_group_tree_id integer NOT NULL,
+    work_id uuid NOT NULL,
+    relationship_id integer NOT NULL
+);
+
+
+ALTER TABLE musicbrainz.l_release_group_work OWNER TO musicbrainz;
+
+--
+-- Name: l_release_label; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE l_release_label (
+    release_tree_id integer NOT NULL,
+    label_id uuid NOT NULL,
+    relationship_id integer NOT NULL
+);
+
+
+ALTER TABLE musicbrainz.l_release_label OWNER TO musicbrainz;
+
+--
+-- Name: l_release_recording; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE l_release_recording (
+    release_tree_id integer NOT NULL,
+    recording_id uuid NOT NULL,
+    relationship_id integer NOT NULL
+);
+
+
+ALTER TABLE musicbrainz.l_release_recording OWNER TO musicbrainz;
+
+--
+-- Name: l_release_release; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE l_release_release (
+    release_tree_id integer NOT NULL,
+    release_id uuid NOT NULL,
+    relationship_id integer NOT NULL
+);
+
+
+ALTER TABLE musicbrainz.l_release_release OWNER TO musicbrainz;
+
+--
+-- Name: l_release_release_group; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE l_release_release_group (
+    release_tree_id integer NOT NULL,
+    release_group_id uuid NOT NULL,
+    relationship_id integer NOT NULL
+);
+
+
+ALTER TABLE musicbrainz.l_release_release_group OWNER TO musicbrainz;
+
+--
+-- Name: l_release_url; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE l_release_url (
+    release_tree_id integer NOT NULL,
+    url_id uuid NOT NULL,
+    relationship_id integer NOT NULL
+);
+
+
+ALTER TABLE musicbrainz.l_release_url OWNER TO musicbrainz;
+
+--
+-- Name: l_release_work; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE l_release_work (
+    release_tree_id integer NOT NULL,
+    work_id uuid NOT NULL,
+    relationship_id integer NOT NULL
+);
+
+
+ALTER TABLE musicbrainz.l_release_work OWNER TO musicbrainz;
+
+--
+-- Name: l_url_artist; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE l_url_artist (
+    url_tree_id integer NOT NULL,
+    artist_id uuid NOT NULL,
+    relationship_id integer NOT NULL
+);
+
+
+ALTER TABLE musicbrainz.l_url_artist OWNER TO musicbrainz;
+
+--
+-- Name: l_url_label; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE l_url_label (
+    url_tree_id integer NOT NULL,
+    label_id uuid NOT NULL,
+    relationship_id integer NOT NULL
+);
+
+
+ALTER TABLE musicbrainz.l_url_label OWNER TO musicbrainz;
+
+--
+-- Name: l_url_recording; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE l_url_recording (
+    url_tree_id integer NOT NULL,
+    recording_id uuid NOT NULL,
+    relationship_id integer NOT NULL
+);
+
+
+ALTER TABLE musicbrainz.l_url_recording OWNER TO musicbrainz;
+
+--
+-- Name: l_url_release; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE l_url_release (
+    url_tree_id integer NOT NULL,
+    release_id uuid NOT NULL,
+    relationship_id integer NOT NULL
+);
+
+
+ALTER TABLE musicbrainz.l_url_release OWNER TO musicbrainz;
+
+--
+-- Name: l_url_release_group; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE l_url_release_group (
+    url_tree_id integer NOT NULL,
+    release_group_id uuid NOT NULL,
+    relationship_id integer NOT NULL
+);
+
+
+ALTER TABLE musicbrainz.l_url_release_group OWNER TO musicbrainz;
+
+--
+-- Name: l_url_url; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE l_url_url (
+    url_tree_id integer NOT NULL,
+    url_id uuid NOT NULL,
+    relationship_id integer NOT NULL
+);
+
+
+ALTER TABLE musicbrainz.l_url_url OWNER TO musicbrainz;
+
+--
+-- Name: l_url_work; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE l_url_work (
+    url_tree_id integer NOT NULL,
+    work_id uuid NOT NULL,
+    relationship_id integer NOT NULL
+);
+
+
+ALTER TABLE musicbrainz.l_url_work OWNER TO musicbrainz;
+
+--
+-- Name: l_work_artist; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE l_work_artist (
+    work_tree_id integer NOT NULL,
+    artist_id uuid NOT NULL,
+    relationship_id integer NOT NULL
+);
+
+
+ALTER TABLE musicbrainz.l_work_artist OWNER TO musicbrainz;
+
+--
+-- Name: l_work_label; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE l_work_label (
+    work_tree_id integer NOT NULL,
+    label_id uuid NOT NULL,
+    relationship_id integer NOT NULL
+);
+
+
+ALTER TABLE musicbrainz.l_work_label OWNER TO musicbrainz;
+
+--
+-- Name: l_work_recording; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE l_work_recording (
+    work_tree_id integer NOT NULL,
+    recording_id uuid NOT NULL,
+    relationship_id integer NOT NULL
+);
+
+
+ALTER TABLE musicbrainz.l_work_recording OWNER TO musicbrainz;
+
+--
+-- Name: l_work_release; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE l_work_release (
+    work_tree_id integer NOT NULL,
+    release_id uuid NOT NULL,
+    relationship_id integer NOT NULL
+);
+
+
+ALTER TABLE musicbrainz.l_work_release OWNER TO musicbrainz;
+
+--
+-- Name: l_work_release_group; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE l_work_release_group (
+    work_tree_id integer NOT NULL,
+    release_group_id uuid NOT NULL,
+    relationship_id integer NOT NULL
+);
+
+
+ALTER TABLE musicbrainz.l_work_release_group OWNER TO musicbrainz;
+
+--
+-- Name: l_work_url; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE l_work_url (
+    work_tree_id integer NOT NULL,
+    url_id uuid NOT NULL,
+    relationship_id integer NOT NULL
+);
+
+
+ALTER TABLE musicbrainz.l_work_url OWNER TO musicbrainz;
+
+--
+-- Name: l_work_work; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE l_work_work (
+    work_tree_id integer NOT NULL,
+    work_id uuid NOT NULL,
+    relationship_id integer NOT NULL
+);
+
+
+ALTER TABLE musicbrainz.l_work_work OWNER TO musicbrainz;
 
 --
 -- Name: label; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
@@ -1774,7 +2398,7 @@ ALTER TABLE musicbrainz.label_tag_raw OWNER TO musicbrainz;
 CREATE TABLE label_tree (
     label_tree_id integer NOT NULL,
     label_data_id integer NOT NULL,
-    annotation text
+    annotation text NOT NULL
 );
 
 
@@ -1873,23 +2497,6 @@ ALTER SEQUENCE language_id_seq OWNED BY language.id;
 
 
 --
--- Name: link; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
---
-
-CREATE TABLE link (
-    id integer NOT NULL,
-    link_type integer NOT NULL,
-    begin_date partial_date,
-    end_date partial_date,
-    attribute_count natural_integer DEFAULT 0 NOT NULL,
-    created timestamp with time zone DEFAULT now(),
-    ended boolean DEFAULT false NOT NULL
-);
-
-
-ALTER TABLE musicbrainz.link OWNER TO musicbrainz;
-
---
 -- Name: link_attribute; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
 --
 
@@ -1954,13 +2561,6 @@ CREATE SEQUENCE link_id_seq
 
 
 ALTER TABLE musicbrainz.link_id_seq OWNER TO musicbrainz;
-
---
--- Name: link_id_seq; Type: SEQUENCE OWNED BY; Schema: musicbrainz; Owner: musicbrainz
---
-
-ALTER SEQUENCE link_id_seq OWNED BY link.id;
-
 
 --
 -- Name: link_type; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
@@ -2515,21 +3115,6 @@ ALTER TABLE musicbrainz.release_group_data_release_group_data_id_seq OWNER TO mu
 
 ALTER SEQUENCE release_group_data_release_group_data_id_seq OWNED BY release_group_data.release_group_data_id;
 
-
---
--- Name: release_group_meta; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
---
-
-CREATE TABLE release_group_meta (
-    release_group_id uuid NOT NULL,
-    release_count natural_integer DEFAULT 0 NOT NULL,
-    first_release_date partial_date,
-    rating rating,
-    rating_count natural_integer NOT NULL
-);
-
-
-ALTER TABLE musicbrainz.release_group_meta OWNER TO musicbrainz;
 
 --
 -- Name: release_group_primary_type; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
@@ -3692,13 +4277,6 @@ ALTER TABLE ONLY language ALTER COLUMN id SET DEFAULT nextval('language_id_seq':
 -- Name: id; Type: DEFAULT; Schema: musicbrainz; Owner: musicbrainz
 --
 
-ALTER TABLE ONLY link ALTER COLUMN id SET DEFAULT nextval('link_id_seq'::regclass);
-
-
---
--- Name: id; Type: DEFAULT; Schema: musicbrainz; Owner: musicbrainz
---
-
 ALTER TABLE ONLY link_attribute_type ALTER COLUMN id SET DEFAULT nextval('link_attribute_type_id_seq'::regclass);
 
 
@@ -4174,15 +4752,391 @@ ALTER TABLE ONLY iswc
 --
 
 ALTER TABLE ONLY l_artist_artist
-    ADD CONSTRAINT l_artist_artist_pkey PRIMARY KEY (source_id, target_id);
+    ADD CONSTRAINT l_artist_artist_pkey PRIMARY KEY (artist_tree_id, artist_id, relationship_id);
 
 
 --
--- Name: label_alias_label_tree_id_name_locale_key; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+-- Name: l_artist_label_pkey; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
 --
 
-ALTER TABLE ONLY label_alias
-    ADD CONSTRAINT label_alias_label_tree_id_name_locale_key UNIQUE (label_tree_id, name, locale);
+ALTER TABLE ONLY l_artist_label
+    ADD CONSTRAINT l_artist_label_pkey PRIMARY KEY (artist_tree_id, label_id, relationship_id);
+
+
+--
+-- Name: l_artist_recording_pkey; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+ALTER TABLE ONLY l_artist_recording
+    ADD CONSTRAINT l_artist_recording_pkey PRIMARY KEY (artist_tree_id, recording_id, relationship_id);
+
+
+--
+-- Name: l_artist_release_group_pkey; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+ALTER TABLE ONLY l_artist_release_group
+    ADD CONSTRAINT l_artist_release_group_pkey PRIMARY KEY (artist_tree_id, release_group_id, relationship_id);
+
+
+--
+-- Name: l_artist_release_pkey; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+ALTER TABLE ONLY l_artist_release
+    ADD CONSTRAINT l_artist_release_pkey PRIMARY KEY (artist_tree_id, release_id, relationship_id);
+
+
+--
+-- Name: l_artist_url_pkey; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+ALTER TABLE ONLY l_artist_url
+    ADD CONSTRAINT l_artist_url_pkey PRIMARY KEY (artist_tree_id, url_id, relationship_id);
+
+
+--
+-- Name: l_artist_work_pkey; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+ALTER TABLE ONLY l_artist_work
+    ADD CONSTRAINT l_artist_work_pkey PRIMARY KEY (artist_tree_id, work_id, relationship_id);
+
+
+--
+-- Name: l_label_artist_pkey; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+ALTER TABLE ONLY l_label_artist
+    ADD CONSTRAINT l_label_artist_pkey PRIMARY KEY (label_tree_id, artist_id, relationship_id);
+
+
+--
+-- Name: l_label_label_pkey; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+ALTER TABLE ONLY l_label_label
+    ADD CONSTRAINT l_label_label_pkey PRIMARY KEY (label_tree_id, label_id, relationship_id);
+
+
+--
+-- Name: l_label_recording_pkey; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+ALTER TABLE ONLY l_label_recording
+    ADD CONSTRAINT l_label_recording_pkey PRIMARY KEY (label_tree_id, recording_id, relationship_id);
+
+
+--
+-- Name: l_label_release_group_pkey; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+ALTER TABLE ONLY l_label_release_group
+    ADD CONSTRAINT l_label_release_group_pkey PRIMARY KEY (label_tree_id, release_group_id, relationship_id);
+
+
+--
+-- Name: l_label_release_pkey; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+ALTER TABLE ONLY l_label_release
+    ADD CONSTRAINT l_label_release_pkey PRIMARY KEY (label_tree_id, release_id, relationship_id);
+
+
+--
+-- Name: l_label_url_pkey; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+ALTER TABLE ONLY l_label_url
+    ADD CONSTRAINT l_label_url_pkey PRIMARY KEY (label_tree_id, url_id, relationship_id);
+
+
+--
+-- Name: l_label_work_pkey; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+ALTER TABLE ONLY l_label_work
+    ADD CONSTRAINT l_label_work_pkey PRIMARY KEY (label_tree_id, work_id, relationship_id);
+
+
+--
+-- Name: l_recording_artist_pkey; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+ALTER TABLE ONLY l_recording_artist
+    ADD CONSTRAINT l_recording_artist_pkey PRIMARY KEY (recording_tree_id, artist_id, relationship_id);
+
+
+--
+-- Name: l_recording_label_pkey; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+ALTER TABLE ONLY l_recording_label
+    ADD CONSTRAINT l_recording_label_pkey PRIMARY KEY (recording_tree_id, label_id, relationship_id);
+
+
+--
+-- Name: l_recording_recording_pkey; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+ALTER TABLE ONLY l_recording_recording
+    ADD CONSTRAINT l_recording_recording_pkey PRIMARY KEY (recording_tree_id, recording_id, relationship_id);
+
+
+--
+-- Name: l_recording_release_group_pkey; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+ALTER TABLE ONLY l_recording_release_group
+    ADD CONSTRAINT l_recording_release_group_pkey PRIMARY KEY (recording_tree_id, release_group_id, relationship_id);
+
+
+--
+-- Name: l_recording_release_pkey; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+ALTER TABLE ONLY l_recording_release
+    ADD CONSTRAINT l_recording_release_pkey PRIMARY KEY (recording_tree_id, release_id, relationship_id);
+
+
+--
+-- Name: l_recording_url_pkey; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+ALTER TABLE ONLY l_recording_url
+    ADD CONSTRAINT l_recording_url_pkey PRIMARY KEY (recording_tree_id, url_id, relationship_id);
+
+
+--
+-- Name: l_recording_work_pkey; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+ALTER TABLE ONLY l_recording_work
+    ADD CONSTRAINT l_recording_work_pkey PRIMARY KEY (recording_tree_id, work_id, relationship_id);
+
+
+--
+-- Name: l_release_artist_pkey; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+ALTER TABLE ONLY l_release_artist
+    ADD CONSTRAINT l_release_artist_pkey PRIMARY KEY (release_tree_id, artist_id, relationship_id);
+
+
+--
+-- Name: l_release_group_artist_pkey; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+ALTER TABLE ONLY l_release_group_artist
+    ADD CONSTRAINT l_release_group_artist_pkey PRIMARY KEY (release_group_tree_id, artist_id, relationship_id);
+
+
+--
+-- Name: l_release_group_label_pkey; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+ALTER TABLE ONLY l_release_group_label
+    ADD CONSTRAINT l_release_group_label_pkey PRIMARY KEY (release_group_tree_id, label_id, relationship_id);
+
+
+--
+-- Name: l_release_group_recording_pkey; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+ALTER TABLE ONLY l_release_group_recording
+    ADD CONSTRAINT l_release_group_recording_pkey PRIMARY KEY (release_group_tree_id, recording_id, relationship_id);
+
+
+--
+-- Name: l_release_group_release_group_pkey; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+ALTER TABLE ONLY l_release_group_release_group
+    ADD CONSTRAINT l_release_group_release_group_pkey PRIMARY KEY (release_group_tree_id, release_group_id, relationship_id);
+
+
+--
+-- Name: l_release_group_release_pkey; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+ALTER TABLE ONLY l_release_group_release
+    ADD CONSTRAINT l_release_group_release_pkey PRIMARY KEY (release_group_tree_id, release_id, relationship_id);
+
+
+--
+-- Name: l_release_group_url_pkey; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+ALTER TABLE ONLY l_release_group_url
+    ADD CONSTRAINT l_release_group_url_pkey PRIMARY KEY (release_group_tree_id, url_id, relationship_id);
+
+
+--
+-- Name: l_release_group_work_pkey; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+ALTER TABLE ONLY l_release_group_work
+    ADD CONSTRAINT l_release_group_work_pkey PRIMARY KEY (release_group_tree_id, work_id, relationship_id);
+
+
+--
+-- Name: l_release_label_pkey; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+ALTER TABLE ONLY l_release_label
+    ADD CONSTRAINT l_release_label_pkey PRIMARY KEY (release_tree_id, label_id, relationship_id);
+
+
+--
+-- Name: l_release_recording_pkey; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+ALTER TABLE ONLY l_release_recording
+    ADD CONSTRAINT l_release_recording_pkey PRIMARY KEY (release_tree_id, recording_id, relationship_id);
+
+
+--
+-- Name: l_release_release_group_pkey; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+ALTER TABLE ONLY l_release_release_group
+    ADD CONSTRAINT l_release_release_group_pkey PRIMARY KEY (release_tree_id, release_group_id, relationship_id);
+
+
+--
+-- Name: l_release_release_pkey; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+ALTER TABLE ONLY l_release_release
+    ADD CONSTRAINT l_release_release_pkey PRIMARY KEY (release_tree_id, release_id, relationship_id);
+
+
+--
+-- Name: l_release_url_pkey; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+ALTER TABLE ONLY l_release_url
+    ADD CONSTRAINT l_release_url_pkey PRIMARY KEY (release_tree_id, url_id, relationship_id);
+
+
+--
+-- Name: l_release_work_pkey; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+ALTER TABLE ONLY l_release_work
+    ADD CONSTRAINT l_release_work_pkey PRIMARY KEY (release_tree_id, work_id, relationship_id);
+
+
+--
+-- Name: l_url_artist_pkey; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+ALTER TABLE ONLY l_url_artist
+    ADD CONSTRAINT l_url_artist_pkey PRIMARY KEY (url_tree_id, artist_id, relationship_id);
+
+
+--
+-- Name: l_url_label_pkey; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+ALTER TABLE ONLY l_url_label
+    ADD CONSTRAINT l_url_label_pkey PRIMARY KEY (url_tree_id, label_id, relationship_id);
+
+
+--
+-- Name: l_url_recording_pkey; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+ALTER TABLE ONLY l_url_recording
+    ADD CONSTRAINT l_url_recording_pkey PRIMARY KEY (url_tree_id, recording_id, relationship_id);
+
+
+--
+-- Name: l_url_release_group_pkey; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+ALTER TABLE ONLY l_url_release_group
+    ADD CONSTRAINT l_url_release_group_pkey PRIMARY KEY (url_tree_id, release_group_id, relationship_id);
+
+
+--
+-- Name: l_url_release_pkey; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+ALTER TABLE ONLY l_url_release
+    ADD CONSTRAINT l_url_release_pkey PRIMARY KEY (url_tree_id, release_id, relationship_id);
+
+
+--
+-- Name: l_url_url_pkey; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+ALTER TABLE ONLY l_url_url
+    ADD CONSTRAINT l_url_url_pkey PRIMARY KEY (url_tree_id, url_id, relationship_id);
+
+
+--
+-- Name: l_url_work_pkey; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+ALTER TABLE ONLY l_url_work
+    ADD CONSTRAINT l_url_work_pkey PRIMARY KEY (url_tree_id, work_id, relationship_id);
+
+
+--
+-- Name: l_work_artist_pkey; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+ALTER TABLE ONLY l_work_artist
+    ADD CONSTRAINT l_work_artist_pkey PRIMARY KEY (work_tree_id, artist_id, relationship_id);
+
+
+--
+-- Name: l_work_label_pkey; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+ALTER TABLE ONLY l_work_label
+    ADD CONSTRAINT l_work_label_pkey PRIMARY KEY (work_tree_id, label_id, relationship_id);
+
+
+--
+-- Name: l_work_recording_pkey; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+ALTER TABLE ONLY l_work_recording
+    ADD CONSTRAINT l_work_recording_pkey PRIMARY KEY (work_tree_id, recording_id, relationship_id);
+
+
+--
+-- Name: l_work_release_group_pkey; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+ALTER TABLE ONLY l_work_release_group
+    ADD CONSTRAINT l_work_release_group_pkey PRIMARY KEY (work_tree_id, release_group_id, relationship_id);
+
+
+--
+-- Name: l_work_release_pkey; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+ALTER TABLE ONLY l_work_release
+    ADD CONSTRAINT l_work_release_pkey PRIMARY KEY (work_tree_id, release_id, relationship_id);
+
+
+--
+-- Name: l_work_url_pkey; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+ALTER TABLE ONLY l_work_url
+    ADD CONSTRAINT l_work_url_pkey PRIMARY KEY (work_tree_id, url_id, relationship_id);
+
+
+--
+-- Name: l_work_work_pkey; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+ALTER TABLE ONLY l_work_work
+    ADD CONSTRAINT l_work_work_pkey PRIMARY KEY (work_tree_id, work_id, relationship_id);
 
 
 --
@@ -4391,14 +5345,6 @@ ALTER TABLE ONLY link_attribute_type
 
 ALTER TABLE ONLY link_attribute_type
     ADD CONSTRAINT link_attribute_type_pkey PRIMARY KEY (gid);
-
-
---
--- Name: link_pkey; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
---
-
-ALTER TABLE ONLY link
-    ADD CONSTRAINT link_pkey PRIMARY KEY (id);
 
 
 --
@@ -4615,14 +5561,6 @@ ALTER TABLE ONLY release_data
 
 ALTER TABLE ONLY release_group_data
     ADD CONSTRAINT release_group_data_pkey PRIMARY KEY (release_group_data_id);
-
-
---
--- Name: release_group_meta_pkey; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
---
-
-ALTER TABLE ONLY release_group_meta
-    ADD CONSTRAINT release_group_meta_pkey PRIMARY KEY (release_group_id);
 
 
 --
@@ -4994,14 +5932,6 @@ ALTER TABLE ONLY work_alias_type
 
 
 --
--- Name: work_alias_work_tree_id_name_locale_key; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
---
-
-ALTER TABLE ONLY work_alias
-    ADD CONSTRAINT work_alias_work_tree_id_name_locale_key UNIQUE (work_tree_id, name, locale);
-
-
---
 -- Name: work_data_pkey; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
 --
 
@@ -5102,13 +6032,6 @@ ALTER TABLE ONLY work_type
 --
 
 CREATE UNIQUE INDEX artist_alias_artist_tree_id_name_idx ON artist_alias USING btree (artist_tree_id, name) WHERE (locale IS NULL);
-
-
---
--- Name: label_alias_label_tree_id_name_idx; Type: INDEX; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
---
-
-CREATE UNIQUE INDEX label_alias_label_tree_id_name_idx ON label_alias USING btree (label_tree_id, name) WHERE (locale IS NULL);
 
 
 --
@@ -5460,19 +6383,787 @@ ALTER TABLE ONLY iswc
 
 
 --
--- Name: l_artist_artist_source_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+-- Name: l_artist_artist_artist_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
 --
 
 ALTER TABLE ONLY l_artist_artist
-    ADD CONSTRAINT l_artist_artist_source_id_fkey FOREIGN KEY (source_id) REFERENCES artist_tree(artist_tree_id);
+    ADD CONSTRAINT l_artist_artist_artist_id_fkey FOREIGN KEY (artist_id) REFERENCES artist(artist_id);
 
 
 --
--- Name: l_artist_artist_target_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+-- Name: l_artist_artist_artist_tree_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
 --
 
 ALTER TABLE ONLY l_artist_artist
-    ADD CONSTRAINT l_artist_artist_target_id_fkey FOREIGN KEY (target_id) REFERENCES artist(artist_id);
+    ADD CONSTRAINT l_artist_artist_artist_tree_id_fkey FOREIGN KEY (artist_tree_id) REFERENCES artist_tree(artist_tree_id);
+
+
+--
+-- Name: l_artist_label_artist_tree_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_artist_label
+    ADD CONSTRAINT l_artist_label_artist_tree_id_fkey FOREIGN KEY (artist_tree_id) REFERENCES artist_tree(artist_tree_id);
+
+
+--
+-- Name: l_artist_label_label_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_artist_label
+    ADD CONSTRAINT l_artist_label_label_id_fkey FOREIGN KEY (label_id) REFERENCES label(label_id);
+
+
+--
+-- Name: l_artist_recording_artist_tree_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_artist_recording
+    ADD CONSTRAINT l_artist_recording_artist_tree_id_fkey FOREIGN KEY (artist_tree_id) REFERENCES artist_tree(artist_tree_id);
+
+
+--
+-- Name: l_artist_recording_recording_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_artist_recording
+    ADD CONSTRAINT l_artist_recording_recording_id_fkey FOREIGN KEY (recording_id) REFERENCES recording(recording_id);
+
+
+--
+-- Name: l_artist_release_artist_tree_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_artist_release
+    ADD CONSTRAINT l_artist_release_artist_tree_id_fkey FOREIGN KEY (artist_tree_id) REFERENCES artist_tree(artist_tree_id);
+
+
+--
+-- Name: l_artist_release_group_artist_tree_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_artist_release_group
+    ADD CONSTRAINT l_artist_release_group_artist_tree_id_fkey FOREIGN KEY (artist_tree_id) REFERENCES artist_tree(artist_tree_id);
+
+
+--
+-- Name: l_artist_release_group_release_group_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_artist_release_group
+    ADD CONSTRAINT l_artist_release_group_release_group_id_fkey FOREIGN KEY (release_group_id) REFERENCES release_group(release_group_id);
+
+
+--
+-- Name: l_artist_release_release_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_artist_release
+    ADD CONSTRAINT l_artist_release_release_id_fkey FOREIGN KEY (release_id) REFERENCES release(release_id);
+
+
+--
+-- Name: l_artist_url_artist_tree_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_artist_url
+    ADD CONSTRAINT l_artist_url_artist_tree_id_fkey FOREIGN KEY (artist_tree_id) REFERENCES artist_tree(artist_tree_id);
+
+
+--
+-- Name: l_artist_url_url_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_artist_url
+    ADD CONSTRAINT l_artist_url_url_id_fkey FOREIGN KEY (url_id) REFERENCES url(url_id);
+
+
+--
+-- Name: l_artist_work_artist_tree_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_artist_work
+    ADD CONSTRAINT l_artist_work_artist_tree_id_fkey FOREIGN KEY (artist_tree_id) REFERENCES artist_tree(artist_tree_id);
+
+
+--
+-- Name: l_artist_work_work_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_artist_work
+    ADD CONSTRAINT l_artist_work_work_id_fkey FOREIGN KEY (work_id) REFERENCES work(work_id);
+
+
+--
+-- Name: l_label_artist_artist_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_label_artist
+    ADD CONSTRAINT l_label_artist_artist_id_fkey FOREIGN KEY (artist_id) REFERENCES artist(artist_id);
+
+
+--
+-- Name: l_label_artist_label_tree_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_label_artist
+    ADD CONSTRAINT l_label_artist_label_tree_id_fkey FOREIGN KEY (label_tree_id) REFERENCES label_tree(label_tree_id);
+
+
+--
+-- Name: l_label_label_label_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_label_label
+    ADD CONSTRAINT l_label_label_label_id_fkey FOREIGN KEY (label_id) REFERENCES label(label_id);
+
+
+--
+-- Name: l_label_label_label_tree_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_label_label
+    ADD CONSTRAINT l_label_label_label_tree_id_fkey FOREIGN KEY (label_tree_id) REFERENCES label_tree(label_tree_id);
+
+
+--
+-- Name: l_label_recording_label_tree_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_label_recording
+    ADD CONSTRAINT l_label_recording_label_tree_id_fkey FOREIGN KEY (label_tree_id) REFERENCES label_tree(label_tree_id);
+
+
+--
+-- Name: l_label_recording_recording_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_label_recording
+    ADD CONSTRAINT l_label_recording_recording_id_fkey FOREIGN KEY (recording_id) REFERENCES recording(recording_id);
+
+
+--
+-- Name: l_label_release_group_label_tree_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_label_release_group
+    ADD CONSTRAINT l_label_release_group_label_tree_id_fkey FOREIGN KEY (label_tree_id) REFERENCES label_tree(label_tree_id);
+
+
+--
+-- Name: l_label_release_group_release_group_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_label_release_group
+    ADD CONSTRAINT l_label_release_group_release_group_id_fkey FOREIGN KEY (release_group_id) REFERENCES release_group(release_group_id);
+
+
+--
+-- Name: l_label_release_label_tree_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_label_release
+    ADD CONSTRAINT l_label_release_label_tree_id_fkey FOREIGN KEY (label_tree_id) REFERENCES label_tree(label_tree_id);
+
+
+--
+-- Name: l_label_release_release_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_label_release
+    ADD CONSTRAINT l_label_release_release_id_fkey FOREIGN KEY (release_id) REFERENCES release(release_id);
+
+
+--
+-- Name: l_label_url_label_tree_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_label_url
+    ADD CONSTRAINT l_label_url_label_tree_id_fkey FOREIGN KEY (label_tree_id) REFERENCES label_tree(label_tree_id);
+
+
+--
+-- Name: l_label_url_url_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_label_url
+    ADD CONSTRAINT l_label_url_url_id_fkey FOREIGN KEY (url_id) REFERENCES url(url_id);
+
+
+--
+-- Name: l_label_work_label_tree_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_label_work
+    ADD CONSTRAINT l_label_work_label_tree_id_fkey FOREIGN KEY (label_tree_id) REFERENCES label_tree(label_tree_id);
+
+
+--
+-- Name: l_label_work_work_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_label_work
+    ADD CONSTRAINT l_label_work_work_id_fkey FOREIGN KEY (work_id) REFERENCES work(work_id);
+
+
+--
+-- Name: l_recording_artist_artist_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_recording_artist
+    ADD CONSTRAINT l_recording_artist_artist_id_fkey FOREIGN KEY (artist_id) REFERENCES artist(artist_id);
+
+
+--
+-- Name: l_recording_artist_recording_tree_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_recording_artist
+    ADD CONSTRAINT l_recording_artist_recording_tree_id_fkey FOREIGN KEY (recording_tree_id) REFERENCES recording_tree(recording_tree_id);
+
+
+--
+-- Name: l_recording_label_label_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_recording_label
+    ADD CONSTRAINT l_recording_label_label_id_fkey FOREIGN KEY (label_id) REFERENCES label(label_id);
+
+
+--
+-- Name: l_recording_label_recording_tree_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_recording_label
+    ADD CONSTRAINT l_recording_label_recording_tree_id_fkey FOREIGN KEY (recording_tree_id) REFERENCES recording_tree(recording_tree_id);
+
+
+--
+-- Name: l_recording_recording_recording_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_recording_recording
+    ADD CONSTRAINT l_recording_recording_recording_id_fkey FOREIGN KEY (recording_id) REFERENCES recording(recording_id);
+
+
+--
+-- Name: l_recording_recording_recording_tree_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_recording_recording
+    ADD CONSTRAINT l_recording_recording_recording_tree_id_fkey FOREIGN KEY (recording_tree_id) REFERENCES recording_tree(recording_tree_id);
+
+
+--
+-- Name: l_recording_release_group_recording_tree_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_recording_release_group
+    ADD CONSTRAINT l_recording_release_group_recording_tree_id_fkey FOREIGN KEY (recording_tree_id) REFERENCES recording_tree(recording_tree_id);
+
+
+--
+-- Name: l_recording_release_group_release_group_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_recording_release_group
+    ADD CONSTRAINT l_recording_release_group_release_group_id_fkey FOREIGN KEY (release_group_id) REFERENCES release_group(release_group_id);
+
+
+--
+-- Name: l_recording_release_recording_tree_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_recording_release
+    ADD CONSTRAINT l_recording_release_recording_tree_id_fkey FOREIGN KEY (recording_tree_id) REFERENCES recording_tree(recording_tree_id);
+
+
+--
+-- Name: l_recording_release_release_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_recording_release
+    ADD CONSTRAINT l_recording_release_release_id_fkey FOREIGN KEY (release_id) REFERENCES release(release_id);
+
+
+--
+-- Name: l_recording_url_recording_tree_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_recording_url
+    ADD CONSTRAINT l_recording_url_recording_tree_id_fkey FOREIGN KEY (recording_tree_id) REFERENCES recording_tree(recording_tree_id);
+
+
+--
+-- Name: l_recording_url_url_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_recording_url
+    ADD CONSTRAINT l_recording_url_url_id_fkey FOREIGN KEY (url_id) REFERENCES url(url_id);
+
+
+--
+-- Name: l_recording_work_recording_tree_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_recording_work
+    ADD CONSTRAINT l_recording_work_recording_tree_id_fkey FOREIGN KEY (recording_tree_id) REFERENCES recording_tree(recording_tree_id);
+
+
+--
+-- Name: l_recording_work_work_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_recording_work
+    ADD CONSTRAINT l_recording_work_work_id_fkey FOREIGN KEY (work_id) REFERENCES work(work_id);
+
+
+--
+-- Name: l_release_artist_artist_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_release_artist
+    ADD CONSTRAINT l_release_artist_artist_id_fkey FOREIGN KEY (artist_id) REFERENCES artist(artist_id);
+
+
+--
+-- Name: l_release_artist_release_tree_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_release_artist
+    ADD CONSTRAINT l_release_artist_release_tree_id_fkey FOREIGN KEY (release_tree_id) REFERENCES release_tree(release_tree_id);
+
+
+--
+-- Name: l_release_group_artist_artist_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_release_group_artist
+    ADD CONSTRAINT l_release_group_artist_artist_id_fkey FOREIGN KEY (artist_id) REFERENCES artist(artist_id);
+
+
+--
+-- Name: l_release_group_artist_release_group_tree_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_release_group_artist
+    ADD CONSTRAINT l_release_group_artist_release_group_tree_id_fkey FOREIGN KEY (release_group_tree_id) REFERENCES release_group_tree(release_group_tree_id);
+
+
+--
+-- Name: l_release_group_label_label_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_release_group_label
+    ADD CONSTRAINT l_release_group_label_label_id_fkey FOREIGN KEY (label_id) REFERENCES label(label_id);
+
+
+--
+-- Name: l_release_group_label_release_group_tree_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_release_group_label
+    ADD CONSTRAINT l_release_group_label_release_group_tree_id_fkey FOREIGN KEY (release_group_tree_id) REFERENCES release_group_tree(release_group_tree_id);
+
+
+--
+-- Name: l_release_group_recording_recording_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_release_group_recording
+    ADD CONSTRAINT l_release_group_recording_recording_id_fkey FOREIGN KEY (recording_id) REFERENCES recording(recording_id);
+
+
+--
+-- Name: l_release_group_recording_release_group_tree_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_release_group_recording
+    ADD CONSTRAINT l_release_group_recording_release_group_tree_id_fkey FOREIGN KEY (release_group_tree_id) REFERENCES release_group_tree(release_group_tree_id);
+
+
+--
+-- Name: l_release_group_release_group_release_group_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_release_group_release_group
+    ADD CONSTRAINT l_release_group_release_group_release_group_id_fkey FOREIGN KEY (release_group_id) REFERENCES release_group(release_group_id);
+
+
+--
+-- Name: l_release_group_release_group_release_group_tree_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_release_group_release_group
+    ADD CONSTRAINT l_release_group_release_group_release_group_tree_id_fkey FOREIGN KEY (release_group_tree_id) REFERENCES release_group_tree(release_group_tree_id);
+
+
+--
+-- Name: l_release_group_release_release_group_tree_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_release_group_release
+    ADD CONSTRAINT l_release_group_release_release_group_tree_id_fkey FOREIGN KEY (release_group_tree_id) REFERENCES release_group_tree(release_group_tree_id);
+
+
+--
+-- Name: l_release_group_release_release_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_release_group_release
+    ADD CONSTRAINT l_release_group_release_release_id_fkey FOREIGN KEY (release_id) REFERENCES release(release_id);
+
+
+--
+-- Name: l_release_group_url_release_group_tree_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_release_group_url
+    ADD CONSTRAINT l_release_group_url_release_group_tree_id_fkey FOREIGN KEY (release_group_tree_id) REFERENCES release_group_tree(release_group_tree_id);
+
+
+--
+-- Name: l_release_group_url_url_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_release_group_url
+    ADD CONSTRAINT l_release_group_url_url_id_fkey FOREIGN KEY (url_id) REFERENCES url(url_id);
+
+
+--
+-- Name: l_release_group_work_release_group_tree_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_release_group_work
+    ADD CONSTRAINT l_release_group_work_release_group_tree_id_fkey FOREIGN KEY (release_group_tree_id) REFERENCES release_group_tree(release_group_tree_id);
+
+
+--
+-- Name: l_release_group_work_work_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_release_group_work
+    ADD CONSTRAINT l_release_group_work_work_id_fkey FOREIGN KEY (work_id) REFERENCES work(work_id);
+
+
+--
+-- Name: l_release_label_label_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_release_label
+    ADD CONSTRAINT l_release_label_label_id_fkey FOREIGN KEY (label_id) REFERENCES label(label_id);
+
+
+--
+-- Name: l_release_label_release_tree_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_release_label
+    ADD CONSTRAINT l_release_label_release_tree_id_fkey FOREIGN KEY (release_tree_id) REFERENCES release_tree(release_tree_id);
+
+
+--
+-- Name: l_release_recording_recording_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_release_recording
+    ADD CONSTRAINT l_release_recording_recording_id_fkey FOREIGN KEY (recording_id) REFERENCES recording(recording_id);
+
+
+--
+-- Name: l_release_recording_release_tree_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_release_recording
+    ADD CONSTRAINT l_release_recording_release_tree_id_fkey FOREIGN KEY (release_tree_id) REFERENCES release_tree(release_tree_id);
+
+
+--
+-- Name: l_release_release_group_release_group_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_release_release_group
+    ADD CONSTRAINT l_release_release_group_release_group_id_fkey FOREIGN KEY (release_group_id) REFERENCES release_group(release_group_id);
+
+
+--
+-- Name: l_release_release_group_release_tree_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_release_release_group
+    ADD CONSTRAINT l_release_release_group_release_tree_id_fkey FOREIGN KEY (release_tree_id) REFERENCES release_tree(release_tree_id);
+
+
+--
+-- Name: l_release_release_release_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_release_release
+    ADD CONSTRAINT l_release_release_release_id_fkey FOREIGN KEY (release_id) REFERENCES release(release_id);
+
+
+--
+-- Name: l_release_release_release_tree_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_release_release
+    ADD CONSTRAINT l_release_release_release_tree_id_fkey FOREIGN KEY (release_tree_id) REFERENCES release_tree(release_tree_id);
+
+
+--
+-- Name: l_release_url_release_tree_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_release_url
+    ADD CONSTRAINT l_release_url_release_tree_id_fkey FOREIGN KEY (release_tree_id) REFERENCES release_tree(release_tree_id);
+
+
+--
+-- Name: l_release_url_url_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_release_url
+    ADD CONSTRAINT l_release_url_url_id_fkey FOREIGN KEY (url_id) REFERENCES url(url_id);
+
+
+--
+-- Name: l_release_work_release_tree_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_release_work
+    ADD CONSTRAINT l_release_work_release_tree_id_fkey FOREIGN KEY (release_tree_id) REFERENCES release_tree(release_tree_id);
+
+
+--
+-- Name: l_release_work_work_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_release_work
+    ADD CONSTRAINT l_release_work_work_id_fkey FOREIGN KEY (work_id) REFERENCES work(work_id);
+
+
+--
+-- Name: l_url_artist_artist_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_url_artist
+    ADD CONSTRAINT l_url_artist_artist_id_fkey FOREIGN KEY (artist_id) REFERENCES artist(artist_id);
+
+
+--
+-- Name: l_url_artist_url_tree_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_url_artist
+    ADD CONSTRAINT l_url_artist_url_tree_id_fkey FOREIGN KEY (url_tree_id) REFERENCES url_tree(url_tree_id);
+
+
+--
+-- Name: l_url_label_label_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_url_label
+    ADD CONSTRAINT l_url_label_label_id_fkey FOREIGN KEY (label_id) REFERENCES label(label_id);
+
+
+--
+-- Name: l_url_label_url_tree_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_url_label
+    ADD CONSTRAINT l_url_label_url_tree_id_fkey FOREIGN KEY (url_tree_id) REFERENCES url_tree(url_tree_id);
+
+
+--
+-- Name: l_url_recording_recording_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_url_recording
+    ADD CONSTRAINT l_url_recording_recording_id_fkey FOREIGN KEY (recording_id) REFERENCES recording(recording_id);
+
+
+--
+-- Name: l_url_recording_url_tree_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_url_recording
+    ADD CONSTRAINT l_url_recording_url_tree_id_fkey FOREIGN KEY (url_tree_id) REFERENCES url_tree(url_tree_id);
+
+
+--
+-- Name: l_url_release_group_release_group_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_url_release_group
+    ADD CONSTRAINT l_url_release_group_release_group_id_fkey FOREIGN KEY (release_group_id) REFERENCES release_group(release_group_id);
+
+
+--
+-- Name: l_url_release_group_url_tree_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_url_release_group
+    ADD CONSTRAINT l_url_release_group_url_tree_id_fkey FOREIGN KEY (url_tree_id) REFERENCES url_tree(url_tree_id);
+
+
+--
+-- Name: l_url_release_release_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_url_release
+    ADD CONSTRAINT l_url_release_release_id_fkey FOREIGN KEY (release_id) REFERENCES release(release_id);
+
+
+--
+-- Name: l_url_release_url_tree_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_url_release
+    ADD CONSTRAINT l_url_release_url_tree_id_fkey FOREIGN KEY (url_tree_id) REFERENCES url_tree(url_tree_id);
+
+
+--
+-- Name: l_url_url_url_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_url_url
+    ADD CONSTRAINT l_url_url_url_id_fkey FOREIGN KEY (url_id) REFERENCES url(url_id);
+
+
+--
+-- Name: l_url_url_url_tree_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_url_url
+    ADD CONSTRAINT l_url_url_url_tree_id_fkey FOREIGN KEY (url_tree_id) REFERENCES url_tree(url_tree_id);
+
+
+--
+-- Name: l_url_work_url_tree_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_url_work
+    ADD CONSTRAINT l_url_work_url_tree_id_fkey FOREIGN KEY (url_tree_id) REFERENCES url_tree(url_tree_id);
+
+
+--
+-- Name: l_url_work_work_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_url_work
+    ADD CONSTRAINT l_url_work_work_id_fkey FOREIGN KEY (work_id) REFERENCES work(work_id);
+
+
+--
+-- Name: l_work_artist_artist_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_work_artist
+    ADD CONSTRAINT l_work_artist_artist_id_fkey FOREIGN KEY (artist_id) REFERENCES artist(artist_id);
+
+
+--
+-- Name: l_work_artist_work_tree_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_work_artist
+    ADD CONSTRAINT l_work_artist_work_tree_id_fkey FOREIGN KEY (work_tree_id) REFERENCES work_tree(work_tree_id);
+
+
+--
+-- Name: l_work_label_label_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_work_label
+    ADD CONSTRAINT l_work_label_label_id_fkey FOREIGN KEY (label_id) REFERENCES label(label_id);
+
+
+--
+-- Name: l_work_label_work_tree_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_work_label
+    ADD CONSTRAINT l_work_label_work_tree_id_fkey FOREIGN KEY (work_tree_id) REFERENCES work_tree(work_tree_id);
+
+
+--
+-- Name: l_work_recording_recording_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_work_recording
+    ADD CONSTRAINT l_work_recording_recording_id_fkey FOREIGN KEY (recording_id) REFERENCES recording(recording_id);
+
+
+--
+-- Name: l_work_recording_work_tree_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_work_recording
+    ADD CONSTRAINT l_work_recording_work_tree_id_fkey FOREIGN KEY (work_tree_id) REFERENCES work_tree(work_tree_id);
+
+
+--
+-- Name: l_work_release_group_release_group_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_work_release_group
+    ADD CONSTRAINT l_work_release_group_release_group_id_fkey FOREIGN KEY (release_group_id) REFERENCES release_group(release_group_id);
+
+
+--
+-- Name: l_work_release_group_work_tree_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_work_release_group
+    ADD CONSTRAINT l_work_release_group_work_tree_id_fkey FOREIGN KEY (work_tree_id) REFERENCES work_tree(work_tree_id);
+
+
+--
+-- Name: l_work_release_release_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_work_release
+    ADD CONSTRAINT l_work_release_release_id_fkey FOREIGN KEY (release_id) REFERENCES release(release_id);
+
+
+--
+-- Name: l_work_release_work_tree_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_work_release
+    ADD CONSTRAINT l_work_release_work_tree_id_fkey FOREIGN KEY (work_tree_id) REFERENCES work_tree(work_tree_id);
+
+
+--
+-- Name: l_work_url_url_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_work_url
+    ADD CONSTRAINT l_work_url_url_id_fkey FOREIGN KEY (url_id) REFERENCES url(url_id);
+
+
+--
+-- Name: l_work_url_work_tree_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_work_url
+    ADD CONSTRAINT l_work_url_work_tree_id_fkey FOREIGN KEY (work_tree_id) REFERENCES work_tree(work_tree_id);
+
+
+--
+-- Name: l_work_work_work_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_work_work
+    ADD CONSTRAINT l_work_work_work_id_fkey FOREIGN KEY (work_id) REFERENCES work(work_id);
+
+
+--
+-- Name: l_work_work_work_tree_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY l_work_work
+    ADD CONSTRAINT l_work_work_work_tree_id_fkey FOREIGN KEY (work_tree_id) REFERENCES work_tree(work_tree_id);
 
 
 --
@@ -5620,14 +7311,6 @@ ALTER TABLE ONLY link_attribute
 
 
 --
--- Name: link_attribute_link_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
---
-
-ALTER TABLE ONLY link_attribute
-    ADD CONSTRAINT link_attribute_link_fkey FOREIGN KEY (link) REFERENCES link(id);
-
-
---
 -- Name: link_attribute_type_parent_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
 --
 
@@ -5641,14 +7324,6 @@ ALTER TABLE ONLY link_attribute_type
 
 ALTER TABLE ONLY link_attribute_type
     ADD CONSTRAINT link_attribute_type_root_fkey FOREIGN KEY (root) REFERENCES link_attribute_type(id);
-
-
---
--- Name: link_link_type_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
---
-
-ALTER TABLE ONLY link
-    ADD CONSTRAINT link_link_type_fkey FOREIGN KEY (link_type) REFERENCES link_type(id);
 
 
 --
@@ -5945,14 +7620,6 @@ ALTER TABLE ONLY release_group
 
 ALTER TABLE ONLY release_group
     ADD CONSTRAINT release_group_merged_into_fkey FOREIGN KEY (merged_into) REFERENCES release_group(release_group_id);
-
-
---
--- Name: release_group_meta_release_group_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
---
-
-ALTER TABLE ONLY release_group_meta
-    ADD CONSTRAINT release_group_meta_release_group_id_fkey FOREIGN KEY (release_group_id) REFERENCES release_group(release_group_id);
 
 
 --

@@ -15,6 +15,7 @@ import Control.Lens
 import Control.Monad (unless)
 import Control.Monad.IO.Class (MonadIO)
 import Data.Foldable (mapM_, forM_)
+import Data.String (fromString)
 import Database.PostgreSQL.Simple (Only(..))
 import Database.PostgreSQL.Simple.SqlQQ
 
@@ -40,18 +41,20 @@ import qualified MusicBrainz.Data.Generic as Generic
 
 --------------------------------------------------------------------------------
 instance HoldsRelationships Artist where
-  fetchEndPoints r ToArtist = do
-    rels <- query [sql|
-      SELECT target_id, relationship_id
-      FROM artist_revision
-      JOIN artist_tree USING (artist_tree_id)
-      JOIN l_artist_artist ON (source_id = artist_tree_id)
-      WHERE revision_id = ?
-    |] (Only r)
-    return $ map constructPartialRel rels
+  fetchEndPoints r t = case t of
+    ToArtist -> fetch ArtistRelationship "artist" "artist"
     where
-      constructPartialRel (targetId, relationshipId) =
-        (ArtistRelationship targetId, relationshipId)
+      fetch cons t0 t1 =
+        let q = fromString $ unlines
+              [ "SELECT l." ++ t1 ++ "_id, l.relationship_id "
+              , "FROM l_" ++ t0 ++ "_" ++ t1 ++ " l "
+              , "JOIN " ++ t0 ++ "_tree source_tree ON (l." ++ t0 ++ "_tree_id = source_tree." ++ t0 ++ "_tree_id) "
+              , "JOIN " ++ t0 ++ "_revision source ON (source." ++ t0 ++ "_tree_id = source_tree." ++ t0 ++ "_tree_id) "
+              , "WHERE source.revision_id = ?"
+              ]
+        in map (constructPartialRel cons) <$> query q (Only r)
+      constructPartialRel cons (targetId, relationshipId) =
+        (cons targetId, relationshipId)
 
 
 --------------------------------------------------------------------------------
@@ -203,7 +206,7 @@ instance RealiseTree Artist where
             end_date_year, end_date_month, end_date_day,
             ended)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING relationship_id |] relInfo
-        execute [sql| INSERT INTO l_artist_artist (source_id, target_id, relationship_id) VALUES (?, ?, ?) |]
+        execute [sql| INSERT INTO l_artist_artist (artist_tree_id, artist_id, relationship_id) VALUES (?, ?, ?) |]
           (treeId, targetId, relationshipId :: Int)
 
 
