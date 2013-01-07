@@ -23,12 +23,20 @@ import MusicBrainz.Data.Annotation
 import MusicBrainz.Data.Create
 import MusicBrainz.Data.FindLatest
 import MusicBrainz.Data.Merge
+import MusicBrainz.Data.Relationship
+import MusicBrainz.Data.Relationship.Internal
 import MusicBrainz.Data.Revision.Internal
 import MusicBrainz.Data.Tree
 import MusicBrainz.Data.Update
 import MusicBrainz.Edit
 
 import qualified MusicBrainz.Data.Generic as Generic
+
+--------------------------------------------------------------------------------
+instance HoldsRelationships Work where
+  fetchEndPoints = Generic.fetchEndPoints "work"
+  reflectRelationshipChange = Generic.reflectRelationshipChange WorkRelationship
+
 
 --------------------------------------------------------------------------------
 instance FindLatest Work where
@@ -66,6 +74,7 @@ instance RealiseTree Work where
     dataId <- insertWorkData (workData work)
     treeId <- insertWorkTree (workAnnotation work) dataId
     Generic.realiseAliases "work" treeId work
+    Generic.realiseRelationships "work" treeId work
     realiseIswcs treeId
     return treeId
     where
@@ -103,6 +112,7 @@ instance ViewRevision Work where
 --------------------------------------------------------------------------------
 instance ViewTree Work where
   viewTree r = WorkTree <$> fmap coreData (viewRevision r)
+                        <*> viewRelationships r
                         <*> viewAliases r
                         <*> viewAnnotation r
                         <*> viewIswcs r
@@ -129,14 +139,7 @@ instance CloneRevision Work where
 
 
 --------------------------------------------------------------------------------
-instance Update Work where
-  update editor baseRev work = runUpdate work baseRev
-    where
-      runUpdate tree base = do
-        treeId <- realiseTree tree
-        revisionId <- newChildRevision editor base treeId
-        includeRevision revisionId
-        return revisionId
+instance Update Work
 
 
 --------------------------------------------------------------------------------

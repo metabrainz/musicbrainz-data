@@ -6,7 +6,9 @@ cabal-dev
 *.chi
 *.chs.h
 *.tix
-*-boot
+*.o-boot
+*.hi-boot
 *.p_o
 *.p_hi
+/*.html
 /test.cfg

@@ -8,18 +8,10 @@ should see the documentation on the 'Artist' type and notice all the type class
 instances. -}
 module MusicBrainz.Data.Artist () where
 
-import Prelude hiding (mapM_)
-
 import Control.Applicative
-import Control.Lens
-import Control.Monad (unless)
 import Control.Monad.IO.Class (MonadIO)
-import Data.Foldable (mapM_, forM_)
-import Data.String (fromString)
 import Database.PostgreSQL.Simple (Only(..))
 import Database.PostgreSQL.Simple.SqlQQ
-
-import qualified Data.Set as Set
 
 import MusicBrainz
 import MusicBrainz.Data.Alias
@@ -34,27 +26,13 @@ import MusicBrainz.Data.Revision.Internal
 import MusicBrainz.Data.Tree
 import MusicBrainz.Data.Update
 import MusicBrainz.Edit
-import MusicBrainz.Lens
-import MusicBrainz.Types.Internal
 
 import qualified MusicBrainz.Data.Generic as Generic
 
 --------------------------------------------------------------------------------
 instance HoldsRelationships Artist where
-  fetchEndPoints r t = case t of
-    ToArtist -> fetch ArtistRelationship "artist" "artist"
-    where
-      fetch cons t0 t1 =
-        let q = fromString $ unlines
-              [ "SELECT l." ++ t1 ++ "_id, l.relationship_id "
-              , "FROM l_" ++ t0 ++ "_" ++ t1 ++ " l "
-              , "JOIN " ++ t0 ++ "_tree source_tree ON (l." ++ t0 ++ "_tree_id = source_tree." ++ t0 ++ "_tree_id) "
-              , "JOIN " ++ t0 ++ "_revision source ON (source." ++ t0 ++ "_tree_id = source_tree." ++ t0 ++ "_tree_id) "
-              , "WHERE source.revision_id = ?"
-              ]
-        in map (constructPartialRel cons) <$> query q (Only r)
-      constructPartialRel cons (targetId, relationshipId) =
-        (cons targetId, relationshipId)
+  fetchEndPoints = Generic.fetchEndPoints "artist"
+  reflectRelationshipChange = Generic.reflectRelationshipChange ArtistRelationship
 
 
 --------------------------------------------------------------------------------
@@ -135,39 +113,7 @@ instance Create Artist where
 
 
 --------------------------------------------------------------------------------
-instance Update Artist where
-  update editor baseRev artist = do
-    -- Create the new revision for this artist
-    revisionId <- runUpdate artist baseRev
-
-    -- Reflect relationship changes against other entities
-    oldRelationships <- viewRelationships baseRev
-    let additions = artistRelationships artist `Set.difference` oldRelationships
-    let deletions = oldRelationships `Set.difference` artistRelationships artist
-
-    unless (Set.null additions && Set.null deletions) $ do
-      self <- viewRevision baseRev
-
-      forM_ additions $
-        reflectRelationshipChange self Set.insert
-
-      forM_ deletions $
-        reflectRelationshipChange self Set.delete
-
-    return revisionId
-
-    where
-      runUpdate tree base = do
-        treeId <- realiseTree tree
-        revisionId <- newChildRevision editor base treeId
-        includeRevision revisionId
-        return revisionId
-
-      reflectRelationshipChange endpoint f (ArtistRelationship targetId rel) = do
-        let returnRelationship = ArtistRelationship (coreRef endpoint) rel
-        target <- findLatest targetId
-        targetTree <- over relationships (f returnRelationship) <$> viewTree (coreRevision target)
-        runUpdate targetTree (coreRevision target)
+instance Update Artist
 
 
 --------------------------------------------------------------------------------
@@ -181,8 +127,7 @@ instance RealiseTree Artist where
     dataId <- insertArtistData (artistData artist)
     treeId <- insertArtistTree (artistAnnotation artist) dataId
 
-    mapM_ (addRelationship treeId) $ artistRelationships artist
-
+    Generic.realiseRelationships "artist" treeId artist
     Generic.realiseAliases "artist" treeId artist
     Generic.realiseIpiCodes "artist" treeId artist
 
@@ -198,16 +143,6 @@ instance RealiseTree Artist where
                     VALUES (?, ?)
                     RETURNING artist_tree_id  |]
           (dataId, annotationBody)
-
-      addRelationship treeId (ArtistRelationship targetId relInfo) = do
-        relationshipId <- selectValue $ query [sql|
-          INSERT INTO relationship (relationship_type_id,
-            begin_date_year, begin_date_month, begin_date_day,
-            end_date_year, end_date_month, end_date_day,
-            ended)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING relationship_id |] relInfo
-        execute [sql| INSERT INTO l_artist_artist (artist_tree_id, artist_id, relationship_id) VALUES (?, ?, ?) |]
-          (treeId, targetId, relationshipId :: Int)
 
 
 --------------------------------------------------------------------------------

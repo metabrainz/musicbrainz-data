@@ -30,12 +30,20 @@ import MusicBrainz.Data.Annotation
 import MusicBrainz.Data.Create
 import MusicBrainz.Data.FindLatest
 import MusicBrainz.Data.Merge
+import MusicBrainz.Data.Relationship
+import MusicBrainz.Data.Relationship.Internal
 import MusicBrainz.Data.Revision.Internal
 import MusicBrainz.Data.Update
 import MusicBrainz.Data.Tree
 import MusicBrainz.Edit
 
 import qualified MusicBrainz.Data.Generic as Generic
+
+--------------------------------------------------------------------------------
+instance HoldsRelationships Release where
+  fetchEndPoints = Generic.fetchEndPoints "release"
+  reflectRelationshipChange = Generic.reflectRelationshipChange ReleaseRelationship
+
 
 --------------------------------------------------------------------------------
 instance FindLatest Release where
@@ -79,6 +87,7 @@ instance RealiseTree Release where
     treeId <- insertReleaseTree (releaseAnnotation release) (releaseReleaseGroup . releaseData $ release) dataId
     realiseReleaseLabels treeId
     realiseMediums treeId
+    Generic.realiseRelationships "release" treeId release
     return treeId
     where
       insertReleaseData :: (Functor m, MonadIO m) => Release -> MusicBrainzT m Int
@@ -113,12 +122,7 @@ instance ViewAnnotation Release where
 
 
 --------------------------------------------------------------------------------
-instance Update Release where
-  update editor baseRev release = do
-    treeId <- realiseTree release
-    revisionId <- newChildRevision editor baseRev treeId
-    includeRevision revisionId
-    return revisionId
+instance Update Release
 
 
 --------------------------------------------------------------------------------
@@ -145,6 +149,7 @@ instance Editable Release where
 --------------------------------------------------------------------------------
 instance ViewTree Release where
   viewTree r = ReleaseTree <$> fmap coreData (viewRevision r)
+                           <*> viewRelationships r
                            <*> viewAnnotation r
                            <*> viewReleaseLabels r
                            <*> viewMediums r

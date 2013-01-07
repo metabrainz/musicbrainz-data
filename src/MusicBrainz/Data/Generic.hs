@@ -1,4 +1,5 @@
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE OverloadedStrings #-}
 module MusicBrainz.Data.Generic
     ( viewAliases
@@ -13,6 +14,10 @@ module MusicBrainz.Data.Generic
     , MusicBrainz.Data.Generic.setMasterRevision
     , realiseAliases
     , realiseIpiCodes
+    , realiseRelationships
+    , fetchEndPoints
+    , reflectRelationshipChange
+    , addRelationship
     ) where
 
 import Control.Applicative
@@ -25,14 +30,26 @@ import Data.Text (Text)
 import Data.Foldable (forM_)
 import Database.PostgreSQL.Simple (Only(..), (:.)(..))
 import Database.PostgreSQL.Simple.FromField (FromField)
+import Database.PostgreSQL.Simple.SqlQQ
 import Database.PostgreSQL.Simple.ToField (ToField)
 
 import qualified Data.Set as Set
 
 import MusicBrainz
 import MusicBrainz.Lens
+import MusicBrainz.Data.FindLatest
 import MusicBrainz.Data.Revision.Internal
+import MusicBrainz.Data.Tree
 import MusicBrainz.Edit
+import MusicBrainz.Types.Internal
+
+import {-# SOURCE #-} MusicBrainz.Data.Artist ()
+import {-# SOURCE #-} MusicBrainz.Data.Label ()
+import {-# SOURCE #-} MusicBrainz.Data.Recording ()
+import {-# SOURCE #-} MusicBrainz.Data.Release ()
+import {-# SOURCE #-} MusicBrainz.Data.ReleaseGroup ()
+import {-# SOURCE #-} MusicBrainz.Data.Url ()
+import {-# SOURCE #-} MusicBrainz.Data.Work ()
 
 --------------------------------------------------------------------------------
 viewAliases :: (Functor m, MonadIO m)
@@ -223,3 +240,87 @@ realiseIpiCodes :: (Functor m, MonadIO m, TreeIPICodes a)
 realiseIpiCodes eName treeId tree = void $ executeMany q
       $ map (Only treeId :.) (Set.toList $ tree^.ipiCodes)
   where q = fromString $ "INSERT INTO " ++ eName ++ "_ipi (" ++ eName ++ "_tree_id, ipi) VALUES (?, ?)"
+
+
+--------------------------------------------------------------------------------
+fetchEndPoints :: (Functor m, MonadIO m)
+  => String -> Ref (Revision a) -> RelationshipTarget
+  -> MusicBrainzT m [(Relationship -> LinkedRelationship, Int)]
+fetchEndPoints source r t = case t of
+    ToArtist -> fetch ArtistRelationship "artist"
+    ToLabel -> fetch LabelRelationship "label"
+    ToRecording -> fetch RecordingRelationship "recording"
+    ToRelease -> fetch ReleaseRelationship "release"
+    ToReleaseGroup -> fetch ReleaseGroupRelationship "release_group"
+    ToUrl -> fetch UrlRelationship "url"
+    ToWork -> fetch WorkRelationship "work"
+  where
+    fetch cons t1 =
+      let q = fromString $ unlines
+            [ "SELECT l." ++ t1 ++ "_id, l.relationship_id "
+            , "FROM l_" ++ source ++ "_" ++ t1 ++ " l "
+            , "JOIN " ++ source ++ "_tree source_tree ON (l." ++ source ++ "_tree_id = source_tree." ++ source ++ "_tree_id) "
+            , "JOIN " ++ source ++ "_revision source ON (source." ++ source ++ "_tree_id = source_tree." ++ source ++ "_tree_id) "
+            , "WHERE source.revision_id = ?"
+            ]
+      in map (constructPartialRel cons) <$> query q (Only r)
+    constructPartialRel cons (targetId, relationshipId) =
+      (cons targetId, relationshipId)
+
+
+--------------------------------------------------------------------------------
+reflectRelationshipChange :: (Ref a -> Relationship -> LinkedRelationship)
+                          -> Ref Editor
+                          -> Ref a
+                          -> (LinkedRelationship -> Set.Set LinkedRelationship -> Set.Set LinkedRelationship)
+                          -> LinkedRelationship
+                          -> EditM ()
+reflectRelationshipChange returnCon editor endpoint f toReflect =
+  case toReflect of
+    (ArtistRelationship targetId rel) -> reflect targetId rel
+    (LabelRelationship targetId rel) -> reflect targetId rel
+    (RecordingRelationship targetId rel) -> reflect targetId rel
+    (ReleaseRelationship targetId rel) -> reflect targetId rel
+    (ReleaseGroupRelationship targetId rel) -> reflect targetId rel
+    (UrlRelationship targetId rel) -> reflect targetId rel
+    (WorkRelationship targetId rel) -> reflect targetId rel
+  where
+    reflect targetId rel = do
+      let returnRelationship = returnCon endpoint rel
+      target <- findLatest targetId
+      targetTree <- over relationships (f returnRelationship) <$> viewTree (coreRevision target)
+      void $ runUpdate editor (coreRevision target) targetTree
+
+
+--------------------------------------------------------------------------------
+addRelationship :: (Functor m, MonadIO m)
+  => String -> Ref (Tree a) -> LinkedRelationship -> MusicBrainzT m ()
+addRelationship source treeId rel = case rel of
+    (ArtistRelationship targetId relInfo) -> go "artist" targetId relInfo
+    (LabelRelationship targetId relInfo) -> go "label" targetId relInfo
+    (RecordingRelationship targetId relInfo) -> go "recording" targetId relInfo
+    (ReleaseRelationship targetId relInfo) -> go "release" targetId relInfo
+    (ReleaseGroupRelationship targetId relInfo) -> go "release_group" targetId relInfo
+    (WorkRelationship targetId relInfo) -> go "work" targetId relInfo
+    (UrlRelationship targetId relInfo) -> go "url" targetId relInfo
+  where
+    go target targetId relInfo = do
+      relationshipId <- selectValue $ query [sql|
+        INSERT INTO relationship (relationship_type_id,
+          begin_date_year, begin_date_month, begin_date_day,
+          end_date_year, end_date_month, end_date_day,
+          ended)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING relationship_id |] relInfo
+      let q = fromString $ unlines
+            [ "INSERT INTO l_" ++ source ++ "_" ++ target ++ " "
+            , "(" ++ source ++ "_tree_id, " ++ target ++ "_id, relationship_id) "
+            , "VALUES (?, ?, ?)"
+            ]
+      void $ execute q (treeId, targetId, relationshipId :: Int)
+
+
+--------------------------------------------------------------------------------
+realiseRelationships :: (Functor m, MonadIO m, TreeRelationships a)
+  => String -> Ref (Tree a) -> Tree a -> MusicBrainzT m ()
+realiseRelationships tbl treeId =
+  mapMOf_ (relationships.folded) (addRelationship tbl treeId)

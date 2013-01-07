@@ -19,7 +19,7 @@ import qualified Data.Set as Set
 
 import MusicBrainz
 import MusicBrainz.Data.Add
-import MusicBrainz.Data.Relationship.Internal
+import {-# SOURCE #-} MusicBrainz.Data.Relationship.Internal
 import MusicBrainz.Types.Internal
 
 --------------------------------------------------------------------------------

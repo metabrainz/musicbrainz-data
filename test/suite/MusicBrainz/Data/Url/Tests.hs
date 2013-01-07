@@ -2,11 +2,9 @@
 module MusicBrainz.Data.Url.Tests ( tests ) where
 
 import Control.Applicative
-import Data.Maybe (fromJust)
-import Network.URI (parseURI)
 
 import Test.MusicBrainz
-import Test.MusicBrainz.Repository (acid2)
+import Test.MusicBrainz.Repository (acid2, musicBrainz, google)
 
 import qualified Test.MusicBrainz.CommonTests as CommonTests
 
@@ -55,9 +53,3 @@ testMerge = testCase "Can merge 2 distinct urls" $ do
 testResolveRevisionReference :: Test
 testResolveRevisionReference = testCase "Resolve revision reference" $ do
   CommonTests.testResolveRevisionReference (return . const musicBrainz)
-
-
---------------------------------------------------------------------------------
-musicBrainz, google :: Tree Url
-musicBrainz = UrlTree { urlData = Url { urlUrl = fromJust (parseURI "https://musicbrainz.org/") } }
-google = UrlTree { urlData = Url { urlUrl = fromJust (parseURI "https://google.com/musicbrainz/rocks") } }

@@ -523,6 +523,7 @@ data Tree a where
 
   LabelTree :: {
     labelData :: Label
+  , labelRelationships :: Set.Set LinkedRelationship
   , labelAliases :: Set.Set Alias
   , labelIpiCodes :: Set.Set IPI
   , labelAnnotation :: Text
@@ -530,6 +531,7 @@ data Tree a where
 
   RecordingTree :: {
     recordingData :: Recording
+  , recordingRelationships :: Set.Set LinkedRelationship
   , recordingAnnotation :: Text
   , recordingIsrcs :: Set.Set ISRC
   , recordingPuids :: Set.Set PUID
@@ -537,6 +539,7 @@ data Tree a where
 
   ReleaseTree :: {
     releaseData :: Release
+  , releaseRelationships :: Set.Set LinkedRelationship
   , releaseAnnotation :: Text
   , releaseLabels :: Set.Set ReleaseLabel
   , releaseMediums :: [Medium]
@@ -544,15 +547,18 @@ data Tree a where
 
   ReleaseGroupTree :: {
     releaseGroupData :: ReleaseGroup
+  , releaseGroupRelationships :: Set.Set LinkedRelationship
   , releaseGroupAnnotation :: Text
   } -> Tree ReleaseGroup
 
   UrlTree :: {
     urlData :: Url
+  , urlRelationships :: Set.Set LinkedRelationship
   } -> Tree Url
 
   WorkTree :: {
     workData :: Work
+  , workRelationships :: Set.Set LinkedRelationship
   , workAliases :: Set.Set Alias
   , workAnnotation :: Text
   , workIswcs :: Set.Set ISWC
@@ -649,11 +655,14 @@ data EditNote = EditNote
 --------------------------------------------------------------------------------
 {-| A 'LinkedRelationship' is an end-point 'Ref', along with the data
 describing the 'Relationship' itself. -}
-data LinkedRelationship =
-  ArtistRelationship
-    { relTarget :: Ref Artist
-    , relData :: Relationship
-    }
+data LinkedRelationship
+  = ArtistRelationship (Ref Artist) Relationship
+  | LabelRelationship (Ref Label) Relationship
+  | RecordingRelationship (Ref Recording) Relationship
+  | ReleaseRelationship (Ref Release) Relationship
+  | ReleaseGroupRelationship (Ref ReleaseGroup) Relationship
+  | UrlRelationship (Ref Url) Relationship
+  | WorkRelationship (Ref Work) Relationship
   deriving (Eq, Ord, Show)
 
 
@@ -686,7 +695,7 @@ data RelationshipAttribute = RelationshipAttribute
 
 --------------------------------------------------------------------------------
 {-| A description of all types that a relationship can be between. -}
-data RelationshipTarget = ToArtist
+data RelationshipTarget = ToArtist | ToLabel | ToRecording | ToRelease | ToReleaseGroup | ToUrl | ToWork
   deriving (Bounded, Enum)
 
 

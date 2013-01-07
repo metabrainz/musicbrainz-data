@@ -21,12 +21,20 @@ import MusicBrainz.Data.Create
 import MusicBrainz.Data.FindLatest
 import MusicBrainz.Data.IPI
 import MusicBrainz.Data.Merge
+import MusicBrainz.Data.Relationship
+import MusicBrainz.Data.Relationship.Internal
 import MusicBrainz.Data.Revision.Internal
 import MusicBrainz.Data.Tree
 import MusicBrainz.Data.Update
 import MusicBrainz.Edit
 
 import qualified MusicBrainz.Data.Generic as Generic
+
+--------------------------------------------------------------------------------
+instance HoldsRelationships Label where
+  fetchEndPoints = Generic.fetchEndPoints "label"
+  reflectRelationshipChange = Generic.reflectRelationshipChange LabelRelationship
+
 
 --------------------------------------------------------------------------------
 instance FindLatest Label where
@@ -67,8 +75,11 @@ instance RealiseTree Label where
   realiseTree label = do
     dataId <- insertLabelData (labelData label)
     treeId <- insertLabelTree (labelAnnotation label) dataId
+
+    Generic.realiseRelationships "label" treeId label
     Generic.realiseAliases "label" treeId label
     Generic.realiseIpiCodes "label" treeId label
+
     return treeId
     where
       insertLabelData :: (Functor m, MonadIO m) => Label -> MusicBrainzT m Int
@@ -104,6 +115,7 @@ instance ViewRevision Label where
 --------------------------------------------------------------------------------
 instance ViewTree Label where
   viewTree r = LabelTree <$> fmap coreData (viewRevision r)
+                         <*> viewRelationships r
                          <*> viewAliases r
                          <*> viewIpiCodes r
                          <*> viewAnnotation r
@@ -135,14 +147,7 @@ instance CloneRevision Label where
 
 
 --------------------------------------------------------------------------------
-instance Update Label where
-  update editor baseRev label = runUpdate label baseRev
-    where
-      runUpdate tree base = do
-        treeId <- realiseTree tree
-        revisionId <- newChildRevision editor base treeId
-        includeRevision revisionId
-        return revisionId
+instance Update Label
 
 
 --------------------------------------------------------------------------------

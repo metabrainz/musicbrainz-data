@@ -5,6 +5,7 @@ module MusicBrainz.Data.Revision.Internal
     , addChild
     , newChildRevision
     , CloneRevision(..)
+    , runUpdate
     ) where
 
 import Control.Monad (void)
@@ -48,4 +49,14 @@ newChildRevision editorId baseRevisionId treeId = do
   revisionId <- newUnlinkedRevision editorId
   newEntityRevision revisionId (coreRef entity) treeId
   addChild revisionId baseRevisionId
+  return revisionId
+
+
+--------------------------------------------------------------------------------
+runUpdate :: Editable a
+  => Ref Editor -> Ref (Revision a) -> Tree a -> EditM (Ref (Revision a))
+runUpdate editor base tree = do
+  treeId <- realiseTree tree
+  revisionId <- newChildRevision editor base treeId
+  includeRevision revisionId
   return revisionId

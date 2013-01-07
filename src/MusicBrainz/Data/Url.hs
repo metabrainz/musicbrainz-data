@@ -12,12 +12,20 @@ import MusicBrainz
 import MusicBrainz.Data.Create
 import MusicBrainz.Data.FindLatest
 import MusicBrainz.Data.Merge
+import MusicBrainz.Data.Relationship
+import MusicBrainz.Data.Relationship.Internal
 import MusicBrainz.Data.Revision.Internal
 import MusicBrainz.Data.Tree
 import MusicBrainz.Data.Update
 import MusicBrainz.Edit
 
 import qualified MusicBrainz.Data.Generic as Generic
+
+--------------------------------------------------------------------------------
+instance HoldsRelationships Url where
+  fetchEndPoints = Generic.fetchEndPoints "url"
+  reflectRelationshipChange = Generic.reflectRelationshipChange UrlRelationship
+
 
 --------------------------------------------------------------------------------
 instance Editable Url where
@@ -35,7 +43,11 @@ instance NewEntityRevision Url where
 
 --------------------------------------------------------------------------------
 instance RealiseTree Url where
-  realiseTree url = insertUrlData (urlData url) >>= insertUrlTree
+  realiseTree url = do
+    dataId <- insertUrlData (urlData url)
+    treeId <- insertUrlTree dataId
+    Generic.realiseRelationships "url" treeId url
+    return treeId
     where
       insertUrlData :: (Functor m, MonadIO m) => Url -> MusicBrainzT m Int
       insertUrlData data' = selectValue $
@@ -64,6 +76,7 @@ instance ViewRevision Url where
 --------------------------------------------------------------------------------
 instance ViewTree Url where
   viewTree r = UrlTree <$> fmap coreData (viewRevision r)
+                       <*> viewRelationships r
 
 
 --------------------------------------------------------------------------------
@@ -94,12 +107,8 @@ instance Create Url where
 
 
 --------------------------------------------------------------------------------
-instance Update Url where
-  update editor baseRev url = do
-    treeId <- realiseTree url
-    revisionId <- newChildRevision editor baseRev treeId
-    includeRevision revisionId
-    return revisionId
+instance Update Url
+
 
 --------------------------------------------------------------------------------
 instance ResolveReference Url where

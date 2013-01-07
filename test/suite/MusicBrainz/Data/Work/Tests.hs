@@ -7,7 +7,7 @@ import Control.Lens
 import qualified Data.Set as Set
 
 import Test.MusicBrainz
-import Test.MusicBrainz.Repository (acid2, minimalTree)
+import Test.MusicBrainz.Repository (acid2, minimalTree, wildRose)
 
 import qualified Test.MusicBrainz.CommonTests as CommonTests
 
@@ -110,12 +110,3 @@ testIswc = testCase "Can add and remove ISWCs" $
 testResolveRevisionReference :: Test
 testResolveRevisionReference = testCase "Resolve revision reference" $ do
   CommonTests.testResolveRevisionReference (return . const wildRose)
-
-
---------------------------------------------------------------------------------
-wildRose :: Tree Work
-wildRose = minimalTree Work { workName = "To a Wild Rose"
-                            , workComment = ""
-                            , workLanguage = Nothing
-                            , workType = Nothing
-                            }

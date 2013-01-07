@@ -160,6 +160,7 @@ instance Mergeable (Tree Label) where
     , Render (Maybe (Ref Country)) mo
     , Render (Set.Set Alias) mo
     , Render (Set.Set IPI) mo
+    , Render (Set.Set LinkedRelationship) mo
     , Render Bool mo
     , Render PartialDate mo
     , Render Text mo
@@ -167,6 +168,7 @@ instance Mergeable (Tree Label) where
 
   merge =
     LabelTree <$> labelData `mergedVia` mergeLabelData
+              <*> labelRelationships `mergedVia` merge
               <*> labelAliases `mergedVia` merge
               <*> labelIpiCodes `mergedVia` merge
               <*> labelAnnotation `mergedVia` mergeEq
@@ -203,12 +205,14 @@ instance Mergeable (Tree Recording) where
     ( Render (Maybe Int) mo
     , Render (Ref ArtistCredit) mo
     , Render (Set.Set ISRC) mo
+    , Render (Set.Set LinkedRelationship) mo
     , Render (Set.Set PUID) mo
     , Render Text mo
     )
 
   merge =
     RecordingTree <$> recordingData `mergedVia` mergeRecordingData
+                  <*> recordingRelationships `mergedVia` merge
                   <*> recordingAnnotation `mergedVia` mergeEq
                   <*> recordingIsrcs `mergedVia` merge
                   <*> recordingPuids `mergedVia` merge
@@ -233,12 +237,14 @@ instance Mergeable (Tree Release) where
     , Render PartialDate mo
     , Render (Ref ArtistCredit) mo
     , Render (Ref ReleaseGroup) mo
+    , Render (Set.Set LinkedRelationship) mo
     , Render (Set.Set ReleaseLabel) mo
     , Render Text mo
     )
 
   merge =
     ReleaseTree <$> releaseData `mergedVia` mergeReleaseData
+                <*> releaseRelationships `mergedVia` merge
                 <*> releaseAnnotation `mergedVia` mergeEq
                 <*> releaseLabels `mergedVia` merge
                 <*> releaseMediums `mergedVia` mergeEq
@@ -261,6 +267,7 @@ instance Mergeable (Tree Release) where
 instance Mergeable (Tree ReleaseGroup) where
   type MergeRender (Tree ReleaseGroup) mo =
     ( Render (Maybe (Ref (ReleaseGroupType Primary))) mo
+    , Render (Set.Set LinkedRelationship) mo
     , Render (Set.Set (Ref (ReleaseGroupType Secondary))) mo
     , Render (Ref ArtistCredit) mo
     , Render Text mo
@@ -268,6 +275,7 @@ instance Mergeable (Tree ReleaseGroup) where
 
   merge =
     ReleaseGroupTree <$> releaseGroupData `mergedVia` mergeReleaseGroupData
+                     <*> releaseGroupRelationships `mergedVia` merge
                      <*> releaseGroupAnnotation `mergedVia` mergeEq
     where
       mergeReleaseGroupData =
@@ -297,10 +305,13 @@ instance Mergeable Track where
 --------------------------------------------------------------------------------
 instance Mergeable (Tree Url) where
   type MergeRender (Tree Url) mo =
-    ( Render URI mo )
+    ( Render (Set.Set LinkedRelationship) mo
+    , Render URI mo
+    )
 
   merge =
     UrlTree <$> urlData `mergedVia` mergeUrlData
+            <*> urlRelationships `mergedVia` merge
     where
       mergeUrlData =
         Url <$> urlUrl `mergedVia` mergeEq
@@ -313,10 +324,12 @@ instance Mergeable (Tree Work) where
     , Render (Maybe (Ref WorkType)) mo
     , Render (Set.Set Alias) mo
     , Render (Set.Set ISWC) mo
+    , Render (Set.Set LinkedRelationship) mo
     , Render Text mo )
 
   merge =
     WorkTree <$> workData `mergedVia` mergeWorkData
+             <*> workRelationships `mergedVia` merge
              <*> workAliases `mergedVia` merge
              <*> workAnnotation `mergedVia` mergeEq
              <*> workIswcs `mergedVia` merge

@@ -4,25 +4,19 @@ module MusicBrainz.Data.Artist.Tests ( tests ) where
 import Control.Applicative
 
 import Data.Monoid (mempty)
-import qualified Data.Set as Set
 
 import Test.MusicBrainz
-import Test.MusicBrainz.Repository (uk, acid2, male, person, portishead, minimalTree)
+import Test.MusicBrainz.Repository (uk, male, person, portishead, minimalTree, freddie)
 
 import qualified Test.MusicBrainz.CommonTests as CommonTests
 
 import MusicBrainz
 import MusicBrainz.Data
-import MusicBrainz.Data.Edit
-import MusicBrainz.Data.Editor
-
-import qualified MusicBrainz.Data.Relationship as Relationship
 
 --------------------------------------------------------------------------------
 tests :: [Test]
 tests = [ testCreateFindLatest
         , testUpdate
-        , testRelationships
         , testAliases
         , testIpiCodes
         , testAnnotation
@@ -80,53 +74,6 @@ testUpdate = testCase "update does change artist" $ do
 
 
 --------------------------------------------------------------------------------
-testRelationships :: Test
-testRelationships = testCase "Relationships are bidirectional over addition and deletion" $ do
-  editor <- entityRef <$> register acid2
-  rel <- expectedRel
-
-  a <- autoEdit $ create editor freddie >>= viewRevision
-  b <- autoEdit $ create editor (minimalTree portishead) >>= viewRevision
-
-  edit1 <- createEdit $
-    update editor (coreRevision a) freddie { artistRelationships = Set.singleton $ ArtistRelationship (coreRef b) rel }
-
-  apply edit1
-
-  relationshipsChanged a mempty (Set.singleton $ ArtistRelationship (coreRef b) rel)
-  relationshipsChanged b mempty (Set.singleton $ ArtistRelationship (coreRef a) rel)
-
-  changedA <- findLatest (coreRef a)
-  changedB <- findLatest (coreRef b)
-
-  edit2 <- createEdit $
-    update editor (coreRevision $ changedB)
-      (minimalTree portishead)
-
-  apply edit2
-
-  relationshipsChanged changedA (Set.singleton $ ArtistRelationship (coreRef b) rel) mempty
-  relationshipsChanged changedB (Set.singleton $ ArtistRelationship (coreRef a) rel) mempty
-
-  where
-    expectedRel =
-      Relationship <$> fmap entityRef (add $ RelationshipType "performer")
-                   <*> pure mempty
-                   <*> pure emptyDate
-                   <*> pure emptyDate
-                   <*> pure False
-
-    relationshipsChanged for old new = do
-      latest <- findLatest (coreRef for)
-      oldRels <- Relationship.viewRelationships (coreRevision for)
-      newRels <- Relationship.viewRelationships (coreRevision latest)
-
-      liftIO $ do
-        oldRels @?= old
-        newRels @?= new
-
-
---------------------------------------------------------------------------------
 testAliases :: Test
 testAliases = testCase "Can add and remove aliases" $ do
   CommonTests.testAliases freddie alias
@@ -157,27 +104,4 @@ testAnnotation = testCase "Can add and remove artist annotations" $ do
 testMerge :: Test
 testMerge = testCase "Can merge 2 distinct artists" $ do
   CommonTests.testMerge (pure . const (freddie, (minimalTree portishead)))
-
-
---------------------------------------------------------------------------------
-freddie :: Tree Artist
-freddie = ArtistTree
-  { artistData =  Artist
-      { artistName = "Freddie Mercury"
-      , artistSortName = "Mercury, Freddie"
-      , artistComment = "Of queen"
-      , artistBeginDate =
-          PartialDate (Just 1946) (Just 9) (Just 5)
-      , artistEndDate =
-          PartialDate (Just 1991) (Just 11) (Just 24)
-      , artistEnded = True
-      , artistGender = Nothing
-      , artistCountry = Nothing
-      , artistType = Nothing
-      }
-  , artistRelationships = mempty
-  , artistAliases = mempty
-  , artistIpiCodes = mempty
-  , artistAnnotation = ""
-  }
 

@@ -25,12 +25,20 @@ import MusicBrainz.Data.Annotation
 import MusicBrainz.Data.Create
 import MusicBrainz.Data.FindLatest
 import MusicBrainz.Data.Merge
+import MusicBrainz.Data.Relationship
+import MusicBrainz.Data.Relationship.Internal
 import MusicBrainz.Data.Revision.Internal
 import MusicBrainz.Data.Update
 import MusicBrainz.Data.Tree
 import MusicBrainz.Edit
 
 import qualified MusicBrainz.Data.Generic as Generic
+
+--------------------------------------------------------------------------------
+instance HoldsRelationships Recording where
+  fetchEndPoints = Generic.fetchEndPoints "recording"
+  reflectRelationshipChange = Generic.reflectRelationshipChange RecordingRelationship
+
 
 --------------------------------------------------------------------------------
 instance FindLatest Recording where
@@ -70,6 +78,7 @@ instance RealiseTree Recording where
   realiseTree recording = do
     dataId <- insertRecordingData (recordingData recording)
     treeId <- insertRecordingTree (recordingAnnotation recording) dataId
+    Generic.realiseRelationships "recording" treeId recording
     realiseIsrcs treeId
     realisePuids treeId
     return treeId
@@ -100,12 +109,7 @@ instance ViewAnnotation Recording where
 
 
 --------------------------------------------------------------------------------
-instance Update Recording where
-  update editor baseRev recording = do
-    treeId <- realiseTree recording
-    revisionId <- newChildRevision editor baseRev treeId
-    includeRevision revisionId
-    return revisionId
+instance Update Recording
 
 
 --------------------------------------------------------------------------------
@@ -130,6 +134,7 @@ instance Editable Recording where
 --------------------------------------------------------------------------------
 instance ViewTree Recording where
   viewTree r = RecordingTree <$> fmap coreData (viewRevision r)
+                             <*> viewRelationships r
                              <*> viewAnnotation r
                              <*> viewIsrcs r
                              <*> viewPuids r

@@ -22,12 +22,20 @@ import MusicBrainz.Data.Annotation
 import MusicBrainz.Data.Create
 import MusicBrainz.Data.FindLatest
 import MusicBrainz.Data.Merge
+import MusicBrainz.Data.Relationship
+import MusicBrainz.Data.Relationship.Internal
 import MusicBrainz.Data.Revision.Internal
 import MusicBrainz.Data.Tree
 import MusicBrainz.Data.Update
 import MusicBrainz.Edit
 
 import qualified MusicBrainz.Data.Generic as Generic
+
+--------------------------------------------------------------------------------
+instance HoldsRelationships ReleaseGroup where
+  fetchEndPoints = Generic.fetchEndPoints "release_group"
+  reflectRelationshipChange = Generic.reflectRelationshipChange ReleaseGroupRelationship
+
 
 --------------------------------------------------------------------------------
 addSecondaryTypes :: (Functor m, Monad m, MonadIO m)
@@ -77,6 +85,7 @@ instance Editable ReleaseGroup where
 --------------------------------------------------------------------------------
 instance ViewTree ReleaseGroup where
   viewTree r = ReleaseGroupTree <$> fmap coreData (viewRevision r)
+                                <*> viewRelationships r
                                 <*> viewAnnotation r
 
 
@@ -100,6 +109,7 @@ instance RealiseTree ReleaseGroup where
     dataId <- insertRgData (releaseGroupData rg)
     treeId <- insertRgTree (releaseGroupAnnotation rg) dataId
     realiseSecondaryTypes treeId
+    Generic.realiseRelationships "release_group" treeId rg
     return treeId
     where
       insertRgData :: (Functor m, MonadIO m) => ReleaseGroup -> MusicBrainzT m Int
@@ -140,12 +150,7 @@ instance ViewAnnotation ReleaseGroup where
 
 
 --------------------------------------------------------------------------------
-instance Update ReleaseGroup where
-  update editor baseRev releaseGroup = do
-    treeId <- realiseTree releaseGroup
-    revisionId <- newChildRevision editor baseRev treeId
-    includeRevision revisionId
-    return revisionId
+instance Update ReleaseGroup
 
 
 --------------------------------------------------------------------------------

@@ -17,6 +17,25 @@ class TreeRelationships a where
 instance TreeRelationships Artist where
   relationships f artist = f (artistRelationships artist) <&> \b -> artist { artistRelationships = b }
 
+instance TreeRelationships Label where
+  relationships f label = f (labelRelationships label) <&> \b -> label { labelRelationships = b }
+
+instance TreeRelationships Recording where
+  relationships f recording = f (recordingRelationships recording) <&> \b -> recording { recordingRelationships = b }
+
+instance TreeRelationships Release where
+  relationships f release = f (releaseRelationships release) <&> \b -> release { releaseRelationships = b }
+
+instance TreeRelationships ReleaseGroup where
+  relationships f releaseGroup = f (releaseGroupRelationships releaseGroup) <&> \b -> releaseGroup { releaseGroupRelationships = b }
+
+instance TreeRelationships Url where
+  relationships f url = f (urlRelationships url) <&> \b -> url { urlRelationships = b }
+
+instance TreeRelationships Work where
+  relationships f work = f (workRelationships work) <&> \b -> work { workRelationships = b }
+
+
 --------------------------------------------------------------------------------
 {-| Provide a single lens to view all aliases inside a 'Tree'. -}
 class TreeAliases a where
