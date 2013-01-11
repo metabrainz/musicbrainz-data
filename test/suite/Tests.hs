@@ -56,9 +56,9 @@ main = defaultMain [buildTest (testRunner (testGroup "All tests" tests))]
 
     tests = [ testGroup "MusicBrainz.Data.Artist"
                 MusicBrainz.Data.Artist.Tests.tests
-            , testGroup "MusicBrainz.Data.ArtistType.Tests"
+            , testGroup "MusicBrainz.Data.ArtistType"
                 MusicBrainz.Data.ArtistType.Tests.tests
-            , testGroup "MusicBrainz.Data.Country.Tests"
+            , testGroup "MusicBrainz.Data.Country"
                 MusicBrainz.Data.Country.Tests.tests
             , testGroup "MusicBrainz.Data.Edit"
                 MusicBrainz.Data.Edit.Tests.tests
@@ -76,7 +76,7 @@ main = defaultMain [buildTest (testRunner (testGroup "All tests" tests))]
                 MusicBrainz.Data.MediumFormat.Tests.tests
             , testGroup "MusicBrainz.Data.Recording"
                 MusicBrainz.Data.Recording.Tests.tests
-            , testGroup "MusicBrainz.Data.Relationship.Tests"
+            , testGroup "MusicBrainz.Data.Relationship"
                 MusicBrainz.Data.Relationship.Tests.tests
             , testGroup "MusicBrainz.Data.Release"
                 MusicBrainz.Data.Release.Tests.tests
@@ -84,15 +84,15 @@ main = defaultMain [buildTest (testRunner (testGroup "All tests" tests))]
                 MusicBrainz.Data.ReleaseGroup.Tests.tests
             , testGroup "MusicBrainz.Data.ReleaseGroupType"
                 MusicBrainz.Data.ReleaseGroupType.Tests.tests
-            , testGroup "MusicBrainz.Data.Script.Tests"
+            , testGroup "MusicBrainz.Data.Script"
                 MusicBrainz.Data.Script.Tests.tests
-            , testGroup "MusicBrainz.Data.Url.Tests"
+            , testGroup "MusicBrainz.Data.Url"
                 MusicBrainz.Data.Url.Tests.tests
-            , testGroup "MusicBrainz.Data.Work.Tests"
+            , testGroup "MusicBrainz.Data.Work"
                 MusicBrainz.Data.Work.Tests.tests
-            , testGroup "MusicBrainz.Data.WorkType.Tests"
+            , testGroup "MusicBrainz.Data.WorkType"
                 MusicBrainz.Data.WorkType.Tests.tests
-            , testGroup "MusicBrainz.Schema.Tests"
+            , testGroup "MusicBrainz.Schema"
                 MusicBrainz.Schema.Tests.tests
             , testGroup "MusicBrainz.Types"
                 MusicBrainz.Types.Tests.tests
