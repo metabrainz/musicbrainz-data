@@ -18,6 +18,7 @@ module MusicBrainz.Types.Internal
     , ArtistCredit
     , ArtistCreditName(..)
     , ArtistType(..)
+    , CdToc(..)
     , CoreEntity(..)
     , Country(..)
     , Edit(..)
@@ -757,6 +758,7 @@ data Medium = Medium
     , mediumFormat :: Maybe (Ref MediumFormat)
     , mediumPosition :: Int
     , mediumTracks :: [Track]
+    , mediumCdTocs :: Set.Set CdToc
     }
   deriving (Eq, Show)
 
@@ -802,3 +804,12 @@ parsecPrism extract parser = prism extract runParse
   where
     runParse t = either (const $ Left t) Right $
       parse parser "" t
+
+
+--------------------------------------------------------------------------------
+data CdToc = CdToc
+    { cdTocTrackOffsets :: [Int]
+    , cdTocLeadoutOffset :: Int
+    }
+  deriving (Eq, Ord, Show)
+

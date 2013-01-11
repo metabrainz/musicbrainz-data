@@ -12,12 +12,16 @@ many type classes instances. 'MusicBrainz' itself re-exports this module,
 so you should usually import that. -}
 module MusicBrainz.Schema () where
 
-import Blaze.ByteString.Builder.Char8 (fromString)
+import Blaze.ByteString.Builder (fromByteString)
+import Blaze.ByteString.Builder.Char8 (fromChar, fromString)
 import Control.Applicative
 import Control.Lens
+import Data.Attoparsec.Char8
+import Data.List (intersperse)
 import Data.Monoid (mempty)
-import Data.UUID (UUID)
 import Data.Typeable (Typeable)
+import Data.UUID (UUID)
+import Database.PostgreSQL.Simple.Arrays (array, fmt)
 import Database.PostgreSQL.Simple.FromField (FieldParser, FromField(..), ResultError(..), returnError, typename)
 import Database.PostgreSQL.Simple.FromRow (FromRow(..), field)
 import Database.PostgreSQL.Simple.ToField (ToField(..), Action(..), inQuotes)
@@ -191,6 +195,19 @@ instance FromField UUID where
         Nothing -> returnError ConversionFailed f "Not a valid UUID"
 
 
+-- This should be removed when postgresql-simple 0.3 is removed.
+instance FromField [Int] where
+  fromField f dat = either (returnError ConversionFailed f)
+                           id
+                           (parseOnly (fromArray ',') (maybe "" id dat))
+    where
+      fromArray delim = sequence . (parseIt <$>) <$> array delim
+        where
+          parseIt item = maybe (returnError ConversionFailed f "Could not parse integer array")
+                           return
+                           (fmap fst . LBS.readInt . fmt delim $ item)
+
+
 --------------------------------------------------------------------------------
 instance (FromField (Ref a), FromRow a) => FromRow (CoreEntity a) where
   fromRow = CoreEntity     -- Core entity's MBID
@@ -214,6 +231,10 @@ instance FromRow Artist where
 
 instance FromRow ArtistType where
   fromRow = ArtistType <$> field
+
+
+instance FromRow CdToc where
+  fromRow = CdToc <$> field <*> field
 
 
 instance FromRow Country where
@@ -320,6 +341,13 @@ instance FromRow WorkType where
 --------------------------------------------------------------------------------
 instance ToField EditStatus where
   toField = toField . fromEnum
+
+
+instance ToField [Int] where
+  toField xs = Many $
+    Plain (fromByteString "ARRAY[") :
+    (intersperse (Plain (fromChar ',')) $ map toField xs) ++
+    [Plain (fromChar ']')]
 
 
 instance ToField ISRC where
@@ -483,6 +511,12 @@ instance ToRow Artist where
 instance ToRow ArtistType where
   toRow ArtistType{..} = [ toField artistTypeName
                          ]
+
+
+instance ToRow CdToc where
+  toRow CdToc{..} = [ toField cdTocTrackOffsets
+                    , toField cdTocLeadoutOffset
+                    ]
 
 
 instance ToRow Country where

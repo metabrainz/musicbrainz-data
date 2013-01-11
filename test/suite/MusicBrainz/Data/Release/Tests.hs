@@ -4,6 +4,7 @@ module MusicBrainz.Data.Release.Tests
 
 import Control.Applicative
 import Control.Lens
+import Data.Monoid (mempty)
 
 import qualified Data.Set as Set
 
@@ -23,6 +24,7 @@ tests = [ testCreateFindLatest
         , testAnnotation
         , testReleaseLabels
         , testTrackLists
+        , testCdTocs
         , testMerge
         , testResolveRevisionReference
         ]
@@ -60,9 +62,28 @@ testReleaseLabels = testCase "Releases can have release labels" $ do
 --------------------------------------------------------------------------------
 testTrackLists :: Test
 testTrackLists = testCase "Releases can have track lists" $ do
+  createReleaseTreeTest makeMediums
+
+
+--------------------------------------------------------------------------------
+testCdTocs :: Test
+testCdTocs = testCase "Releases can have CDTOCs" $
+  createReleaseTreeTest $ \editor -> do
+    [m] <- makeMediums editor
+    return . pure $
+       m { mediumCdTocs = Set.singleton $
+             CdToc [ 150, 31615, 67600, 87137, 108242
+                   , 127110, 142910, 166340, 231445 ]
+                   252000
+         }
+
+
+--------------------------------------------------------------------------------
+createReleaseTreeTest :: (Ref Editor -> MusicBrainz [Medium]) -> MusicBrainz ()
+createReleaseTreeTest make = do
   editor <- entityRef <$> register acid2
 
-  mediums <- makeMediums editor
+  mediums <- make editor
   tree <- (\t -> t { releaseMediums = mediums }) <$> dummyReleaseTree editor
 
   release <- autoEdit $ create editor tree >>= viewRevision
@@ -70,20 +91,22 @@ testTrackLists = testCase "Releases can have track lists" $ do
 
   liftIO $ createdMediums @?= mediums
 
-  where
-    makeMediums editor = do
-      t <- mysterons editor
-      mystRec <- autoEdit $ create editor t >>= viewRevision
-      return $ [ Medium { mediumName = "Live"
-                        , mediumFormat = Nothing
-                        , mediumPosition = 1
-                        , mediumTracks = [ Track { trackName = "Mysterons"
-                                                 , trackRecording = coreRef mystRec
-                                                 , trackDuration = Nothing
-                                                 , trackArtistCredit = (recordingArtistCredit (coreData mystRec))
-                                                 , trackPosition = "1"
-                                                 } ] } ]
 
+--------------------------------------------------------------------------------
+makeMediums :: Ref Editor -> MusicBrainz [Medium]
+makeMediums editor = do
+  t <- mysterons editor
+  mystRec <- autoEdit $ create editor t >>= viewRevision
+  return $ [ Medium { mediumName = "Live"
+                    , mediumFormat = Nothing
+                    , mediumPosition = 1
+                    , mediumCdTocs = mempty
+                    , mediumTracks = [ Track { trackName = "Mysterons"
+                                             , trackRecording = coreRef mystRec
+                                             , trackDuration = Nothing
+                                             , trackArtistCredit = (recordingArtistCredit (coreData mystRec))
+                                             , trackPosition = "1"
+                                             } ] } ]
 
 --------------------------------------------------------------------------------
 testMerge :: Test

@@ -190,6 +190,7 @@ instance Mergeable Medium where
   type MergeRender Medium mo =
     ( Render Int mo
     , Render (Maybe (Ref MediumFormat)) mo
+    , Render (Set.Set CdToc) mo
     , Render [Track] mo
     , Render Text mo
     )
@@ -197,6 +198,7 @@ instance Mergeable Medium where
                  <*> mediumFormat `mergedVia` mergeEq
                  <*> mediumPosition `mergedVia` mergeEq
                  <*> mediumTracks `mergedVia` merge
+                 <*> mediumCdTocs `mergedVia` merge
 
 
 --------------------------------------------------------------------------------

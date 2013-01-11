@@ -13,11 +13,13 @@ module MusicBrainz.Data.Release
 
 import Control.Applicative
 import Control.Lens
-import Control.Monad
+import Control.Monad (void)
 import Control.Monad.IO.Class
 import Data.Function
+import Data.Foldable (forM_)
 import Data.List
 import Data.Maybe (fromMaybe)
+import Data.Monoid (mempty)
 import Data.Semigroup (First(..), sconcat)
 import Database.PostgreSQL.Simple (Only(..), (:.)(..), In(..))
 import Database.PostgreSQL.Simple.SqlQQ (sql)
@@ -114,6 +116,10 @@ instance RealiseTree Release where
         forM_ (zip (mediumTracks medium) [1..]) $ \(track, n) ->
           execute [sql| INSERT INTO track (tracklist_id, name, recording_id, length, artist_credit_id, position, number) VALUES (?, (SELECT find_or_insert_track_name(?)), ?, ?, ?, ?, ?) |]
             (Only tracklistId :. track :. Only (n :: Int))
+        forM_ (mediumCdTocs medium) $ \cdtoc -> do
+          execute [sql| INSERT INTO medium_cdtoc (release_tree_id, position, track_offsets, leadout_offset)
+                        VALUES (?, ?, ?, ?) |]
+            ((treeId, mediumPosition medium) :. cdtoc)
 
 
 --------------------------------------------------------------------------------
@@ -171,12 +177,13 @@ viewMediums :: (Applicative m, Functor m, Monad m, MonadIO m)
 viewMediums revisionId = do
   mediums <- query selectMediums (Only revisionId)
   tracks <- groupTracks <$>
-    query selectTracks (Only $ In (mediums ^.. traverse._1 :: [Int]))
-  pure $ associateMediums mediums tracks
+    query selectTracks (Only $ In (mediums ^.. traverse._2 :: [Int]))
+  cdtocs <- groupCdTocs <$> query selectCdTocs (Only revisionId)
+  pure $ associateMediums mediums tracks cdtocs
 
   where
     selectMediums =
-      [sql| SELECT tracklist_id, name, medium_format_id, position
+      [sql| SELECT release_tree_id, tracklist_id, name, medium_format_id, position
             FROM medium
             JOIN release_revision
             USING (release_tree_id)
@@ -187,6 +194,12 @@ viewMediums revisionId = do
             FROM track
             JOIN track_name ON (track_name.id = track.name)
             WHERE tracklist_id IN ? |]
+
+    selectCdTocs =
+      [sql| SELECT release_tree_id, position, track_offsets, leadout_offset
+            FROM medium_cdtoc
+            JOIN release_revision USING (release_tree_id)
+            WHERE revision_id = ? |]
 
     -- We group tracks by using a pair of semigroups. The first element uses the
     -- 'First' semigroup to collapse a list of tracklist IDs into a single
@@ -201,14 +214,26 @@ viewMediums revisionId = do
       in map (over _1 getFirst . sconcat . NonEmpty.fromList) .
            groupBy ((==) `on` fst) . map formTrack
 
-    associateMediums mediums tracks =
-      let formMedium (tracklistId, name, format, position) =
+    groupCdTocs =
+      let formCdToc ((releaseTreeId, position) :. cdtoc) =
+            ( First (releaseTreeId :: Ref (Tree Release), position :: Int)
+            , Set.singleton cdtoc
+            )
+      in map (over _1 getFirst . sconcat . NonEmpty.fromList) .
+           groupBy (((==) `on` fst)) . map formCdToc
+
+    associateMediums mediums tracks cdtocs =
+      let formMedium (releaseTreeId, tracklistId, name, format, position) =
             Medium { mediumName = name
                    , mediumFormat = format
                    , mediumPosition = position
                    , mediumTracks =
                        fromMaybe (error "Tracklist association failed!") $
                          tracklistId `lookup` tracks
+                   , mediumCdTocs =
+                       fromMaybe mempty $
+                         (releaseTreeId, position) `lookup` cdtocs
+
                    }
       in map formMedium mediums
 

@@ -38,6 +38,7 @@ module MusicBrainz.Types
     , AliasType(..)
     , ArtistCredit
     , ArtistCreditName(..)
+    , CdToc(..)
     , Country(..)
     , Editor(..)
     , Gender(..)

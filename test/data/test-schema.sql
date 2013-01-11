@@ -1125,45 +1125,6 @@ ALTER SEQUENCE artist_type_id_seq OWNED BY artist_type.id;
 
 
 --
--- Name: cdtoc; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
---
-
-CREATE TABLE cdtoc (
-    id integer NOT NULL,
-    discid character(28) NOT NULL,
-    freedb_id character(8) NOT NULL,
-    track_count positive_integer NOT NULL,
-    leadout_offset positive_integer NOT NULL,
-    track_offset integer[] NOT NULL,
-    degraded boolean DEFAULT false NOT NULL,
-    created timestamp with time zone DEFAULT now()
-);
-
-
-ALTER TABLE musicbrainz.cdtoc OWNER TO musicbrainz;
-
---
--- Name: cdtoc_id_seq; Type: SEQUENCE; Schema: musicbrainz; Owner: musicbrainz
---
-
-CREATE SEQUENCE cdtoc_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER TABLE musicbrainz.cdtoc_id_seq OWNER TO musicbrainz;
-
---
--- Name: cdtoc_id_seq; Type: SEQUENCE OWNED BY; Schema: musicbrainz; Owner: musicbrainz
---
-
-ALTER SEQUENCE cdtoc_id_seq OWNED BY cdtoc.id;
-
-
---
 -- Name: clientversion; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
 --
 
@@ -2641,35 +2602,14 @@ ALTER TABLE musicbrainz.medium OWNER TO musicbrainz;
 --
 
 CREATE TABLE medium_cdtoc (
-    id integer NOT NULL,
     release_tree_id integer NOT NULL,
     "position" positive_integer NOT NULL,
-    cdtoc integer NOT NULL
+    leadout_offset positive_integer NOT NULL,
+    track_offsets integer[] NOT NULL
 );
 
 
 ALTER TABLE musicbrainz.medium_cdtoc OWNER TO musicbrainz;
-
---
--- Name: medium_cdtoc_id_seq; Type: SEQUENCE; Schema: musicbrainz; Owner: musicbrainz
---
-
-CREATE SEQUENCE medium_cdtoc_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER TABLE musicbrainz.medium_cdtoc_id_seq OWNER TO musicbrainz;
-
---
--- Name: medium_cdtoc_id_seq; Type: SEQUENCE OWNED BY; Schema: musicbrainz; Owner: musicbrainz
---
-
-ALTER SEQUENCE medium_cdtoc_id_seq OWNED BY medium_cdtoc.id;
-
 
 --
 -- Name: medium_format; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
@@ -4172,13 +4112,6 @@ ALTER TABLE ONLY artist_type ALTER COLUMN id SET DEFAULT nextval('artist_type_id
 -- Name: id; Type: DEFAULT; Schema: musicbrainz; Owner: musicbrainz
 --
 
-ALTER TABLE ONLY cdtoc ALTER COLUMN id SET DEFAULT nextval('cdtoc_id_seq'::regclass);
-
-
---
--- Name: id; Type: DEFAULT; Schema: musicbrainz; Owner: musicbrainz
---
-
 ALTER TABLE ONLY clientversion ALTER COLUMN id SET DEFAULT nextval('clientversion_id_seq'::regclass);
 
 
@@ -4285,13 +4218,6 @@ ALTER TABLE ONLY link_attribute_type ALTER COLUMN id SET DEFAULT nextval('link_a
 --
 
 ALTER TABLE ONLY link_type ALTER COLUMN id SET DEFAULT nextval('link_type_id_seq'::regclass);
-
-
---
--- Name: id; Type: DEFAULT; Schema: musicbrainz; Owner: musicbrainz
---
-
-ALTER TABLE ONLY medium_cdtoc ALTER COLUMN id SET DEFAULT nextval('medium_cdtoc_id_seq'::regclass);
 
 
 --
@@ -4625,22 +4551,6 @@ ALTER TABLE ONLY artist_type
 
 ALTER TABLE ONLY artist_type
     ADD CONSTRAINT artist_type_pkey PRIMARY KEY (name);
-
-
---
--- Name: cdtoc_id_key; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
---
-
-ALTER TABLE ONLY cdtoc
-    ADD CONSTRAINT cdtoc_id_key UNIQUE (id);
-
-
---
--- Name: cdtoc_pkey; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
---
-
-ALTER TABLE ONLY cdtoc
-    ADD CONSTRAINT cdtoc_pkey PRIMARY KEY (discid);
 
 
 --
@@ -5416,7 +5326,7 @@ ALTER TABLE ONLY link_type
 --
 
 ALTER TABLE ONLY medium_cdtoc
-    ADD CONSTRAINT medium_cdtoc_pkey PRIMARY KEY (release_tree_id, "position", cdtoc);
+    ADD CONSTRAINT medium_cdtoc_pkey PRIMARY KEY (release_tree_id, "position", leadout_offset, track_offsets);
 
 
 --
@@ -7348,14 +7258,6 @@ ALTER TABLE ONLY link_type_attribute_type
 
 ALTER TABLE ONLY link_type
     ADD CONSTRAINT link_type_parent_fkey FOREIGN KEY (parent) REFERENCES link_type(id);
-
-
---
--- Name: medium_cdtoc_cdtoc_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
---
-
-ALTER TABLE ONLY medium_cdtoc
-    ADD CONSTRAINT medium_cdtoc_cdtoc_fkey FOREIGN KEY (cdtoc) REFERENCES cdtoc(id);
 
 
 --
