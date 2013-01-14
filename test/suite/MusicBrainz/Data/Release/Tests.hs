@@ -45,7 +45,7 @@ testAnnotation = testCase "Can add and remove artist annotations" $ do
 --------------------------------------------------------------------------------
 testReleaseLabels :: Test
 testReleaseLabels = testCase "Releases can have release labels" $ do
-  editor <- entityRef <$> register acid2
+  editor <- entityRef <$> register acid2 { editorName = "warp" }
   revRecLabel <- coreRef <$> autoEdit (create editor revolutionRecords >>= viewRevision)
   let revRec = ReleaseLabel { releaseLabel = Just revRecLabel, releaseCatalogNumber = Just "REVREC001" }
 

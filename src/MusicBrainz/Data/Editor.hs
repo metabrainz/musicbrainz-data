@@ -22,7 +22,7 @@ import MusicBrainz.Data.FindLatest
 {-| Look up an editor by their name. -}
 findEditorByName :: Text -> MusicBrainz (Maybe (Entity Editor))
 findEditorByName name =
-  listToMaybe <$> query [sql| SELECT editor_id, name FROM editor WHERE name = ? |]
+  listToMaybe <$> query [sql| SELECT id, name, password FROM editor WHERE name = ? |]
              (Only name)
 
 
@@ -30,11 +30,11 @@ findEditorByName name =
 {-| Register a new MusicBrainz editor. -}
 register :: Editor -> MusicBrainz (Entity Editor)
 register editor = head <$> query
-  [sql| INSERT INTO editor (name) VALUES (?)
-        RETURNING editor_id, name |] editor
+  [sql| INSERT INTO editor (name, password) VALUES (?, ?)
+        RETURNING id, name, password |] editor
 
 
 --------------------------------------------------------------------------------
 instance ResolveReference Editor where
   resolveReference editorId = listToMaybe . map fromOnly <$>
-    query [sql| SELECT editor_id FROM editor WHERE editor_id = ? |] (Only editorId)
+    query [sql| SELECT id FROM editor WHERE id = ? |] (Only editorId)

@@ -276,7 +276,9 @@ data Country = Country
 
 --------------------------------------------------------------------------------
 {-| A MusicBrainz editor who makes changes to the database. -}
-data Editor = Editor { editorName :: Text }
+data Editor = Editor { editorName :: Text
+                     , editorPassword :: Text
+                     }
   deriving (Eq, Show)
 
 

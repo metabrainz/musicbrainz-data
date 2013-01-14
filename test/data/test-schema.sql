@@ -1349,8 +1349,9 @@ ALTER TABLE musicbrainz.edit_work OWNER TO musicbrainz;
 --
 
 CREATE TABLE editor (
-    editor_id integer NOT NULL,
+    id integer NOT NULL,
     name character varying(64) NOT NULL,
+    password character varying(64) NOT NULL,
     privs integer DEFAULT 0,
     email character varying(64) DEFAULT NULL::character varying,
     website character varying(255) DEFAULT NULL::character varying,
@@ -1358,20 +1359,24 @@ CREATE TABLE editor (
     member_since timestamp with time zone DEFAULT now(),
     email_confirm_date timestamp with time zone,
     last_login_date timestamp with time zone,
+    edits_accepted integer DEFAULT 0,
+    edits_rejected integer DEFAULT 0,
+    auto_edits_accepted integer DEFAULT 0,
+    edits_failed integer DEFAULT 0,
     last_updated timestamp with time zone DEFAULT now(),
     birth_date date,
-    gender_id integer,
-    country_id integer
+    gender integer,
+    country integer
 );
 
 
 ALTER TABLE musicbrainz.editor OWNER TO musicbrainz;
 
 --
--- Name: editor_editor_id_seq; Type: SEQUENCE; Schema: musicbrainz; Owner: musicbrainz
+-- Name: editor_id_seq; Type: SEQUENCE; Schema: musicbrainz; Owner: musicbrainz
 --
 
-CREATE SEQUENCE editor_editor_id_seq
+CREATE SEQUENCE editor_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -1379,13 +1384,48 @@ CREATE SEQUENCE editor_editor_id_seq
     CACHE 1;
 
 
-ALTER TABLE musicbrainz.editor_editor_id_seq OWNER TO musicbrainz;
+ALTER TABLE musicbrainz.editor_id_seq OWNER TO musicbrainz;
 
 --
--- Name: editor_editor_id_seq; Type: SEQUENCE OWNED BY; Schema: musicbrainz; Owner: musicbrainz
+-- Name: editor_id_seq; Type: SEQUENCE OWNED BY; Schema: musicbrainz; Owner: musicbrainz
 --
 
-ALTER SEQUENCE editor_editor_id_seq OWNED BY editor.editor_id;
+ALTER SEQUENCE editor_id_seq OWNED BY editor.id;
+
+
+--
+-- Name: editor_preference; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE editor_preference (
+    id integer NOT NULL,
+    editor integer NOT NULL,
+    name character varying(50) NOT NULL,
+    value character varying(100) NOT NULL
+);
+
+
+ALTER TABLE musicbrainz.editor_preference OWNER TO musicbrainz;
+
+--
+-- Name: editor_preference_id_seq; Type: SEQUENCE; Schema: musicbrainz; Owner: musicbrainz
+--
+
+CREATE SEQUENCE editor_preference_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE musicbrainz.editor_preference_id_seq OWNER TO musicbrainz;
+
+--
+-- Name: editor_preference_id_seq; Type: SEQUENCE OWNED BY; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER SEQUENCE editor_preference_id_seq OWNED BY editor_preference.id;
 
 
 --
@@ -4137,10 +4177,17 @@ ALTER TABLE ONLY edit_note ALTER COLUMN edit_note_id SET DEFAULT nextval('edit_n
 
 
 --
--- Name: editor_id; Type: DEFAULT; Schema: musicbrainz; Owner: musicbrainz
+-- Name: id; Type: DEFAULT; Schema: musicbrainz; Owner: musicbrainz
 --
 
-ALTER TABLE ONLY editor ALTER COLUMN editor_id SET DEFAULT nextval('editor_editor_id_seq'::regclass);
+ALTER TABLE ONLY editor ALTER COLUMN id SET DEFAULT nextval('editor_id_seq'::regclass);
+
+
+--
+-- Name: id; Type: DEFAULT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY editor_preference ALTER COLUMN id SET DEFAULT nextval('editor_preference_id_seq'::regclass);
 
 
 --
@@ -4622,7 +4669,15 @@ ALTER TABLE ONLY edit
 --
 
 ALTER TABLE ONLY editor
-    ADD CONSTRAINT editor_pkey PRIMARY KEY (editor_id);
+    ADD CONSTRAINT editor_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: editor_preference_pkey; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+ALTER TABLE ONLY editor_preference
+    ADD CONSTRAINT editor_preference_pkey PRIMARY KEY (id);
 
 
 --
@@ -5945,6 +6000,20 @@ CREATE UNIQUE INDEX artist_alias_artist_tree_id_name_idx ON artist_alias USING b
 
 
 --
+-- Name: editor_idx_name; Type: INDEX; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE UNIQUE INDEX editor_idx_name ON editor USING btree (lower((name)::text));
+
+
+--
+-- Name: editor_preference_idx_editor_name; Type: INDEX; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE UNIQUE INDEX editor_preference_idx_editor_name ON editor_preference USING btree (editor, name);
+
+
+--
 -- Name: release_label_release_tree_id_catalog_number_idx; Type: INDEX; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
 --
 
@@ -6193,7 +6262,7 @@ ALTER TABLE ONLY edit_note
 --
 
 ALTER TABLE ONLY edit_note
-    ADD CONSTRAINT edit_note_editor_id_fkey FOREIGN KEY (editor_id) REFERENCES editor(editor_id);
+    ADD CONSTRAINT edit_note_editor_id_fkey FOREIGN KEY (editor_id) REFERENCES editor(id);
 
 
 --
@@ -6274,6 +6343,14 @@ ALTER TABLE ONLY edit_work
 
 ALTER TABLE ONLY edit_work
     ADD CONSTRAINT edit_work_revision_id_fkey FOREIGN KEY (revision_id) REFERENCES work_revision(revision_id);
+
+
+--
+-- Name: editor_preference_fk_editor; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY editor_preference
+    ADD CONSTRAINT editor_preference_fk_editor FOREIGN KEY (editor) REFERENCES editor(id);
 
 
 --
@@ -7665,7 +7742,7 @@ ALTER TABLE ONLY release_tag
 --
 
 ALTER TABLE ONLY revision
-    ADD CONSTRAINT revision_editor_id_fkey FOREIGN KEY (editor_id) REFERENCES editor(editor_id);
+    ADD CONSTRAINT revision_editor_id_fkey FOREIGN KEY (editor_id) REFERENCES editor(id);
 
 
 --
@@ -7817,7 +7894,7 @@ ALTER TABLE ONLY vote
 --
 
 ALTER TABLE ONLY vote
-    ADD CONSTRAINT vote_editor_id_fkey FOREIGN KEY (editor_id) REFERENCES editor(editor_id);
+    ADD CONSTRAINT vote_editor_id_fkey FOREIGN KEY (editor_id) REFERENCES editor(id);
 
 
 --

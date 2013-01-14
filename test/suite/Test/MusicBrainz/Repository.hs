@@ -37,7 +37,7 @@ uk = Country { countryName = "United Kingdom"
              }
 
 acid2 :: Editor
-acid2 = Editor { editorName = "acid2" }
+acid2 = Editor { editorName = "acid2", editorPassword = "fluffles" }
 
 male :: Gender
 male = Gender { genderName = "Male" }

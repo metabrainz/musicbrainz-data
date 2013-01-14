@@ -246,7 +246,7 @@ instance FromRow EditNote where
 
 
 instance FromRow Editor where
-  fromRow = Editor <$> field
+  fromRow = Editor <$> field <*> field
 
 
 instance (FromField (Ref a), FromRow a) => FromRow (Entity a) where
@@ -533,6 +533,7 @@ instance ToRow EditNote where
 
 instance ToRow Editor where
   toRow Editor{..} = [ toField editorName
+                     , toField editorPassword
                      ]
 
 

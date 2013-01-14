@@ -24,7 +24,7 @@ testRegister = testCase "Register and lookup an editor" $ do
   liftIO $ found @?= Just registered
 
   where
-    ocharles = Editor { editorName = "ocharles" }
+    ocharles = Editor { editorName = "ocharles", editorPassword = "foo" }
 
 --------------------------------------------------------------------------------
 testResolveUnknown :: Test
