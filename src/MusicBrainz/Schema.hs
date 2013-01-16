@@ -322,6 +322,10 @@ instance FromRow Script where
   fromRow = Script <$> field <*> field <*> field
 
 
+instance FromRow Track where
+  fromRow = Track <$> field <*> field <*> field <*> field <*> field
+
+
 instance FromRow Url where
   fromRow = Url <$> field
 

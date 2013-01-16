@@ -11,20 +11,19 @@ module MusicBrainz.Data.Release
     , viewReleaseLabels
     ) where
 
+import Control.Arrow ((&&&))
 import Control.Applicative
 import Control.Lens
 import Control.Monad (void)
 import Control.Monad.IO.Class
 import Data.Function
-import Data.Foldable (forM_)
+import Data.Foldable (foldMap, forM_)
 import Data.List
 import Data.Maybe (fromMaybe)
 import Data.Monoid (mempty)
-import Data.Semigroup (First(..), sconcat)
 import Database.PostgreSQL.Simple (Only(..), (:.)(..), In(..))
 import Database.PostgreSQL.Simple.SqlQQ (sql)
 
-import qualified Data.List.NonEmpty as NonEmpty
 import qualified Data.Set as Set
 
 import MusicBrainz
@@ -201,26 +200,17 @@ viewMediums revisionId = do
             JOIN release_revision USING (release_tree_id)
             WHERE revision_id = ? |]
 
-    -- We group tracks by using a pair of semigroups. The first element uses the
-    -- 'First' semigroup to collapse a list of tracklist IDs into a single
-    -- tracklist ID -- we've guaranteed these are equal due to the groupBy.
-    -- The second semigroup is the list semigroup, so we simply concatenate all
-    -- tracks with the same tracklist ID together.
-    groupTracks =
-      let formTrack (tracklistId, name, recording, duration, ac, position) =
-            ( First (tracklistId :: Int)
-            , [Track name recording duration ac position]
-            )
-      in map (over _1 getFirst . sconcat . NonEmpty.fromList) .
-           groupBy ((==) `on` fst) . map formTrack
+    groupRows splitRow =
+      map (fst . head &&& foldMap snd) . groupBy ((==) `on` fst) . map splitRow
 
-    groupCdTocs =
-      let formCdToc ((releaseTreeId, position) :. cdtoc) =
-            ( First (releaseTreeId :: Ref (Tree Release), position :: Int)
-            , Set.singleton cdtoc
-            )
-      in map (over _1 getFirst . sconcat . NonEmpty.fromList) .
-           groupBy (((==) `on` fst)) . map formCdToc
+    groupTracks = groupRows $
+      \(Only id' :. track) -> (id' :: Int, [track])
+
+    groupCdTocs = groupRows $
+      \((releaseTreeId, position) :. cdtoc) ->
+        ( (releaseTreeId :: Ref (Tree Release), position :: Int)
+        , Set.singleton cdtoc
+        )
 
     associateMediums mediums tracks cdtocs =
       let formMedium (releaseTreeId, tracklistId, name, format, position) =
