@@ -7,14 +7,21 @@ The majority of operations on works are common for all core entities, so you
 should see the documentation on the 'Work' type and notice all the type class
 instances. -}
 module MusicBrainz.Data.Work
-    ( viewIswcs ) where
+    ( -- * ISWCs
+      findIswcs
+    , viewIswcs
+    ) where
 
+import Control.Arrow ((&&&))
 import Control.Applicative
 import Control.Monad.IO.Class (MonadIO)
 import Data.Foldable (forM_)
-import Database.PostgreSQL.Simple (Only(..))
+import Data.Function (on)
+import Data.List (groupBy)
+import Database.PostgreSQL.Simple (In(..), Only(..))
 import Database.PostgreSQL.Simple.SqlQQ
 
+import qualified Data.Map as Map
 import qualified Data.Set as Set
 
 import MusicBrainz hiding (iswc)
@@ -165,3 +172,20 @@ viewIswcs revisionId = Set.fromList . map fromOnly <$> query q (Only revisionId)
               FROM iswc
               JOIN work_revision USING (work_tree_id)
               WHERE revision_id = ? |]
+
+
+--------------------------------------------------------------------------------
+findIswcs :: (Functor m, MonadIO m, Monad m)
+  => Set.Set (Ref (Revision Work))
+  -> MusicBrainzT m (Map.Map (Ref (Revision Work)) (Set.Set ISWC))
+findIswcs revisionIds =
+    associate <$> query q (Only $ In (Set.toList revisionIds))
+  where
+    associate =
+      Map.fromList .
+        map (fst . head &&& Set.fromList . map snd) .
+          groupBy ((==) `on` fst)
+    q = [sql| SELECT revision_id, iswc
+              FROM iswc
+              JOIN work_revision USING (work_tree_id)
+              WHERE revision_id IN ? |]

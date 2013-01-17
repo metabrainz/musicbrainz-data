@@ -3,7 +3,9 @@ module MusicBrainz.Data.Work.Tests ( tests ) where
 
 import Control.Applicative
 import Control.Lens
+import Control.Monad (void)
 
+import qualified Data.Map as Map
 import qualified Data.Set as Set
 
 import Test.MusicBrainz
@@ -26,6 +28,7 @@ tests = [ testCreateFindLatest
         , testMerge
         , testIswc
         , testResolveRevisionReference
+        , testFindIswcs
         ]
 
 
@@ -110,3 +113,23 @@ testIswc = testCase "Can add and remove ISWCs" $
 testResolveRevisionReference :: Test
 testResolveRevisionReference = testCase "Resolve revision reference" $ do
   CommonTests.testResolveRevisionReference (return . const wildRose)
+
+
+--------------------------------------------------------------------------------
+testFindIswcs :: Test
+testFindIswcs = testCase "Can find ISWCs for multiple works" $ do
+  editor <- entityRef <$> register acid2
+  void $ createEdit $ do
+    revId <- create editor honeysuckleRose
+    iswcs <- findIswcs $ Set.singleton revId
+    liftIO $ iswcs @?= Map.singleton revId expected
+
+  where
+    honeysuckleRose =
+      (minimalTree
+         Work { workName = "Honeysuckle Rose"
+              , workComment = ""
+              , workType = Nothing
+              , workLanguage = Nothing
+              }) { workIswcs = expected }
+    expected = Set.singleton $ "T-070.074.170-3"^?!iswc
