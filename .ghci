@@ -1,2 +1,2 @@
-:set -hide-package MonadCatchIO-transformers
+:set -hide-package MonadCatchIO-transformers -hide-package monads-tf
 :set -XOverloadedStrings
