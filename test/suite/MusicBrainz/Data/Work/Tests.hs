@@ -69,6 +69,7 @@ testAliases = testCase "Can add and remove aliases" $ do
                   , aliasEnded = False
                   , aliasType = Nothing
                   , aliasLocale = Nothing
+                  , aliasPrimaryForLocale = False
                   }
 
 

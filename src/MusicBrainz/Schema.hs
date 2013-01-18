@@ -220,7 +220,7 @@ instance (FromField (Ref a), FromRow a) => FromRow (CoreEntity a) where
 
 instance FromRow Alias where
   fromRow = Alias <$> field <*> field <*> fromRow <*> fromRow <*> field <*> field
-                  <*> field
+                  <*> field <*> field
 
 
 instance FromRow Artist where
@@ -493,6 +493,7 @@ instance ToRow Alias where
                     [ toField aliasEnded
                     , toField aliasType
                     , toField aliasLocale
+                    , toField aliasPrimaryForLocale
                     ]
 
 

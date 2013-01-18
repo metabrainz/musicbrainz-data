@@ -208,6 +208,7 @@ data Alias = Alias
     , aliasEnded :: Bool
     , aliasType :: Maybe (Ref AliasType)
     , aliasLocale :: Maybe Text
+    , aliasPrimaryForLocale :: Bool
     }
   deriving (Eq, Ord, Show)
 

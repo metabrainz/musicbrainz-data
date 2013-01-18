@@ -60,7 +60,7 @@ viewAliases entityName r = Set.fromList <$> query q (Only r)
           [ "SELECT name.name, sort_name.name,"
           , "begin_date_year, begin_date_month, begin_date_day,"
           , "end_date_year, end_date_month, end_date_day,"
-          , "ended, " ++ entityName ++ "_alias_type_id, locale "
+          , "ended, " ++ entityName ++ "_alias_type_id, locale, primary_for_locale "
           , "FROM " ++ entityName ++ "_alias alias"
           , "JOIN " ++ entityName ++ "_name name ON (alias.name = name.id) "
           , "JOIN " ++ entityName ++ "_name sort_name ON (alias.sort_name = sort_name.id) "
@@ -228,9 +228,9 @@ realiseAliases eName treeId tree = forM_ (Set.toList $ tree^.aliases) $ \alias -
           [ "INSERT INTO " ++ eName ++ "_alias (" ++ eName ++ "_tree_id, name, sort_name, "
           , "begin_date_year, begin_date_month, begin_date_day, "
           , "end_date_year, end_date_month, end_date_day, "
-          , "ended, " ++ eName ++ "_alias_type_id, locale) "
+          , "ended, " ++ eName ++ "_alias_type_id, locale, primary_for_locale) "
           , "VALUES (?, (SELECT find_or_insert_" ++ eName ++ "_name(?)), "
-          , "(SELECT find_or_insert_" ++ eName ++ "_name(?)), ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+          , "(SELECT find_or_insert_" ++ eName ++ "_name(?)), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
           ]
 
 
