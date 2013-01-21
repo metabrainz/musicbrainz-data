@@ -19,6 +19,9 @@ module MusicBrainz.Data
 
       -- * Working with revisions
     , revisionParents
+
+      -- * Cleaning up old data
+    , eligibleForCleanup
    ) where
 
 import MusicBrainz.Data.Artist ()
@@ -44,6 +47,7 @@ import MusicBrainz.Data.Work ()
 import MusicBrainz.Data.Add
 import MusicBrainz.Data.Alias
 import MusicBrainz.Data.Annotation
+import MusicBrainz.Data.Cleanup
 import MusicBrainz.Data.Create
 import MusicBrainz.Data.FindLatest
 import MusicBrainz.Data.IPI

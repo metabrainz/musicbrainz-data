@@ -19,6 +19,7 @@ Library
     diff3 >= 0.2.0.2,
     lens >= 3.7,
     MonadCatchIO-mtl >= 0.3.0.0 && <0.4,
+    monad-loops >= 0.3.1.1,
     mtl >= 2.1.1 && < 2.2,
     nats >= 0.1,
     network >= 2.3,
@@ -36,6 +37,7 @@ Library
     MusicBrainz.Data.Artist
     MusicBrainz.Data.ArtistCredit
     MusicBrainz.Data.ArtistType
+    MusicBrainz.Data.Cleanup
     MusicBrainz.Data.Country
     MusicBrainz.Data.Create
     MusicBrainz.Data.Edit

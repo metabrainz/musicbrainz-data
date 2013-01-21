@@ -4,6 +4,7 @@
 module MusicBrainz.Data.Revision
     ( mergeBase
     , revisionParents
+    , revisionChildren
     ) where
 
 import Control.Applicative
@@ -47,7 +48,16 @@ mergeBase a b = listToMaybe . map fromOnly <$> query
 {-| Find references to the parent revisions of a given revision. -}
 revisionParents :: (Functor m, MonadIO m)
   => Ref (Revision a) -> MusicBrainzT m (Set.Set (Ref (Revision a)))
-revisionParents artistRev =
-  Set.fromList . map fromOnly <$> query q (Only artistRev)
+revisionParents r =
+  Set.fromList . map fromOnly <$> query q (Only r)
   where q = [sql| SELECT parent_revision_id FROM revision_parent
                   WHERE revision_id = ? |]
+
+
+--------------------------------------------------------------------------------
+revisionChildren :: (Functor m, MonadIO m)
+  => Ref (Revision a) -> MusicBrainzT m (Set.Set (Ref (Revision a)))
+revisionChildren r =
+  Set.fromList . map fromOnly <$> query q (Only r)
+  where q = [sql| SELECT parent_revision_id FROM revision_parent
+                  WHERE parent_revision_id = ? |]
