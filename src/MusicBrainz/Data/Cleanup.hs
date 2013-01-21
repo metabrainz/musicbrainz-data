@@ -13,8 +13,8 @@ import MusicBrainz.Data.Relationship
 
 eligibleForCleanup :: (Functor m, MonadIO m, HoldsRelationships a) =>
   Ref (Revision a) -> MusicBrainzT m Bool
-eligibleForCleanup r = orM $
-    [ Set.null <$> revisionChildren r
-    , Set.null <$> viewRelationships r
+eligibleForCleanup r = fmap not $ orM $
+    [ not . Set.null <$> revisionChildren r
+    , not . Set.null <$> viewRelationships r
     ]
 

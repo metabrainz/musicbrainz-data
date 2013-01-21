@@ -59,5 +59,5 @@ revisionChildren :: (Functor m, MonadIO m)
   => Ref (Revision a) -> MusicBrainzT m (Set.Set (Ref (Revision a)))
 revisionChildren r =
   Set.fromList . map fromOnly <$> query q (Only r)
-  where q = [sql| SELECT parent_revision_id FROM revision_parent
+  where q = [sql| SELECT revision_id FROM revision_parent
                   WHERE parent_revision_id = ? |]
