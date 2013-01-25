@@ -33,6 +33,7 @@ Library
     MusicBrainz.Data
     MusicBrainz.Data.Add
     MusicBrainz.Data.Alias
+    MusicBrainz.Data.AliasType
     MusicBrainz.Data.Annotation
     MusicBrainz.Data.Artist
     MusicBrainz.Data.ArtistCredit

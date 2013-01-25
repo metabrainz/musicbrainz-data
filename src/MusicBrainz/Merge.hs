@@ -120,7 +120,7 @@ instance Mergeable (Tree Artist) where
     ( Render (Maybe (Ref ArtistType)) mo
     , Render (Maybe (Ref Country)) mo
     , Render (Maybe (Ref Gender)) mo
-    , Render (Set.Set Alias) mo
+    , Render (Set.Set (Alias Artist)) mo
     , Render (Set.Set IPI) mo
     , Render (Set.Set LinkedRelationship) mo
     , Render Bool mo
@@ -158,7 +158,7 @@ instance Mergeable (Tree Label) where
     ( Render (Maybe Int) mo
     , Render (Maybe (Ref LabelType)) mo
     , Render (Maybe (Ref Country)) mo
-    , Render (Set.Set Alias) mo
+    , Render (Set.Set (Alias Label)) mo
     , Render (Set.Set IPI) mo
     , Render (Set.Set LinkedRelationship) mo
     , Render Bool mo
@@ -324,7 +324,7 @@ instance Mergeable (Tree Work) where
   type MergeRender (Tree Work) mo =
     ( Render (Maybe (Ref Language)) mo
     , Render (Maybe (Ref WorkType)) mo
-    , Render (Set.Set Alias) mo
+    , Render (Set.Set (Alias Work)) mo
     , Render (Set.Set ISWC) mo
     , Render (Set.Set LinkedRelationship) mo
     , Render Text mo )

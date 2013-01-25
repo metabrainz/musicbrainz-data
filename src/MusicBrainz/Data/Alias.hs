@@ -14,4 +14,4 @@ entity types. -}
 class ViewAliases a where
   {-| Fetch all aliases for a given revision of an entity. -}
   viewAliases :: (Functor m, MonadIO m)
-    => Ref (Revision a) -> MusicBrainzT m (Set.Set Alias)
+    => Ref (Revision a) -> MusicBrainzT m (Set.Set (Alias a))

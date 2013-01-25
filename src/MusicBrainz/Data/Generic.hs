@@ -53,7 +53,7 @@ import {-# SOURCE #-} MusicBrainz.Data.Work ()
 
 --------------------------------------------------------------------------------
 viewAliases :: (Functor m, MonadIO m)
-                 => String -> Ref (Revision a) -> MusicBrainzT m (Set.Set Alias)
+                 => String -> Ref (Revision a) -> MusicBrainzT m (Set.Set (Alias a))
 viewAliases entityName r = Set.fromList <$> query q (Only r)
   where
     q = fromString $ unlines

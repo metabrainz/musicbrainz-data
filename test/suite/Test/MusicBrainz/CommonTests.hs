@@ -125,7 +125,7 @@ testMerge makeTrees = do
 
 --------------------------------------------------------------------------------
 testAliases :: (Create a, FindLatest a, TreeAliases a, Update a, ViewAliases a, ViewRevision a)
-  => Tree a -> Alias -> MusicBrainz ()
+  => Tree a -> (Alias a) -> MusicBrainz ()
 testAliases tree alias = do
   editor <- entityRef <$> register acid2
 

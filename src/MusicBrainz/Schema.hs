@@ -63,7 +63,7 @@ instance FromField PUID where
   fromField f v = PUID <$> fromField f v
 
 
-instance FromField (Ref AliasType) where
+instance FromField (Ref (AliasType a)) where
   fromField f v = view reference <$> fromField f v
 
 
@@ -218,9 +218,13 @@ instance (FromField (Ref a), FromRow a) => FromRow (CoreEntity a) where
                        <*> fromRow
 
 
-instance FromRow Alias where
+instance FromRow (Alias a) where
   fromRow = Alias <$> field <*> field <*> fromRow <*> fromRow <*> field <*> field
                   <*> field <*> field
+
+
+instance FromRow (AliasType a) where
+  fromRow = AliasType <$> field
 
 
 instance FromRow Artist where
@@ -370,7 +374,7 @@ instance ToField PUID where
   toField (PUID id') = toField id'
 
 
-instance ToField (Ref AliasType) where
+instance ToField (Ref (AliasType a)) where
   toField = toField . dereference
 
 
@@ -483,7 +487,7 @@ instance ToField VoteScore where
 
 
 --------------------------------------------------------------------------------
-instance ToRow Alias where
+instance ToRow (Alias a) where
   toRow Alias{..} = [ toField aliasName
                     , toField aliasSortName
                     ]
@@ -495,6 +499,11 @@ instance ToRow Alias where
                     , toField aliasLocale
                     , toField aliasPrimaryForLocale
                     ]
+
+
+instance ToRow (AliasType a) where
+  toRow AliasType{..} = [ toField aliasTypeName
+                        ]
 
 
 instance ToRow Artist where

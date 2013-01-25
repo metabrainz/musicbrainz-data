@@ -13,7 +13,7 @@ always go through 'ipi' and 'iswc' to construct 'ISWC's.-}
 module MusicBrainz.Types.Internal
     (
       Artist(..)
-    , Alias(..)
+    , Alias(..), ArtistAlias, LabelAlias, WorkAlias
     , AliasType(..)
     , ArtistCredit
     , ArtistCreditName(..)
@@ -102,8 +102,8 @@ class (Eq (RefSpec a), Ord (RefSpec a), Show (RefSpec a)) => Referenceable a whe
   @(@'Int'@, @'Int'). -}
   type RefSpec a :: *
 
-instance Referenceable AliasType where
-  type RefSpec AliasType = Int
+instance Referenceable (AliasType a) where
+  type RefSpec (AliasType a) = Int
 
 instance Referenceable Artist where
   type RefSpec Artist = MBID Artist
@@ -192,21 +192,23 @@ dereference  = view (from reference)
 --------------------------------------------------------------------------------
 {-| An 'Iso'morphism to move between a set of attributes and a reference, and
 back again. -}
-reference :: Referenceable a => Simple Iso (RefSpec a) (Ref a)
+reference :: Referenceable a => Iso' (RefSpec a) (Ref a)
 reference = iso Ref (\(Ref r) -> r)
 
 
 --------------------------------------------------------------------------------
 {-| An alias is an alternative name for an entity, along with some information
 describing what that name represents, which locale it is for, and when it was
-in use. -}
-data Alias = Alias
+in use.
+
+@a@ is a phantom type describing what type of entity this alias belongs to.-}
+data Alias a = Alias
     { aliasName :: Text
     , aliasSortName :: Text
     , aliasBeginDate :: PartialDate
     , aliasEndDate :: PartialDate
     , aliasEnded :: Bool
-    , aliasType :: Maybe (Ref AliasType)
+    , aliasType :: Maybe (Ref (AliasType a))
     , aliasLocale :: Maybe Text
     , aliasPrimaryForLocale :: Bool
     }
@@ -214,11 +216,18 @@ data Alias = Alias
 
 
 --------------------------------------------------------------------------------
-{-| A description of the type of an alias. -}
-data AliasType = AliasType
+{-| A description of the type of an alias. @a@ is a phantom type, which should
+be one of 'ArtistAlias', 'LabelAlias' or 'WorkAlias'. It is used to signify
+exactly which type of alias this is (as each entity has its own distinct
+set of possible alias types.) -}
+data AliasType a = AliasType
     { aliasTypeName :: Text }
   deriving (Eq, Show)
 
+
+data ArtistAlias
+data LabelAlias
+data WorkAlias
 
 --------------------------------------------------------------------------------
 {-| The data about an artist in MusicBrainz. -}
@@ -307,7 +316,7 @@ entities. -}
 newtype IPI = IPI Text
   deriving (Eq, Ord, Show, Typeable)
 
-ipi :: SimplePrism Text IPI
+ipi :: Prism' Text IPI
 ipi = parsecPrism (\(IPI i) -> i) ipiParser
   where
     ipiParser = IPI . T.pack <$> (try parseIpi <|> parseCae)
@@ -488,7 +497,7 @@ is a chance of failure) and '^.' / 'remit' to extract the 'String' from an
 
 > aValidMbidValue ^. remit mbid :: String
 -}
-mbid :: SimplePrism String (MBID a)
+mbid :: Prism' String (MBID a)
 mbid = uuid.wrapped
 
 
@@ -520,7 +529,7 @@ data Tree a where
   ArtistTree :: {
     artistData :: Artist
   , artistRelationships :: Set.Set LinkedRelationship
-  , artistAliases :: Set.Set Alias
+  , artistAliases :: Set.Set (Alias Artist)
   , artistIpiCodes :: Set.Set IPI
   , artistAnnotation :: Text
   } -> Tree Artist
@@ -528,7 +537,7 @@ data Tree a where
   LabelTree :: {
     labelData :: Label
   , labelRelationships :: Set.Set LinkedRelationship
-  , labelAliases :: Set.Set Alias
+  , labelAliases :: Set.Set (Alias Label)
   , labelIpiCodes :: Set.Set IPI
   , labelAnnotation :: Text
   } -> Tree Label
@@ -563,7 +572,7 @@ data Tree a where
   WorkTree :: {
     workData :: Work
   , workRelationships :: Set.Set LinkedRelationship
-  , workAliases :: Set.Set Alias
+  , workAliases :: Set.Set (Alias Work)
   , workAnnotation :: Text
   , workIswcs :: Set.Set ISWC
   } -> Tree Work
@@ -707,7 +716,7 @@ data RelationshipTarget = ToArtist | ToLabel | ToRecording | ToRelease | ToRelea
 newtype ISWC = ISWC Text
   deriving (Eq, Ord, Show, Typeable)
 
-iswc :: SimplePrism Text ISWC
+iswc :: Prism' Text ISWC
 iswc = parsecPrism (\(ISWC t) -> t) iswcParser
   where
     iswcParser = do
@@ -731,7 +740,7 @@ iswc = parsecPrism (\(ISWC t) -> t) iswcParser
 newtype ISRC = ISRC Text
   deriving (Eq, Ord, Show, Typeable)
 
-isrc :: SimplePrism Text ISRC
+isrc :: Prism' Text ISRC
 isrc = parsecPrism (\(ISRC i) -> i) isrcParser
   where
     isrcParser = do
@@ -789,12 +798,12 @@ newtype PUID = PUID UUID
 instance Wrapped UUID UUID PUID PUID where
   wrapped = iso PUID $ \(PUID p) -> p
 
-puid :: SimplePrism String PUID
+puid :: Prism' String PUID
 puid = uuid.wrapped
 
 
 --------------------------------------------------------------------------------
-uuid :: SimplePrism String UUID
+uuid :: Prism' String UUID
 uuid = prism toString parseUUID
   where parseUUID s = case fromString s of
           Just u -> Right u
@@ -802,7 +811,7 @@ uuid = prism toString parseUUID
 
 
 --------------------------------------------------------------------------------
-parsecPrism :: Stream a Identity Char => (c -> a) -> Parsec a () c -> SimplePrism a c
+parsecPrism :: Stream a Identity Char => (c -> a) -> Parsec a () c -> Prism' a c
 parsecPrism extract parser = prism extract runParse
   where
     runParse t = either (const $ Left t) Right $

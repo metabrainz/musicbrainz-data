@@ -40,7 +40,7 @@ instance TreeRelationships Work where
 {-| Provide a single lens to view all aliases inside a 'Tree'. -}
 class TreeAliases a where
   {-| A 'Lens' into all aliases for any 'Tree'. -}
-  aliases :: Lens' (Tree a) (Set.Set Alias)
+  aliases :: Lens' (Tree a) (Set.Set (Alias a))
 
 instance TreeAliases Artist where
   aliases f artist = f (artistAliases artist) <&> \b -> artist { artistAliases = b }

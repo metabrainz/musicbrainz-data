@@ -24,6 +24,7 @@ module MusicBrainz.Data
     , eligibleForCleanup
    ) where
 
+import MusicBrainz.Data.AliasType ()
 import MusicBrainz.Data.Artist ()
 import MusicBrainz.Data.ArtistType ()
 import MusicBrainz.Data.Country ()
