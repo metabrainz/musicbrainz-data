@@ -20,6 +20,7 @@ module MusicBrainz.Monad
     , defaultConnectInfo, ConnectInfo(..)
     , query, query_, execute, execute_, returning, executeMany
     , selectValue
+    , begin, commit, rollback
     , withTransaction, withTransactionRollBack
     ) where
 
