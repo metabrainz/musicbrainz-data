@@ -355,11 +355,11 @@ instance ToField [Int] where
 
 
 instance ToField ISRC where
-  toField = toField . view (remit isrc)
+  toField = toField . view (re isrc)
 
 
 instance ToField ISWC where
-  toField = toField . view (remit iswc)
+  toField = toField . view (re iswc)
 
 
 instance ToField (MBID a) where
@@ -548,7 +548,7 @@ instance ToRow Gender where
 
 
 instance ToRow IPI where
-  toRow = pure . toField . view (remit ipi)
+  toRow = pure . toField . view (re ipi)
 
 
 instance ToRow Label where

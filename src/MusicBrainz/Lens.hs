@@ -12,7 +12,7 @@ import MusicBrainz
 {-| Provide a single lens to view all relationships inside a 'Tree'. -}
 class TreeRelationships a where
   {-| A 'Lens' into all relationships for any 'Tree'. -}
-  relationships :: SimpleLens (Tree a) (Set.Set LinkedRelationship)
+  relationships :: Lens' (Tree a) (Set.Set LinkedRelationship)
 
 instance TreeRelationships Artist where
   relationships f artist = f (artistRelationships artist) <&> \b -> artist { artistRelationships = b }
@@ -40,7 +40,7 @@ instance TreeRelationships Work where
 {-| Provide a single lens to view all aliases inside a 'Tree'. -}
 class TreeAliases a where
   {-| A 'Lens' into all aliases for any 'Tree'. -}
-  aliases :: SimpleLens (Tree a) (Set.Set Alias)
+  aliases :: Lens' (Tree a) (Set.Set Alias)
 
 instance TreeAliases Artist where
   aliases f artist = f (artistAliases artist) <&> \b -> artist { artistAliases = b }
@@ -56,7 +56,7 @@ instance TreeAliases Work where
 {-| Provide a single lens to view the annotation inside a 'Tree'. -}
 class TreeAnnotation a where
   {-| A 'Lens' into the annotation for any 'Tree'. -}
-  annotation :: SimpleLens (Tree a) Text
+  annotation :: Lens' (Tree a) Text
 
 instance TreeAnnotation Artist where
   annotation f artist = f (artistAnnotation artist) <&> \b -> artist { artistAnnotation = b }
@@ -81,7 +81,7 @@ instance TreeAnnotation Work where
 {-| Provide a single lens to view the IPI codes inside a 'Tree'. -}
 class TreeIPICodes a where
   {-| A 'Lens' into the annotation for any 'Tree'. -}
-  ipiCodes :: SimpleLens (Tree a) (Set.Set IPI)
+  ipiCodes :: Lens' (Tree a) (Set.Set IPI)
 
 instance TreeIPICodes Artist where
   ipiCodes f artist = f (artistIpiCodes artist) <&> \b -> artist { artistIpiCodes = b }
