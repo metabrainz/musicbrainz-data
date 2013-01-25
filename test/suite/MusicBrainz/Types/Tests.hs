@@ -41,7 +41,7 @@ testParseInvalidMbid = testProperty "Non UUID strings do not parse" $
 
 testMbidParseDisplay :: Test
 testMbidParseDisplay = testProperty "parseMbid (mbidToString m) = Just m" $
-  \validMbid -> validMbid ^. remit mbid ^? mbid == Just validMbid
+  \validMbid -> validMbid ^. re mbid ^? mbid == Just validMbid
 
 --------------------------------------------------------------------------------
 testNonEmptyPartialDates :: Test
