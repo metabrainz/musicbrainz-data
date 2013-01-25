@@ -13,7 +13,7 @@ always go through 'ipi' and 'iswc' to construct 'ISWC's.-}
 module MusicBrainz.Types.Internal
     (
       Artist(..)
-    , Alias(..), ArtistAlias, LabelAlias, WorkAlias
+    , Alias(..)
     , AliasType(..)
     , ArtistCredit
     , ArtistCreditName(..)
@@ -224,10 +224,6 @@ data AliasType a = AliasType
     { aliasTypeName :: Text }
   deriving (Eq, Show)
 
-
-data ArtistAlias
-data LabelAlias
-data WorkAlias
 
 --------------------------------------------------------------------------------
 {-| The data about an artist in MusicBrainz. -}
