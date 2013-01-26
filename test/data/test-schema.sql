@@ -128,7 +128,7 @@ ALTER DOMAIN musicbrainz.label_code OWNER TO musicbrainz;
 --
 
 CREATE DOMAIN locale AS character varying(30)
-	CONSTRAINT locale_check CHECK (((VALUE)::text ~ '^[a-zA-Z_]+$'::text));
+	CONSTRAINT locale_check CHECK (((VALUE)::text ~ '^[a-zA-Z_]+$'::text) OR VALUE IS NULL);
 
 
 ALTER DOMAIN musicbrainz.locale OWNER TO musicbrainz;
