@@ -150,6 +150,10 @@ instance ViewRevision Release where
 instance Editable Release where
   linkRevisionToEdit = Generic.linkRevisionToEdit "edit_release"
 
+  change = prism ReleaseChange extract
+    where extract a = case a of ReleaseChange c -> Right c
+                                _ -> Left a
+
 
 --------------------------------------------------------------------------------
 instance ViewTree Release where

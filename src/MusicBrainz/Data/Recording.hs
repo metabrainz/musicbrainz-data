@@ -12,6 +12,7 @@ module MusicBrainz.Data.Recording
     ) where
 
 import Control.Applicative
+import Control.Lens (prism)
 import Control.Monad (void)
 import Control.Monad.IO.Class
 import Data.Foldable (forM_)
@@ -129,6 +130,10 @@ instance ViewRevision Recording where
 --------------------------------------------------------------------------------
 instance Editable Recording where
   linkRevisionToEdit = Generic.linkRevisionToEdit "edit_recording"
+
+  change = prism RecordingChange extract
+    where extract a = case a of RecordingChange c -> Right c
+                                _ -> Left a
 
 
 --------------------------------------------------------------------------------

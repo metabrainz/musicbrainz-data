@@ -10,6 +10,7 @@ module MusicBrainz.Data.ReleaseGroup
     ( ) where
 
 import Control.Applicative
+import Control.Lens (prism)
 import Control.Monad (void)
 import Control.Monad.IO.Class (MonadIO)
 import Database.PostgreSQL.Simple (Only(..))
@@ -80,6 +81,10 @@ instance ViewRevision ReleaseGroup where
 --------------------------------------------------------------------------------
 instance Editable ReleaseGroup where
   linkRevisionToEdit = Generic.linkRevisionToEdit "edit_release_group"
+
+  change = prism ReleaseGroupChange extract
+    where extract a = case a of ReleaseGroupChange c -> Right c
+                                _ -> Left a
 
 
 --------------------------------------------------------------------------------

@@ -10,6 +10,7 @@ module MusicBrainz.Data.Label
     ( ) where
 
 import Control.Applicative
+import Control.Lens (prism)
 import Control.Monad.IO.Class (MonadIO)
 import Database.PostgreSQL.Simple (Only(..))
 import Database.PostgreSQL.Simple.SqlQQ
@@ -124,6 +125,10 @@ instance ViewTree Label where
 --------------------------------------------------------------------------------
 instance Editable Label where
   linkRevisionToEdit = Generic.linkRevisionToEdit "edit_label"
+
+  change = prism LabelChange extract
+    where extract a = case a of LabelChange c -> Right c
+                                _ -> Left a
 
 
 --------------------------------------------------------------------------------

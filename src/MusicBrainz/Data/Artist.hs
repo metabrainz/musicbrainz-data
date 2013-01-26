@@ -9,6 +9,7 @@ instances. -}
 module MusicBrainz.Data.Artist () where
 
 import Control.Applicative
+import Control.Lens (prism)
 import Control.Monad.IO.Class (MonadIO)
 import Database.PostgreSQL.Simple (Only(..))
 import Database.PostgreSQL.Simple.SqlQQ
@@ -63,6 +64,10 @@ instance ViewAnnotation Artist where
 --------------------------------------------------------------------------------
 instance Editable Artist where
   linkRevisionToEdit = Generic.linkRevisionToEdit "edit_artist"
+
+  change = prism ArtistChange extract
+    where extract a = case a of ArtistChange c -> Right c
+                                _ -> Left a
 
 
 --------------------------------------------------------------------------------

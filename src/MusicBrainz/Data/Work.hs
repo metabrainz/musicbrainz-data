@@ -14,6 +14,7 @@ module MusicBrainz.Data.Work
 
 import Control.Arrow ((&&&))
 import Control.Applicative
+import Control.Lens (prism)
 import Control.Monad.IO.Class (MonadIO)
 import Data.Foldable (forM_)
 import Data.Function (on)
@@ -128,6 +129,10 @@ instance ViewTree Work where
 --------------------------------------------------------------------------------
 instance Editable Work where
   linkRevisionToEdit = Generic.linkRevisionToEdit "edit_work"
+
+  change = prism WorkChange extract
+    where extract a = case a of WorkChange c -> Right c
+                                _ -> Left a
 
 
 --------------------------------------------------------------------------------

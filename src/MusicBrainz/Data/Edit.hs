@@ -11,6 +11,7 @@ module MusicBrainz.Data.Edit
     , findEditNotes
     , voteOnEdit
     , listVotes
+    , findEditsInvolvingAll
     , module MusicBrainz.Edit
     ) where
 
@@ -19,9 +20,14 @@ import Control.Lens
 import Control.Monad
 import Control.Monad.Trans
 import Control.Monad.Trans.Writer
+import Data.List (intercalate)
 import Data.Maybe (listToMaybe)
-import Database.PostgreSQL.Simple (Only(..), (:.)(..))
+import Data.Monoid (Monoid(..), mconcat)
+import Data.String (fromString)
+import Database.PostgreSQL.Simple (In(..), Only(..), (:.)(..))
 import Database.PostgreSQL.Simple.SqlQQ (sql)
+
+import qualified Data.Set as Set
 
 import MusicBrainz
 import MusicBrainz.Data.Artist ()
@@ -61,18 +67,25 @@ apply editId = do
       UNION ALL
       SELECT 'work'::text, revision_id FROM edit_work WHERE edit_id = ?
     |] (editId, editId, editId, editId, editId, editId, editId)
-    mergeUpstream (Change r) = mergeRevisionUpstream r
+
+    mergeUpstream (ArtistChange r) = mergeRevisionUpstream r
+    mergeUpstream (LabelChange r) = mergeRevisionUpstream r
+    mergeUpstream (RecordingChange r) = mergeRevisionUpstream r
+    mergeUpstream (ReleaseChange r) = mergeRevisionUpstream r
+    mergeUpstream (ReleaseGroupChange r) = mergeRevisionUpstream r
+    mergeUpstream (UrlChange r) = mergeRevisionUpstream r
+    mergeUpstream (WorkChange r) = mergeRevisionUpstream r
 
     toChange :: (String, Int) -> Change
     toChange (kind, revisionId) =
       case kind of
-        "artist"        -> Change (revisionId ^. reference :: Ref (Revision Artist))
-        "label"         -> Change (revisionId ^. reference :: Ref (Revision Label))
-        "recording"     -> Change (revisionId ^. reference :: Ref (Revision Recording))
-        "release"       -> Change (revisionId ^. reference :: Ref (Revision Release))
-        "release_group" -> Change (revisionId ^. reference :: Ref (Revision ReleaseGroup))
-        "url"           -> Change (revisionId ^. reference :: Ref (Revision Url))
-        "work"          -> Change (revisionId ^. reference :: Ref (Revision Work))
+        "artist"        -> review change (revisionId ^. reference :: Ref (Revision Artist))
+        "label"         -> review change (revisionId ^. reference :: Ref (Revision Label))
+        "recording"     -> review change (revisionId ^. reference :: Ref (Revision Recording))
+        "release"       -> review change (revisionId ^. reference :: Ref (Revision Release))
+        "release_group" -> review change (revisionId ^. reference :: Ref (Revision ReleaseGroup))
+        "url"           -> review change (revisionId ^. reference :: Ref (Revision Url))
+        "work"          -> review change (revisionId ^. reference :: Ref (Revision Work))
         _               -> error $ "Attempt to load an edit with revision of unknown kind '" ++ kind ++ "'"
 
     closeEdit = void $ execute
@@ -135,7 +148,14 @@ runEditM editId action = do
   mapM_ linkChange changes
   return (a, changes)
   where
-    linkChange (Change r) = linkRevisionToEdit editId r
+    linkChange (ArtistChange r) = linkRevisionToEdit editId r
+    linkChange (LabelChange r) = linkRevisionToEdit editId r
+    linkChange (RecordingChange r) = linkRevisionToEdit editId r
+    linkChange (ReleaseChange r) = linkRevisionToEdit editId r
+    linkChange (ReleaseGroupChange r) = linkRevisionToEdit editId r
+    linkChange (UrlChange r) = linkRevisionToEdit editId r
+    linkChange (WorkChange r) = linkRevisionToEdit editId r
+
 
 
 --------------------------------------------------------------------------------
@@ -190,3 +210,49 @@ listVotes editId =
 instance ResolveReference Edit where
   resolveReference editId = listToMaybe . map fromOnly <$> query q (Only editId)
     where q = [sql| SELECT edit_id FROM edit WHERE edit_id = ? |]
+
+
+--------------------------------------------------------------------------------
+instance (Monoid a, Monoid b, Monoid c, Monoid d, Monoid e, Monoid f, Monoid g) => Monoid (a, b, c, d, e, f, g) where
+  mempty = (mempty, mempty, mempty, mempty, mempty, mempty, mempty)
+  (a, b, c, d, e, f, g) `mappend` (a', b', c', d', e', f', g') =
+    (a `mappend` a', b `mappend` b', c `mappend` c', d `mappend` d', e `mappend` e', f `mappend` f', g `mappend` g')
+
+findEditsInvolvingAll :: (Functor m, MonadIO m) =>
+  [Change] -> MusicBrainzT m (Set.Set (Ref Edit))
+findEditsInvolvingAll changes =
+    Set.fromList . map fromOnly <$> query q (map In $ filter (not . null) $ allRevisions)
+  where
+    q = fromString $ "SELECT edit_id FROM edit " ++
+                     (intercalate " " joins) ++
+                     " WHERE " ++
+                     (intercalate " AND " preds)
+      where
+
+    (artists, labels, recordings, releases, releaseGroups, urls, works) =
+        mconcat $ map extractChange changes
+      where
+        takeChange position c = position .~ [dereference c] $ ([], [], [], [], [], [], [])
+
+        extractChange (ArtistChange c)       = takeChange _1 c
+        extractChange (LabelChange c)        = takeChange _2 c
+        extractChange (RecordingChange c)    = takeChange _3 c
+        extractChange (ReleaseChange c)      = takeChange _4 c
+        extractChange (ReleaseGroupChange c) = takeChange _5 c
+        extractChange (UrlChange c)          = takeChange _6 c
+        extractChange (WorkChange c)         = takeChange _7 c
+
+    allRevisions = [ artists, labels, recordings, releases, releaseGroups, urls, works ]
+
+    (joins, preds) =
+        let joinOn [] _ = ([], [])
+            joinOn _  t = ( [ "JOIN " ++ t ++ " USING (edit_id) " ]
+                          , [ t ++ ".revision_id IN ?" ]
+                          )
+        in mconcat [ artists `joinOn` "edit_artist"
+                   , labels `joinOn` "edit_label"
+                   , recordings `joinOn` "edit_recording"
+                   , releaseGroups `joinOn` "edit_release_group"
+                   , urls `joinOn` "edit_url"
+                   , works `joinOn` "edit_work"
+                   ]

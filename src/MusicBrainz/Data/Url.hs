@@ -4,6 +4,7 @@
 module MusicBrainz.Data.Url () where
 
 import Control.Applicative
+import Control.Lens (prism)
 import Control.Monad.IO.Class (MonadIO)
 import Database.PostgreSQL.Simple (Only(..))
 import Database.PostgreSQL.Simple.SqlQQ (sql)
@@ -30,6 +31,11 @@ instance HoldsRelationships Url where
 --------------------------------------------------------------------------------
 instance Editable Url where
   linkRevisionToEdit = Generic.linkRevisionToEdit "edit_url"
+
+  change = prism UrlChange extract
+    where extract a = case a of UrlChange c -> Right c
+                                _ -> Left a
+
 
 --------------------------------------------------------------------------------
 instance MasterRevision Url where
