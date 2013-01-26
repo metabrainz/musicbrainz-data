@@ -7,7 +7,7 @@
 {-# LANGUAGE UndecidableInstances #-}
 {-| How to merge various types of data, with the possibility of conflicts. -}
 module MusicBrainz.Merge
-    ( execMerge, runMerge, mergeEq, Mergeable(..), Merge ) where
+    ( execMerge, Hunk(..), runMerge, mergeEq, Mergeable(..), Merge ) where
 
 import Control.Applicative
 import Data.Functor.Compose

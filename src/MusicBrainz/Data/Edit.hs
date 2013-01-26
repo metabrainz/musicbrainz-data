@@ -1,3 +1,4 @@
+{-# LANGUAGE ConstraintKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
@@ -12,6 +13,7 @@ module MusicBrainz.Data.Edit
     , voteOnEdit
     , listVotes
     , findEditsInvolvingAll
+    , viewChanges
     , module MusicBrainz.Edit
     ) where
 
@@ -49,25 +51,9 @@ import MusicBrainz.Types.Internal
 {-| Apply an edit by merging all revisions in the edit upstream. -}
 apply :: Ref Edit -> MusicBrainz ()
 apply editId = do
-  getChanges >>= mapM_ mergeUpstream
+  getChanges editId >>= mapM_ mergeUpstream
   closeEdit
   where
-    getChanges = map toChange <$> query [sql|
-      SELECT 'artist'::text, revision_id FROM edit_artist WHERE edit_id = ?
-      UNION ALL
-      SELECT 'label'::text, revision_id FROM edit_label WHERE edit_id = ?
-      UNION ALL
-      SELECT 'recording'::text, revision_id FROM edit_recording WHERE edit_id = ?
-      UNION ALL
-      SELECT 'release'::text, revision_id FROM edit_release WHERE edit_id = ?
-      UNION ALL
-      SELECT 'release_group'::text, revision_id FROM edit_release_group WHERE edit_id = ?
-      UNION ALL
-      SELECT 'url'::text, revision_id FROM edit_url WHERE edit_id = ?
-      UNION ALL
-      SELECT 'work'::text, revision_id FROM edit_work WHERE edit_id = ?
-    |] (editId, editId, editId, editId, editId, editId, editId)
-
     mergeUpstream (ArtistChange r) = mergeRevisionUpstream r
     mergeUpstream (LabelChange r) = mergeRevisionUpstream r
     mergeUpstream (RecordingChange r) = mergeRevisionUpstream r
@@ -75,18 +61,6 @@ apply editId = do
     mergeUpstream (ReleaseGroupChange r) = mergeRevisionUpstream r
     mergeUpstream (UrlChange r) = mergeRevisionUpstream r
     mergeUpstream (WorkChange r) = mergeRevisionUpstream r
-
-    toChange :: (String, Int) -> Change
-    toChange (kind, revisionId) =
-      case kind of
-        "artist"        -> review change (revisionId ^. reference :: Ref (Revision Artist))
-        "label"         -> review change (revisionId ^. reference :: Ref (Revision Label))
-        "recording"     -> review change (revisionId ^. reference :: Ref (Revision Recording))
-        "release"       -> review change (revisionId ^. reference :: Ref (Revision Release))
-        "release_group" -> review change (revisionId ^. reference :: Ref (Revision ReleaseGroup))
-        "url"           -> review change (revisionId ^. reference :: Ref (Revision Url))
-        "work"          -> review change (revisionId ^. reference :: Ref (Revision Work))
-        _               -> error $ "Attempt to load an edit with revision of unknown kind '" ++ kind ++ "'"
 
     closeEdit = void $ execute
       [sql| UPDATE edit SET status = ? WHERE edit_id = ? |] (Closed, editId)
@@ -256,3 +230,71 @@ findEditsInvolvingAll changes =
                    , urls `joinOn` "edit_url"
                    , works `joinOn` "edit_work"
                    ]
+
+
+--------------------------------------------------------------------------------
+viewChanges :: (Applicative m, Functor m, MonadIO m
+               , MergeRender (Tree Artist) mo
+               , MergeRender (Tree Label) mo
+               , MergeRender (Tree Recording) mo
+               , MergeRender (Tree Release) mo
+               , MergeRender (Tree ReleaseGroup) mo
+               , MergeRender (Tree Url) mo
+               , MergeRender (Tree Work) mo)
+  => Ref Edit -> MusicBrainzT m [[Hunk mo]]
+viewChanges e =
+    getChanges e >>= mapM view1
+  where
+    view1 (ArtistChange r) = view1' r
+    view1 (LabelChange r) = view1' r
+    view1 (RecordingChange r) = view1' r
+    view1 (ReleaseChange r) = view1' r
+    view1 (ReleaseGroupChange r) = view1' r
+    view1 (UrlChange r) = view1' r
+    view1 (WorkChange r) = view1' r
+
+    view1' new = do
+      newVer <- viewRevision new
+      let artistId = coreRef newVer
+
+      current <- findLatest artistId
+      ancestor' <- mergeBase new (coreRevision current) >>= traverse viewRevision
+      case ancestor' of
+        Nothing -> error "Unable to merge: no common ancestor"
+        Just ancestor -> do
+          newTree <- viewTree new
+          currentTree <- viewTree (coreRevision current)
+          ancestorTree <- viewTree (coreRevision ancestor)
+
+          return $ fst $ execMerge newTree currentTree ancestorTree merge
+
+
+--------------------------------------------------------------------------------
+getChanges :: (Functor m, MonadIO m) => Ref Edit -> MusicBrainzT m [Change]
+getChanges editId = map toChange <$> query [sql|
+      SELECT 'artist'::text, revision_id FROM edit_artist WHERE edit_id = ?
+      UNION ALL
+      SELECT 'label'::text, revision_id FROM edit_label WHERE edit_id = ?
+      UNION ALL
+      SELECT 'recording'::text, revision_id FROM edit_recording WHERE edit_id = ?
+      UNION ALL
+      SELECT 'release'::text, revision_id FROM edit_release WHERE edit_id = ?
+      UNION ALL
+      SELECT 'release_group'::text, revision_id FROM edit_release_group WHERE edit_id = ?
+      UNION ALL
+      SELECT 'url'::text, revision_id FROM edit_url WHERE edit_id = ?
+      UNION ALL
+      SELECT 'work'::text, revision_id FROM edit_work WHERE edit_id = ?
+    |] (editId, editId, editId, editId, editId, editId, editId)
+  where
+    toChange :: (String, Int) -> Change
+    toChange (kind, revisionId) =
+      case kind of
+        "artist"        -> review change (revisionId ^. reference :: Ref (Revision Artist))
+        "label"         -> review change (revisionId ^. reference :: Ref (Revision Label))
+        "recording"     -> review change (revisionId ^. reference :: Ref (Revision Recording))
+        "release"       -> review change (revisionId ^. reference :: Ref (Revision Release))
+        "release_group" -> review change (revisionId ^. reference :: Ref (Revision ReleaseGroup))
+        "url"           -> review change (revisionId ^. reference :: Ref (Revision Url))
+        "work"          -> review change (revisionId ^. reference :: Ref (Revision Work))
+        _               -> error $ "Attempt to load an edit with revision of unknown kind '" ++ kind ++ "'"
