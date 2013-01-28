@@ -103,6 +103,10 @@ testUpdate start end = do
   liftIO $
     coreRevision created `Set.member` parents @? "Is parented to starting revision"
 
+  children <- revisionChildren (coreRevision created)
+  liftIO $
+    coreRevision found `Set.member` children @? "Original entity has revision as a child"
+
 
 --------------------------------------------------------------------------------
 testMerge :: (RefSpec a ~ MBID a, Merge a, Referenceable a, ResolveReference a, Create a, ViewRevision a)

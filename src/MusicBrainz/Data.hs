@@ -18,6 +18,7 @@ module MusicBrainz.Data
     , Update(..)
 
       -- * Working with revisions
+    , revisionChildren
     , revisionParents
 
       -- * Cleaning up old data
