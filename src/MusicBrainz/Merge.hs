@@ -331,18 +331,18 @@ instance Mergeable (Tree Work) where
     , Render Text mo )
 
   merge =
-    WorkTree <$> workData `mergedVia` mergeWorkData
-             <*> workRelationships `mergedVia` merge
-             <*> workAliases `mergedVia` merge
-             <*> workAnnotation `mergedVia` mergeEq
-             <*> workIswcs `mergedVia` merge
+    WorkTree <$> "Work" .> workData `mergedVia` mergeWorkData
+             <*> "Relationships" .> workRelationships `mergedVia` merge
+             <*> "Aliases" .> workAliases `mergedVia` merge
+             <*> "Annotation" .> workAnnotation `mergedVia` mergeEq
+             <*> "ISWCs" .> workIswcs `mergedVia` merge
     where
       mergeWorkData =
         Work
-              <$> workName `mergedVia` mergeEq
-              <*> workComment `mergedVia` mergeEq
-              <*> workType `mergedVia` mergeEq
-              <*> workLanguage `mergedVia` mergeEq
+              <$> "Name" .> workName `mergedVia` mergeEq
+              <*> "Comment" .> workComment `mergedVia` mergeEq
+              <*> "Type" .> workType `mergedVia` mergeEq
+              <*> "Language" .> workLanguage `mergedVia` mergeEq
 
 
 --------------------------------------------------------------------------------
