@@ -193,7 +193,7 @@ instance (Monoid a, Monoid b, Monoid c, Monoid d, Monoid e, Monoid f, Monoid g) 
     (a `mappend` a', b `mappend` b', c `mappend` c', d `mappend` d', e `mappend` e', f `mappend` f', g `mappend` g')
 
 findEditsInvolvingAll :: (Functor m, MonadIO m) =>
-  [Change] -> MusicBrainzT m (Set.Set (Ref Edit))
+  [CoreEntityRef] -> MusicBrainzT m (Set.Set (Ref Edit))
 findEditsInvolvingAll changes =
     Set.fromList . map fromOnly <$> query q (map In $ filter (not . null) $ allRevisions)
   where
@@ -204,31 +204,33 @@ findEditsInvolvingAll changes =
       where
 
     (artists, labels, recordings, releases, releaseGroups, urls, works) =
-        mconcat $ map extractChange changes
+        mconcat $ map extractRef changes
       where
-        takeChange position c = position .~ [dereference c] $ ([], [], [], [], [], [], [])
+        takeRef position c = position .~ [dereference c ^. unwrapped'] $
+          ([], [], [], [], [], [], [])
 
-        extractChange (ArtistChange c)       = takeChange _1 c
-        extractChange (LabelChange c)        = takeChange _2 c
-        extractChange (RecordingChange c)    = takeChange _3 c
-        extractChange (ReleaseChange c)      = takeChange _4 c
-        extractChange (ReleaseGroupChange c) = takeChange _5 c
-        extractChange (UrlChange c)          = takeChange _6 c
-        extractChange (WorkChange c)         = takeChange _7 c
+        extractRef (ArtistRef c)       = takeRef _1 c
+        extractRef (LabelRef c)        = takeRef _2 c
+        extractRef (RecordingRef c)    = takeRef _3 c
+        extractRef (ReleaseRef c)      = takeRef _4 c
+        extractRef (ReleaseGroupRef c) = takeRef _5 c
+        extractRef (UrlRef c)          = takeRef _6 c
+        extractRef (WorkRef c)         = takeRef _7 c
 
     allRevisions = [ artists, labels, recordings, releases, releaseGroups, urls, works ]
 
     (joins, preds) =
         let joinOn [] _ = ([], [])
-            joinOn _  t = ( [ "JOIN " ++ t ++ " USING (edit_id) " ]
-                          , [ t ++ ".revision_id IN ?" ]
+            joinOn _  t = ( [ "JOIN edit_" ++ t ++ " USING (edit_id) "
+                            , "JOIN " ++ t ++ "_revision " ++ t ++ " ON (" ++ t ++ ".revision_id = edit_" ++ t ++ ".revision_id)" ]
+                          , [ "" ++ t ++ "." ++ t ++ "_id IN ?" ]
                           )
-        in mconcat [ artists `joinOn` "edit_artist"
-                   , labels `joinOn` "edit_label"
-                   , recordings `joinOn` "edit_recording"
-                   , releaseGroups `joinOn` "edit_release_group"
-                   , urls `joinOn` "edit_url"
-                   , works `joinOn` "edit_work"
+        in mconcat [ artists `joinOn` "artist"
+                   , labels `joinOn` "label"
+                   , recordings `joinOn` "recording"
+                   , releaseGroups `joinOn` "release_group"
+                   , urls `joinOn` "url"
+                   , works `joinOn` "work"
                    ]
 
 

@@ -7,6 +7,7 @@ editing in MusicBrainz. -}
 module MusicBrainz.Edit
     ( Edit(..)
     , Change(..)
+    , CoreEntityRef(..)
     , Editable(..)
     , EditNote(..)
     , EditStatus(..)
@@ -37,6 +38,16 @@ data Change = ArtistChange (Ref (Revision Artist))
             | ReleaseGroupChange (Ref (Revision ReleaseGroup))
             | UrlChange (Ref (Revision Url))
             | WorkChange (Ref (Revision Work))
+
+
+--------------------------------------------------------------------------------
+data CoreEntityRef = ArtistRef (Ref Artist)
+                   | LabelRef (Ref Label)
+                   | RecordingRef (Ref Recording)
+                   | ReleaseRef (Ref Release)
+                   | ReleaseGroupRef (Ref ReleaseGroup)
+                   | UrlRef (Ref Url)
+                   | WorkRef (Ref Work)
 
 
 --------------------------------------------------------------------------------
