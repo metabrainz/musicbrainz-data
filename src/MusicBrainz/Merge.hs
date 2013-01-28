@@ -331,7 +331,7 @@ instance Mergeable (Tree Work) where
     , Render Text mo )
 
   merge =
-    WorkTree <$> "Work" .> workData `mergedVia` mergeWorkData
+    WorkTree <$> workData `mergedVia` mergeWorkData
              <*> "Relationships" .> workRelationships `mergedVia` merge
              <*> "Aliases" .> workAliases `mergedVia` merge
              <*> "Annotation" .> workAnnotation `mergedVia` mergeEq
