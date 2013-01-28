@@ -7,7 +7,7 @@
 {-# LANGUAGE UndecidableInstances #-}
 {-| How to merge various types of data, with the possibility of conflicts. -}
 module MusicBrainz.Merge
-    ( execMerge, Hunk(..), runMerge, mergeEq, Mergeable(..), Merge, Render(..) ) where
+    ( execMerge, Hunk(..), runMerge, mergeEq, Mergeable(..), Merge, MergeScope(..), Render(..) ) where
 
 import Control.Applicative
 import Data.Functor.Compose
@@ -50,6 +50,7 @@ newtype Merge e mo a = Merge { getMerge :: Compose ((->) (MergeScope e)) (Produc
 nodes can be a 'Section' containing a forest of 'Hunk's, or they can either be
 'Ok' or in 'Conflict'. -}
 data Hunk a = Section String [Hunk a] | Ok a | Conflict a
+  deriving (Show)
 
 {-| Scope the output forest of 'Hunk's from 'Merge' into a new 'Section' with
 a given label. -}
