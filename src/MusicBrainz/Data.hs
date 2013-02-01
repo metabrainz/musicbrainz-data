@@ -9,6 +9,7 @@ module MusicBrainz.Data
     , ViewAnnotation(..)
     , ViewIPICodes(..)
     , ViewTree(..)
+    , viewRelationships
 
       -- * Editing data
     , Add(..)
@@ -37,7 +38,7 @@ import MusicBrainz.Data.LabelType ()
 import MusicBrainz.Data.Language ()
 import MusicBrainz.Data.MediumFormat ()
 import MusicBrainz.Data.Recording ()
-import MusicBrainz.Data.Relationship ()
+import MusicBrainz.Data.Relationship (viewRelationships)
 import MusicBrainz.Data.Release ()
 import MusicBrainz.Data.ReleaseGroup ()
 import MusicBrainz.Data.ReleaseGroupType ()
