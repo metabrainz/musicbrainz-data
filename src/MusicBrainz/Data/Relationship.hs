@@ -10,6 +10,7 @@ module MusicBrainz.Data.Relationship
 import Control.Applicative
 import Control.Lens
 import Control.Monad.IO.Class (MonadIO)
+import Data.Maybe (listToMaybe)
 import Data.Monoid (mappend, mempty)
 import Database.PostgreSQL.Simple (Only(..), In(..))
 import Database.PostgreSQL.Simple.SqlQQ (sql)
@@ -20,13 +21,32 @@ import qualified Data.Set as Set
 import MusicBrainz
 import MusicBrainz.Data.Add
 import {-# SOURCE #-} MusicBrainz.Data.Relationship.Internal
+import MusicBrainz.Data.FindLatest
 import MusicBrainz.Types.Internal
 
 --------------------------------------------------------------------------------
 instance Add RelationshipType where
-  add rt = head <$>
-    query [sql| INSERT INTO relationship_type (name) VALUES (?)
-                RETURNING relationship_type_id, name |] rt
+  add type' = head <$>
+    query [sql| INSERT INTO link_type (entity_type0, entity_type1, name,
+                    description, link_phrase, reverse_link_phrase,
+                    short_link_phrase)
+                VALUES ( 'undefined: Add RelationshipType'
+                       , 'undefined: Add RelationshipType'
+                       , ?
+                       , 'undefined: Add RelationshipType'
+                       , 'undefined: Add RelationshipType'
+                       , 'undefined: Add RelationshipType'
+                       , 'undefined: Add RelationshipType'
+                       , 'undefined: Add RelationshipType'
+                       )
+                RETURNING id, name |] type'
+
+
+--------------------------------------------------------------------------------
+instance ResolveReference RelationshipType where
+  resolveReference relationshipTypeId = listToMaybe . map fromOnly <$>
+    query [sql| SELECT id FROM link_type WHERE id = ? |]
+      (Only relationshipTypeId)
 
 
 --------------------------------------------------------------------------------

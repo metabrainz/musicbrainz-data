@@ -2945,39 +2945,6 @@ ALTER SEQUENCE relationship_relationship_id_seq OWNED BY relationship.relationsh
 
 
 --
--- Name: relationship_type; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
---
-
-CREATE TABLE relationship_type (
-    relationship_type_id integer NOT NULL,
-    name text NOT NULL
-);
-
-
-ALTER TABLE musicbrainz.relationship_type OWNER TO musicbrainz;
-
---
--- Name: relationship_type_relationship_type_id_seq; Type: SEQUENCE; Schema: musicbrainz; Owner: musicbrainz
---
-
-CREATE SEQUENCE relationship_type_relationship_type_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER TABLE musicbrainz.relationship_type_relationship_type_id_seq OWNER TO musicbrainz;
-
---
--- Name: relationship_type_relationship_type_id_seq; Type: SEQUENCE OWNED BY; Schema: musicbrainz; Owner: musicbrainz
---
-
-ALTER SEQUENCE relationship_type_relationship_type_id_seq OWNED BY relationship_type.relationship_type_id;
-
-
---
 -- Name: release; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
 --
 
@@ -4303,13 +4270,6 @@ ALTER TABLE ONLY relationship_attribute_type ALTER COLUMN attribute_type_id SET 
 
 
 --
--- Name: relationship_type_id; Type: DEFAULT; Schema: musicbrainz; Owner: musicbrainz
---
-
-ALTER TABLE ONLY relationship_type ALTER COLUMN relationship_type_id SET DEFAULT nextval('relationship_type_relationship_type_id_seq'::regclass);
-
-
---
 -- Name: release_data_id; Type: DEFAULT; Schema: musicbrainz; Owner: musicbrainz
 --
 
@@ -5494,14 +5454,6 @@ ALTER TABLE ONLY relationship_attribute_type
 
 ALTER TABLE ONLY relationship
     ADD CONSTRAINT relationship_pkey PRIMARY KEY (relationship_id);
-
-
---
--- Name: relationship_type_pkey; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
---
-
-ALTER TABLE ONLY relationship_type
-    ADD CONSTRAINT relationship_type_pkey PRIMARY KEY (relationship_type_id);
 
 
 --
@@ -7502,7 +7454,7 @@ ALTER TABLE ONLY relationship_attribute
 --
 
 ALTER TABLE ONLY relationship
-    ADD CONSTRAINT relationship_relationship_type_id_fkey FOREIGN KEY (relationship_type_id) REFERENCES relationship_type(relationship_type_id);
+    ADD CONSTRAINT relationship_relationship_type_id_fkey FOREIGN KEY (relationship_type_id) REFERENCES link_type(id);
 
 
 --
