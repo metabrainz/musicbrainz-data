@@ -29,7 +29,7 @@ instance Add RelationshipType where
   add type' = head <$>
     query [sql| INSERT INTO link_type (entity_type0, entity_type1, name,
                     description, link_phrase, reverse_link_phrase,
-                    short_link_phrase)
+                    short_link_phrase, gid)
                 VALUES ( 'undefined: Add RelationshipType'
                        , 'undefined: Add RelationshipType'
                        , ?
@@ -37,7 +37,7 @@ instance Add RelationshipType where
                        , 'undefined: Add RelationshipType'
                        , 'undefined: Add RelationshipType'
                        , 'undefined: Add RelationshipType'
-                       , 'undefined: Add RelationshipType'
+                       , uuid_generate_v4()
                        )
                 RETURNING id, name |] type'
 
@@ -50,18 +50,25 @@ instance ResolveReference RelationshipType where
 
 
 --------------------------------------------------------------------------------
+instance ResolveReference RelationshipAttribute where
+  resolveReference attributeId = listToMaybe . map fromOnly <$>
+    query [sql| SELECT id FROM link_attribute_type WHERE id = ? |]
+      (Only attributeId)
+
+
+--------------------------------------------------------------------------------
 inflateRelationships :: (Functor m, MonadIO m) => [Int] -> MusicBrainzT m (Map.Map Int Relationship)
 inflateRelationships relationshipIds = do
   attrs <- Map.fromListWith mappend . over (mapped._2) Set.singleton
     <$> allAttributes
 
   relRows <- query [sql|
-      SELECT relationship_id, relationship_type_id,
+      SELECT id, link_type,
         begin_date_year, begin_date_month, begin_date_day,
         end_date_year, end_date_month, end_date_day,
         ended
-      FROM relationship
-      WHERE relationship_id IN ?
+      FROM link
+      WHERE id IN ?
     |] (Only $ In relationshipIds)
 
   return $ Map.fromList $ map (constructRelationship attrs) relRows
@@ -69,9 +76,9 @@ inflateRelationships relationshipIds = do
   where
     allAttributes :: MonadIO m => MusicBrainzT m [(Int, Ref RelationshipAttribute)]
     allAttributes = query [sql|
-      SELECT relationship_id, attribute_type_id
-      FROM relationship_attribute
-      WHERE relationship_id IN ?
+      SELECT link, attribute_type
+      FROM link_attribute
+      WHERE link IN ?
     |] (Only $ In relationshipIds)
 
     constructRelationship attrMap

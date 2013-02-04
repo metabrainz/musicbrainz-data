@@ -306,11 +306,11 @@ addRelationship source treeId rel = case rel of
   where
     go target targetId relInfo = do
       relationshipId <- selectValue $ query [sql|
-        INSERT INTO relationship (relationship_type_id,
+        INSERT INTO link (link_type,
           begin_date_year, begin_date_month, begin_date_day,
           end_date_year, end_date_month, end_date_day,
           ended)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING relationship_id |] relInfo
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING id |] relInfo
       let q = fromString $ unlines
             [ "INSERT INTO l_" ++ source ++ "_" ++ target ++ " "
             , "(" ++ source ++ "_tree_id, " ++ target ++ "_id, relationship_id) "
