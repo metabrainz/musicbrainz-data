@@ -426,6 +426,10 @@ instance ToField (Ref Recording) where
   toField = toField . dereference
 
 
+instance ToField (Ref RelationshipAttribute) where
+  toField = toField . dereference
+
+
 instance ToField (Ref RelationshipType) where
   toField = toField . dereference
 

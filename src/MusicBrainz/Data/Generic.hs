@@ -1,6 +1,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TupleSections #-}
 module MusicBrainz.Data.Generic
     ( viewAliases
     , viewAnnotation
@@ -311,6 +312,8 @@ addRelationship source treeId rel = case rel of
           end_date_year, end_date_month, end_date_day,
           ended)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING id |] relInfo
+      executeMany [sql| INSERT INTO link_attribute (link, attribute_type) VALUES (?, ?) |]
+        (map (relationshipId, ) $ Set.toList $ relAttributes relInfo)
       let q = fromString $ unlines
             [ "INSERT INTO l_" ++ source ++ "_" ++ target ++ " "
             , "(" ++ source ++ "_tree_id, " ++ target ++ "_id, relationship_id) "
