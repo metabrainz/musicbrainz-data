@@ -16,6 +16,7 @@ import Database.PostgreSQL.Simple.SqlQQ
 import qualified Data.Set as Set
 
 import MusicBrainz
+import MusicBrainz.Data.GetEntity
 
 --------------------------------------------------------------------------------
 {-| Attempt to resolve a the revision which 2 revisions forked from. -}
@@ -61,3 +62,11 @@ revisionChildren r =
   Set.fromList . map fromOnly <$> query q (Only r)
   where q = [sql| SELECT revision_id FROM revision_parent
                   WHERE parent_revision_id = ? |]
+
+
+--------------------------------------------------------------------------------
+instance GetEntity (Revision a) where
+  getEntity r = head <$>
+    query [sql| SELECT revision_id, created_at
+                FROM revision
+                WHERE revision_id = ? |] (Only r)

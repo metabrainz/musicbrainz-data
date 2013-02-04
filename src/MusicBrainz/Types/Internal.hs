@@ -53,7 +53,7 @@ module MusicBrainz.Types.Internal
     , ReleaseLabel(..)
     , ReleasePackaging(..)
     , ReleaseStatus(..)
-    , Revision
+    , Revision(..)
     , Script(..)
     , Track(..)
     , Tree(..)
@@ -76,6 +76,7 @@ import Control.Monad (mfilter)
 import Data.Functor.Identity (Identity)
 import Data.Monoid (mconcat, (<>))
 import Data.Text (Text)
+import Data.Time (UTCTime)
 import Data.Typeable (Typeable)
 import Data.UUID
 import GHC.Enum (boundedEnumFrom)
@@ -514,7 +515,8 @@ deriving instance (Eq a, Show a) => Show (CoreEntity a)
 {-| A revision is a version of an entity at a specific point in time. The type
 @a@ indicates what type of entity this is a revision of (e.g., @Revision Artist@
 means a specific revision of an 'Artist'). -}
-data Revision a
+data Revision a = Revision { revisionCreatedAt :: UTCTime }
+  deriving (Eq, Show)
 
 
 --------------------------------------------------------------------------------

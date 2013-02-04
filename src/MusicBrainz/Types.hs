@@ -66,7 +66,7 @@ module MusicBrainz.Types
 
       -- * Versioning
     , CoreEntity, coreRef, coreRevision, coreData
-    , Revision
+    , Revision(revisionCreatedAt)
     , Tree(..)
     , treeData
 

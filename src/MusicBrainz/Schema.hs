@@ -322,6 +322,10 @@ instance FromRow ReleaseStatus where
   fromRow = ReleaseStatus <$> field
 
 
+instance FromRow (Revision a) where
+  fromRow = Revision <$> field
+
+
 instance FromRow Script where
   fromRow = Script <$> field <*> field <*> field
 

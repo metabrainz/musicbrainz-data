@@ -1,6 +1,7 @@
 module MusicBrainz.Data
     ( -- * Fetching entities
       FindLatest(..)
+    , GetEntity(..)
     , ResolveReference(..)
     , ViewRevision(..)
 
@@ -42,6 +43,7 @@ import MusicBrainz.Data.Relationship (viewRelationships)
 import MusicBrainz.Data.Release ()
 import MusicBrainz.Data.ReleaseGroup ()
 import MusicBrainz.Data.ReleaseGroupType ()
+import MusicBrainz.Data.Revision ()
 import MusicBrainz.Data.Script ()
 import MusicBrainz.Data.Url ()
 import MusicBrainz.Data.WorkType ()
@@ -53,6 +55,7 @@ import MusicBrainz.Data.Annotation
 import MusicBrainz.Data.Cleanup
 import MusicBrainz.Data.Create
 import MusicBrainz.Data.FindLatest
+import MusicBrainz.Data.GetEntity
 import MusicBrainz.Data.IPI
 import MusicBrainz.Data.Merge
 import MusicBrainz.Data.Revision

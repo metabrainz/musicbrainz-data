@@ -26,6 +26,7 @@ Library
     parsec >= 3,
     postgresql-simple >= 0.2.4.1 && < 0.3,
     text >= 0.11 && < 0.12,
+    time >= 1.4,
     transformers >= 0.3 && < 0.4,
     uuid >= 1.2.7 && < 1.3
   exposed-modules:
@@ -45,6 +46,7 @@ Library
     MusicBrainz.Data.Editor
     MusicBrainz.Data.FindLatest
     MusicBrainz.Data.Gender
+    MusicBrainz.Data.GetEntity
     MusicBrainz.Data.IPI
     MusicBrainz.Data.Label
     MusicBrainz.Data.LabelType
