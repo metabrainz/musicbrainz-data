@@ -2,6 +2,7 @@ module MusicBrainz.Data
     ( -- * Fetching entities
       FindLatest(..)
     , GetEntity(..)
+    , HoldsRelationships
     , ResolveReference(..)
     , ViewRevision(..)
 
@@ -40,6 +41,7 @@ import MusicBrainz.Data.Language ()
 import MusicBrainz.Data.MediumFormat ()
 import MusicBrainz.Data.Recording ()
 import MusicBrainz.Data.Relationship (viewRelationships)
+import MusicBrainz.Data.Relationship.Internal (HoldsRelationships)
 import MusicBrainz.Data.Release ()
 import MusicBrainz.Data.ReleaseGroup ()
 import MusicBrainz.Data.ReleaseGroupType ()

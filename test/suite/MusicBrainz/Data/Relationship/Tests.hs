@@ -140,7 +140,7 @@ testRelationships = testGroup "Can have relationships between core entities"
 
       where
         expectedRel =
-          Relationship <$> fmap entityRef (add $ RelationshipType "performer")
+          Relationship <$> fmap entityRef (add performer)
                        <*> pure mempty
                        <*> pure emptyDate
                        <*> pure emptyDate

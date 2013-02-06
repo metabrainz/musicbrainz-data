@@ -6,6 +6,7 @@ module Test.MusicBrainz.CommonTests
     , testAliases
     , testAnnotation
     , testCreateFindLatest
+    , testEligibleForCleanup
     , testIpiCodes
     , testMerge
     , testResolveReference
@@ -215,3 +216,13 @@ testIpiCodes startTree = do
 
   where
     expected = "12345678912" ^?! ipi
+
+
+--------------------------------------------------------------------------------
+testEligibleForCleanup :: (Create a, HoldsRelationships a, ViewRevision a) => (Ref Editor -> MusicBrainz (Tree a)) -> MusicBrainz ()
+testEligibleForCleanup startTree = do
+  editor <- entityRef <$> register acid2
+  fullTree <- startTree editor
+  entity <- autoEdit $ create editor fullTree >>= viewRevision
+  eligible <- eligibleForCleanup (coreRevision entity)
+  liftIO $ eligible @?= False

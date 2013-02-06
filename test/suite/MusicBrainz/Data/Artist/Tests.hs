@@ -2,16 +2,19 @@
 module MusicBrainz.Data.Artist.Tests ( tests ) where
 
 import Control.Applicative
-
+import Control.Lens
 import Data.Monoid (mempty)
 
+import qualified Data.Set as Set
+
 import Test.MusicBrainz
-import Test.MusicBrainz.Repository (uk, male, person, portishead, minimalTree, freddie)
+import Test.MusicBrainz.Repository (uk, male, person, portishead, minimalTree, freddie, performer)
 
 import qualified Test.MusicBrainz.CommonTests as CommonTests
 
 import MusicBrainz
 import MusicBrainz.Data
+import MusicBrainz.Lens
 
 --------------------------------------------------------------------------------
 tests :: [Test]
@@ -22,6 +25,7 @@ tests = [ testCreateFindLatest
         , testAnnotation
         , testMerge
         , testResolveRevisionReference
+        , testEligibleForCleanup
         ]
 
 --------------------------------------------------------------------------------
@@ -106,3 +110,19 @@ testMerge :: Test
 testMerge = testCase "Can merge 2 distinct artists" $ do
   CommonTests.testMerge (pure . const (freddie, (minimalTree portishead)))
 
+
+--------------------------------------------------------------------------------
+testEligibleForCleanup :: Test
+testEligibleForCleanup = testCase "Artist with relationships is not eligible for cleanup" $ do
+    CommonTests.testEligibleForCleanup makeTree
+  where
+    makeTree editor = do
+      portishead <- autoEdit $ create editor (minimalTree portishead) >>= viewRevision
+      relationshipMeta <-
+        Relationship <$> fmap entityRef (add performer)
+                     <*> pure mempty
+                     <*> pure emptyDate
+                     <*> pure emptyDate
+                     <*> pure False
+      let rel = ArtistRelationship (coreRef portishead) relationshipMeta
+      return $ relationships .~ Set.singleton rel $ freddie

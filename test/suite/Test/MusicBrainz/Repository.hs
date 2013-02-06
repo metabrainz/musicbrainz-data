@@ -168,3 +168,6 @@ instance MinimalTree Url where
 
 instance MinimalTree Work where
   minimalTree dat' = WorkTree dat' mempty mempty "" mempty
+
+performer :: RelationshipType
+performer = RelationshipType "performer"
