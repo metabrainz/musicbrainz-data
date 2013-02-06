@@ -45,6 +45,7 @@ module MusicBrainz.Types.Internal
     , Referenceable
     , Relationship(..)
     , RelationshipAttribute(..)
+    , RelationshipAttributeUse(..)
     , RelationshipTarget(..)
     , RelationshipType(..)
     , Release(..)
@@ -694,7 +695,29 @@ data Relationship = Relationship
 --------------------------------------------------------------------------------
 {-| The type of a relationship between 2 entities. -}
 data RelationshipType = RelationshipType
-    { relName :: Text }
+    { relName :: Text
+    , relTypeAttributes :: Set.Set RelationshipAttributeUse
+    , relParent :: Maybe (Ref RelationshipType)
+    , relChildOrder :: Int
+    , relLeftTarget :: RelationshipTarget
+    , relRightTarget :: RelationshipTarget
+    , relDescription :: Text
+    , relLinkPhrase :: Text
+    , relReverseLinkPhrase :: Text
+    , relShortLinkPhrase :: Text
+    , relPriority :: Int
+    }
+  deriving (Eq, Ord, Show)
+
+
+--------------------------------------------------------------------------------
+{-| A description of the usage of a 'RelationshipAttribute' by a
+'RelationshipType'. -}
+data RelationshipAttributeUse = RelationshipAttributeUse
+     { relAttribute :: Ref RelationshipAttribute
+     , relAttributeMinOccurances :: Maybe Int
+     , relAttributeMaxOccurances :: Maybe Int
+     }
   deriving (Eq, Ord, Show)
 
 
@@ -702,14 +725,19 @@ data RelationshipType = RelationshipType
 {-| An attribute of a relationship (for example, indicating whether the
 relationship is additional). -}
 data RelationshipAttribute = RelationshipAttribute
-    { relAttributeName :: Text }
+    { relAttributeName :: Text
+    , relAttributeParent :: Maybe (Ref RelationshipAttribute)
+    , relAttributeRoot :: Ref RelationshipAttribute
+    , relAttributeChildOrder :: Int
+    , relAttributeDescription :: Text
+    }
   deriving (Eq, Ord, Show)
 
 
 --------------------------------------------------------------------------------
 {-| A description of all types that a relationship can be between. -}
 data RelationshipTarget = ToArtist | ToLabel | ToRecording | ToRelease | ToReleaseGroup | ToUrl | ToWork
-  deriving (Bounded, Enum)
+  deriving (Bounded, Enum, Eq, Ord, Show, Typeable)
 
 
 --------------------------------------------------------------------------------

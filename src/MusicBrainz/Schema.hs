@@ -175,6 +175,19 @@ instance FromField (Ref WorkType) where
   fromField f v = view reference <$> fromField f v
 
 
+instance FromField RelationshipTarget where
+  fromField f Nothing = returnError UnexpectedNull f "RelationshipTarget cannot be null"
+  fromField f (Just v) = case v of
+    "artist" -> return ToArtist
+    "label" -> return ToLabel
+    "recording" -> return ToRecording
+    "release" -> return ToRelease
+    "release_group" -> return ToReleaseGroup
+    "url" -> return ToUrl
+    "work" -> return ToWork
+    _ -> returnError ConversionFailed f "Unknown relationship target"
+
+
 instance FromField URI where
   fromField f v = do
     attempt <- parseURI <$> fromField f v
@@ -293,8 +306,12 @@ instance FromRow Recording where
   fromRow = Recording <$> field <*> field <*> field <*> field
 
 
-instance FromRow RelationshipType where
-  fromRow = RelationshipType <$> field
+instance FromRow RelationshipAttribute where
+  fromRow = RelationshipAttribute <$> field <*> field <*> field <*> field <*> field
+
+
+instance FromRow RelationshipAttributeUse where
+  fromRow = RelationshipAttributeUse <$> field <*> field <*> field
 
 
 instance FromRow Release where
@@ -482,6 +499,17 @@ instance ToField (Ref WorkType) where
   toField = toField . dereference
 
 
+instance ToField RelationshipTarget where
+  toField v = toField $ flip asTypeOf ([]::String) $ case v of
+    ToArtist -> "artist"
+    ToLabel -> "label"
+    ToRecording -> "recording"
+    ToRelease -> "release"
+    ToReleaseGroup -> "release_group"
+    ToUrl -> "url"
+    ToWork -> "work"
+
+
 instance ToField URI where
   toField = toField . show
 
@@ -609,8 +637,35 @@ instance ToRow MediumFormat where
   toRow MediumFormat{..} = [ toField mediumFormatName ]
 
 
+instance ToRow RelationshipAttribute where
+  toRow RelationshipAttribute{..} = [ toField relAttributeRoot
+                                    , toField relAttributeParent
+                                    , toField relAttributeChildOrder
+                                    , toField relAttributeName
+                                    , toField relAttributeDescription
+                                    ]
+
+
+instance ToRow RelationshipAttributeUse where
+  toRow RelationshipAttributeUse{..} =
+    [ toField relAttribute
+    , toField relAttributeMinOccurances
+    , toField relAttributeMaxOccurances
+    ]
+
+
 instance ToRow RelationshipType where
-  toRow RelationshipType{..} = [ toField relName ]
+  toRow RelationshipType{..} = [ toField relName
+                               , toField relParent
+                               , toField relChildOrder
+                               , toField relLeftTarget
+                               , toField relRightTarget
+                               , toField relDescription
+                               , toField relLinkPhrase
+                               , toField relReverseLinkPhrase
+                               , toField relShortLinkPhrase
+                               , toField relPriority
+                               ]
 
 
 instance ToRow Release where

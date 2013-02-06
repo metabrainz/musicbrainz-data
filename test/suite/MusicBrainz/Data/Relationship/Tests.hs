@@ -17,18 +17,33 @@ import MusicBrainz.Data
 import MusicBrainz.Data.Edit
 import MusicBrainz.Data.Editor
 import MusicBrainz.Lens
+
 import qualified MusicBrainz.Data.Relationship as Relationship
 
 --------------------------------------------------------------------------------
 tests :: [Test]
 tests = [ testAddRelationshipType
+        , testResolveRelationshipTypeReference
+        , testResolveRelationshipAttributeReference
         , testRelationships
         ]
 
 --------------------------------------------------------------------------------
 testAddRelationshipType :: Test
 testAddRelationshipType = testCase "Can add RelationshipTypes" $ do
-  CommonTests.testAdd RelationshipType { relName = "member of" }
+  CommonTests.testAdd performer
+
+
+--------------------------------------------------------------------------------
+testResolveRelationshipTypeReference :: Test
+testResolveRelationshipTypeReference = testCase "Can resolve RelationshipTypes" $ do
+  CommonTests.testResolveReference (add performer) entityRef
+
+
+--------------------------------------------------------------------------------
+testResolveRelationshipAttributeReference :: Test
+testResolveRelationshipAttributeReference = testCase "Can resolve RelationshipAttributes" $ do
+  CommonTests.testResolveReference additional entityRef
 
 
 --------------------------------------------------------------------------------

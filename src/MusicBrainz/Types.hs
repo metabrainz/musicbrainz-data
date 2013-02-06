@@ -58,6 +58,7 @@ module MusicBrainz.Types
     , Relationship(..)
     , RelationshipType(..)
     , RelationshipAttribute(..)
+    , RelationshipTarget(..)
 
       -- * Entity attributes
     , MBID(..), mbid

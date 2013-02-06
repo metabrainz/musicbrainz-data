@@ -2,17 +2,21 @@
 {-# LANGUAGE QuasiQuotes #-}
 {-| Functions for working relationships of any general type. -}
 module MusicBrainz.Data.Relationship
-    ( -- * Viewing relationships
-      viewRelationships
+    (
+      addRelationshipAttributeType
+
+      -- * Viewing relationships
+    , viewRelationships
     , HoldsRelationships
     ) where
 
 import Control.Applicative
 import Control.Lens
 import Control.Monad.IO.Class (MonadIO)
-import Data.Maybe (listToMaybe)
+import Data.Maybe (fromMaybe, listToMaybe)
 import Data.Monoid (mappend, mempty)
-import Database.PostgreSQL.Simple (Only(..), In(..))
+import Data.Text (Text)
+import Database.PostgreSQL.Simple (Only(..), In(..), (:.)(..))
 import Database.PostgreSQL.Simple.SqlQQ (sql)
 
 import qualified Data.Map as Map
@@ -26,20 +30,44 @@ import MusicBrainz.Types.Internal
 
 --------------------------------------------------------------------------------
 instance Add RelationshipType where
-  add type' = head <$>
-    query [sql| INSERT INTO link_type (entity_type0, entity_type1, name,
-                    description, link_phrase, reverse_link_phrase,
-                    short_link_phrase, gid)
-                VALUES ( 'undefined: Add RelationshipType'
-                       , 'undefined: Add RelationshipType'
-                       , ?
-                       , 'undefined: Add RelationshipType'
-                       , 'undefined: Add RelationshipType'
-                       , 'undefined: Add RelationshipType'
-                       , 'undefined: Add RelationshipType'
-                       , uuid_generate_v4()
-                       )
-                RETURNING id, name |] type'
+  add rt = do
+    ((id', name, parent, childOrder, t0, t1, description) :. (linkPhrase, reverseLinkPhrase, shortLinkPhrase, priority)) <-
+      head <$> query
+        [sql|
+          INSERT INTO link_type (name, parent, child_order, entity_type0,
+            entity_type1, description, link_phrase, reverse_link_phrase,
+            short_link_phrase, priority, gid)
+          VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, uuid_generate_v4() )
+          RETURNING id, name, parent, child_order, entity_type0, entity_type1,
+            description, link_phrase, reverse_link_phrase, short_link_phrase,
+            priority
+        |] rt
+
+    attrs <- returning
+      [sql|
+        INSERT INTO link_type_attribute_type
+          (link_type, attribute_type, min, max)
+        VALUES (?, ?, ?, ?)
+        RETURNING attribute_type, min, max
+      |] (map ((Only id') :.) $ Set.toList $ relTypeAttributes rt)
+
+    return Entity
+      { entityRef = id'
+      , entityData =
+          RelationshipType
+            { relName = name
+            , relTypeAttributes = Set.fromList attrs
+            , relParent = parent
+            , relChildOrder = childOrder
+            , relLeftTarget = t0
+            , relRightTarget = t1
+            , relDescription = description
+            , relLinkPhrase = linkPhrase
+            , relReverseLinkPhrase = reverseLinkPhrase
+            , relShortLinkPhrase = shortLinkPhrase
+            , relPriority = priority
+            }
+      }
 
 
 --------------------------------------------------------------------------------
@@ -54,6 +82,28 @@ instance ResolveReference RelationshipAttribute where
   resolveReference attributeId = listToMaybe . map fromOnly <$>
     query [sql| SELECT id FROM link_attribute_type WHERE id = ? |]
       (Only attributeId)
+
+
+--------------------------------------------------------------------------------
+addRelationshipAttributeType :: (Functor m, MonadIO m)
+  => Text
+  -> Maybe (Ref RelationshipAttribute)
+  -> Maybe (Ref RelationshipAttribute)
+  -> Int
+  -> Text
+  -> MusicBrainzT m (Entity (RelationshipAttribute))
+addRelationshipAttributeType name parent root childOrder description = do
+    id' <- selectValue $ query_ [sql| SELECT nextval('link_attribute_type_id_seq') |]
+
+    head <$>
+      query [sql|
+              INSERT INTO link_attribute_type
+                (id, gid, parent, child_order, name, description, root)
+              VALUES ( ?, uuid_generate_v4(), ?, ?, ?, ?, ?)
+              RETURNING id, name, parent, root, child_order, description
+            |] ( id' :: Int, parent, childOrder, name, description
+               , fromMaybe (id' ^. reference) root
+               )
 
 
 --------------------------------------------------------------------------------

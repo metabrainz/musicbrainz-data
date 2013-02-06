@@ -7,6 +7,7 @@ import Network.URI (parseURI)
 
 import MusicBrainz
 import MusicBrainz.Data
+import MusicBrainz.Data.Relationship (addRelationshipAttributeType)
 
 import Test.MusicBrainz
 import Test.MusicBrainz.Data
@@ -170,4 +171,18 @@ instance MinimalTree Work where
   minimalTree dat' = WorkTree dat' mempty mempty "" mempty
 
 performer :: RelationshipType
-performer = RelationshipType "performer"
+performer = RelationshipType { relName = "performer"
+                             , relTypeAttributes = mempty
+                             , relParent = Nothing
+                             , relLeftTarget = ToArtist
+                             , relRightTarget = ToRecording
+                             , relLinkPhrase = "performed"
+                             , relReverseLinkPhrase = "was performed by"
+                             , relShortLinkPhrase = "performed"
+                             , relPriority = 0
+                             , relChildOrder = 0
+                             , relDescription = "Indicates an artist performed a recording"
+                             }
+
+additional :: MusicBrainz (Entity RelationshipAttribute)
+additional = addRelationshipAttributeType "performer" Nothing Nothing 0 ""
