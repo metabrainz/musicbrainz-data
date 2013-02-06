@@ -424,6 +424,7 @@ data ReleaseGroupType a = ReleaseGroupType
 --------------------------------------------------------------------------------
 {-| The type of packaging a release came in. -}
 data ReleasePackaging = ReleasePackaging { releasePackagingName :: Text }
+  deriving (Eq, Show)
 
 
 --------------------------------------------------------------------------------
