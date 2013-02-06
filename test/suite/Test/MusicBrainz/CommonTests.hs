@@ -18,6 +18,7 @@ module Test.MusicBrainz.CommonTests
 import           Control.Applicative
 import           Control.Lens
 import           Data.Monoid (mempty)
+import           Data.Time (getCurrentTime)
 
 import qualified Data.Set as Set
 
@@ -79,6 +80,11 @@ testResolveRevisionReference makeTree = do
   createdRev <- autoEdit $ create editor tree
   found <- resolveReference (dereference createdRev)
   liftIO $ found @?= Just createdRev
+
+  now <- liftIO getCurrentTime
+  foundRevision <- traverse getEntity found
+  assertBool "Found a revision" $
+    fmap (revisionCreatedAt . entityData) foundRevision < Just now
 
 
 --------------------------------------------------------------------------------
