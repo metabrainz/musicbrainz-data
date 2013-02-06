@@ -24,6 +24,7 @@ import qualified MusicBrainz.Data.Relationship.Tests
 import qualified MusicBrainz.Data.Release.Tests
 import qualified MusicBrainz.Data.ReleaseGroup.Tests
 import qualified MusicBrainz.Data.ReleaseGroupType.Tests
+import qualified MusicBrainz.Data.ReleaseStatus.Tests
 import qualified MusicBrainz.Data.Script.Tests
 import qualified MusicBrainz.Data.Url.Tests
 import qualified MusicBrainz.Data.Work.Tests
@@ -87,6 +88,8 @@ main = defaultMain [buildTest (testRunner (testGroup "All tests" tests))]
                 MusicBrainz.Data.ReleaseGroup.Tests.tests
             , testGroup "MusicBrainz.Data.ReleaseGroupType"
                 MusicBrainz.Data.ReleaseGroupType.Tests.tests
+            , testGroup "MusicBrainz.Data.ReleaseStatus"
+                MusicBrainz.Data.ReleaseStatus.Tests.tests
             , testGroup "MusicBrainz.Data.Script"
                 MusicBrainz.Data.Script.Tests.tests
             , testGroup "MusicBrainz.Data.Url"

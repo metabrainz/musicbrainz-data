@@ -430,6 +430,7 @@ data ReleasePackaging = ReleasePackaging { releasePackagingName :: Text }
 {-| A release status indicates whether a 'Release' was released official,
 promotionally, as a bootleg, etc. -}
 data ReleaseStatus = ReleaseStatus { releaseStatusName :: Text }
+  deriving (Eq, Show)
 
 
 --------------------------------------------------------------------------------
