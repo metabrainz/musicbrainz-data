@@ -53,7 +53,7 @@ instance FindLatest Release where
        SELECT release_id, revision_id,
          name.name, comment, artist_credit_id, release_group_id,
          date_year, date_month, date_day, country_id, script_id, language_id,
-         release_packaging_id, release_status_id
+         release_packaging_id, release_status_id, barcode
       FROM release
       JOIN release_revision USING (release_id)
       JOIN release_tree USING (release_tree_id)
@@ -93,7 +93,7 @@ instance RealiseTree Release where
     where
       insertReleaseData :: (Functor m, MonadIO m) => Release -> MusicBrainzT m Int
       insertReleaseData data' = selectValue $
-        query [sql| SELECT find_or_insert_release_data(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) |]
+        query [sql| SELECT find_or_insert_release_data(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) |]
           data'
 
       insertReleaseTree annotation releaseGroupId dataId = selectValue $
@@ -137,7 +137,7 @@ instance ViewRevision Release where
        SELECT release_id, revision_id,
          name.name, comment, artist_credit_id, release_group_id,
          date_year, date_month, date_day, country_id, script_id, language_id,
-         release_packaging_id, release_status_id
+         release_packaging_id, release_status_id, barcode
       FROM release
       JOIN release_revision USING (release_id)
       JOIN release_tree USING (release_tree_id)

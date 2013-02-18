@@ -43,6 +43,10 @@ fieldFromPrism p f v = do
       returnError ConversionFailed f "Failed to parse field"
 
 
+instance FromField Barcode where
+  fromField = fieldFromPrism barcode
+
+
 instance FromField IPI where
   fromField = fieldFromPrism ipi
 
@@ -317,6 +321,7 @@ instance FromRow RelationshipAttributeUse where
 instance FromRow Release where
   fromRow = Release <$> field <*> field <*> field <*> field <*> fromRow
                     <*> field <*> field <*> field <*> field <*> field
+                    <*> field
 
 
 instance FromRow ReleaseGroup where
@@ -368,6 +373,10 @@ instance FromRow WorkType where
 
 
 --------------------------------------------------------------------------------
+instance ToField Barcode where
+  toField = toField . view (re barcode)
+
+
 instance ToField EditStatus where
   toField = toField . fromEnum
 
@@ -680,6 +689,7 @@ instance ToRow Release where
                       , toField releaseLanguage
                       , toField releasePackaging
                       , toField releaseStatus
+                      , toField releaseBarcode
                       ]
 
 

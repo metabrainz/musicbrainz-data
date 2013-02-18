@@ -231,7 +231,8 @@ instance Mergeable (Tree Recording) where
 --------------------------------------------------------------------------------
 instance Mergeable (Tree Release) where
   type MergeRender (Tree Release) mo =
-    ( Render (Maybe (Ref Country)) mo
+    ( Render (Maybe Barcode) mo
+    , Render (Maybe (Ref Country)) mo
     , Render (Maybe (Ref Language)) mo
     , Render (Maybe (Ref ReleasePackaging)) mo
     , Render (Maybe (Ref ReleaseStatus)) mo
@@ -264,6 +265,7 @@ instance Mergeable (Tree Release) where
               <*> releaseLanguage `mergedVia` mergeEq
               <*> releasePackaging `mergedVia` mergeEq
               <*> releaseStatus `mergedVia` mergeEq
+              <*> releaseBarcode `mergedVia` mergeEq
 
 
 --------------------------------------------------------------------------------

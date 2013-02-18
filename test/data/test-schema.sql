@@ -428,7 +428,7 @@ ALTER FUNCTION musicbrainz.find_or_insert_recording_tree(in_data_id integer) OWN
 -- Name: find_or_insert_release_data(text, text, integer, integer, integer, integer, integer, integer, integer, integer, integer); Type: FUNCTION; Schema: musicbrainz; Owner: musicbrainz
 --
 
-CREATE FUNCTION find_or_insert_release_data(in_name text, in_comment text, in_ac integer, in_date_year integer, in_date_month integer, in_date_day integer, in_country_id integer, in_script_id integer, in_language_id integer, in_packaging_id integer, in_status_id integer) RETURNS integer
+CREATE FUNCTION find_or_insert_release_data(in_name text, in_comment text, in_ac integer, in_date_year integer, in_date_month integer, in_date_day integer, in_country_id integer, in_script_id integer, in_language_id integer, in_packaging_id integer, in_status_id integer, in_barcode text) RETURNS integer
     LANGUAGE plpgsql
     AS $$
   DECLARE
@@ -449,7 +449,8 @@ CREATE FUNCTION find_or_insert_release_data(in_name text, in_comment text, in_ac
       script_id IS NOT DISTINCT FROM in_script_id AND
       language_id IS NOT DISTINCT FROM in_language_id AND
       release_packaging_id IS NOT DISTINCT FROM in_packaging_id AND
-      release_status_id IS NOT DISTINCT FROM in_status_id;
+      release_status_id IS NOT DISTINCT FROM in_status_id AND
+      barcode IS NOT DISTINCT FROM in_barcode;
 
     IF FOUND
     THEN
@@ -457,10 +458,10 @@ CREATE FUNCTION find_or_insert_release_data(in_name text, in_comment text, in_ac
     ELSE
       INSERT INTO release_data (name, comment, artist_credit_id, date_year,
         date_month, date_day, country_id, script_id, language_id,
-        release_packaging_id, release_status_id)
+        release_packaging_id, release_status_id, barcode)
       VALUES (name_id, in_comment, in_ac, in_date_year, in_date_month,
         in_date_day, in_country_id, in_script_id, in_language_id, in_packaging_id,
-        in_status_id)
+        in_status_id, in_barcode)
       RETURNING release_data_id INTO found_id;
       RETURN found_id;
     END IF;

@@ -118,6 +118,7 @@ main = defaultMain [buildTest (testRunner (testGroup "All tests" tests))]
       , "TRUNCATE medium_format CASCADE"
       , "TRUNCATE release_group_primary_type CASCADE"
       , "TRUNCATE release_group_secondary_type CASCADE"
+      , "TRUNCATE release_status CASCADE"
       , "TRUNCATE script CASCADE"
       , "TRUNCATE track CASCADE"
       , "TRUNCATE work_type CASCADE"

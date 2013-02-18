@@ -124,6 +124,7 @@ dummyReleaseTree editor = do
               , releaseLanguage = Nothing
               , releasePackaging = Nothing
               , releaseStatus = Nothing
+              , releaseBarcode = Just NoBarcode
               }
 
 

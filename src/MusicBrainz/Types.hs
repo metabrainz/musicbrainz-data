@@ -61,6 +61,7 @@ module MusicBrainz.Types
     , RelationshipTarget(..)
 
       -- * Entity attributes
+    , Barcode(..)
     , MBID(..), mbid
     , PartialDate(..)
     , emptyDate, isEmpty

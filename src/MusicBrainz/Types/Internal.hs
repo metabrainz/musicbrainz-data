@@ -18,6 +18,7 @@ module MusicBrainz.Types.Internal
     , ArtistCredit
     , ArtistCreditName(..)
     , ArtistType(..)
+    , Barcode(..), barcode
     , CdToc(..)
     , CoreEntity(..)
     , Country(..)
@@ -74,6 +75,7 @@ import Control.Applicative hiding (optional)
 import Control.Category ((.))
 import Control.Lens
 import Control.Monad (mfilter)
+import Data.Char (digitToInt, intToDigit, isDigit)
 import Data.Functor.Identity (Identity)
 import Data.Monoid (mconcat, (<>))
 import Data.Text (Text)
@@ -383,6 +385,7 @@ data Release = Release
     , releaseLanguage :: Maybe (Ref Language)
     , releasePackaging :: Maybe (Ref ReleasePackaging)
     , releaseStatus :: Maybe (Ref ReleaseStatus)
+    , releaseBarcode :: Maybe Barcode
     }
   deriving (Eq, Show)
 
@@ -852,4 +855,24 @@ data CdToc = CdToc
     , cdTocLeadoutOffset :: Int
     }
   deriving (Eq, Ord, Show)
+
+
+--------------------------------------------------------------------------------
+data Barcode = Barcode [Int] | NoBarcode
+  deriving (Eq, Ord, Show, Typeable)
+
+
+barcode :: Prism' String Barcode
+barcode = prism showBarcode parseBarcode
+  where
+    showBarcode (Barcode bs) = map intToDigit bs
+    showBarcode NoBarcode = []
+
+    parseBarcode bs =
+      maybe (Left bs) (Right . makeBarcode) $
+        sequence $
+          map (\b -> if isDigit b then Just (digitToInt b) else Nothing) bs
+
+    makeBarcode [] = NoBarcode
+    makeBarcode b = Barcode b
 
