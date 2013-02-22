@@ -44,9 +44,9 @@ testCreateFindLatest = testCase "create >>= findLatest == create" $ do
                        , artistSortName = "Mercury, Freddie"
                        , artistComment = "Of queen"
                        , artistBeginDate =
-                           PartialDate (Just 1946) (Just 9) (Just 5)
+                           (Just 1946, Just 9, Just 5) ^?! partialDate
                        , artistEndDate =
-                           PartialDate (Just 1991) (Just 11) (Just 24)
+                           (Just 1991, Just 11, Just 24) ^?! partialDate
                        , artistEnded = True
                        , artistGender = Just maleRef
                        , artistCountry = Just country

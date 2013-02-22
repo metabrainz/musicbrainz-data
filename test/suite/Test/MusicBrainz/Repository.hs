@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Test.MusicBrainz.Repository where
 
+import Control.Lens
 import Data.Maybe (fromJust)
 import Data.Monoid
 import Network.URI (parseURI)
@@ -90,10 +91,8 @@ freddie = ArtistTree
       { artistName = "Freddie Mercury"
       , artistSortName = "Mercury, Freddie"
       , artistComment = "Of queen"
-      , artistBeginDate =
-          PartialDate (Just 1946) (Just 9) (Just 5)
-      , artistEndDate =
-          PartialDate (Just 1991) (Just 11) (Just 24)
+      , artistBeginDate = (Just 1946, Just 9, Just 5) ^?! partialDate
+      , artistEndDate = (Just 1991, Just 11, Just 24) ^?! partialDate
       , artistEnded = True
       , artistGender = Nothing
       , artistCountry = Nothing
@@ -118,7 +117,7 @@ dummyReleaseTree editor = do
               , releaseComment = ""
               , releaseArtistCredit = ac
               , releaseReleaseGroup = rg
-              , releaseDate = PartialDate (Just 1997) (Just 9) (Just 29)
+              , releaseDate = (Just 1997, Just 9, Just 29) ^?! partialDate
               , releaseCountry = Nothing
               , releaseScript = Nothing
               , releaseLanguage = Nothing

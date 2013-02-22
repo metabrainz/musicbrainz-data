@@ -39,7 +39,7 @@ module MusicBrainz.Types.Internal
     , Medium(..)
     , MediumFormat(..)
     , PUID(..), puid
-    , PartialDate(..)
+    , PartialDate(..), partialDate
     , Recording(..)
     , Ref
     , RefSpec
@@ -77,6 +77,7 @@ import Control.Lens
 import Control.Monad (mfilter)
 import Data.Char (digitToInt, intToDigit, isDigit)
 import Data.Functor.Identity (Identity)
+import Data.Ix (inRange)
 import Data.Monoid (mconcat, (<>))
 import Data.Text (Text)
 import Data.Time (UTCTime)
@@ -481,6 +482,18 @@ emptyDate = PartialDate Nothing Nothing Nothing
 isEmpty :: PartialDate -> Bool
 isEmpty = (== emptyDate)
 
+
+{-| View a tuple as a partial date, providing it does make some sort of valid
+date. -}
+partialDate :: Prism' (Maybe Int, Maybe Int, Maybe Int) PartialDate
+partialDate = prism dateComponents viewDate
+  where
+    dateComponents (PartialDate y m d) = (y, m, d)
+    viewDate (y, m, d)
+      | validMonth m && validDay d = Right (PartialDate y m d)
+      | otherwise                  = Left (y, m, d)
+    validMonth = maybe True (inRange (1, 12))
+    validDay = maybe True (inRange (1, 31))
 
 --------------------------------------------------------------------------------
 {-| A MusicBrainz MBID, which is a 'UUID' but scoped to a specific entity

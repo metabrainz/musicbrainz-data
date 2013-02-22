@@ -2,7 +2,7 @@ module MusicBrainz.Types.Tests
     ( tests ) where
 
 import Control.Applicative
-import Control.Lens
+import Control.Lens hiding (elements)
 import Data.Maybe (isNothing)
 import Test.MusicBrainz
 
@@ -44,14 +44,30 @@ testMbidParseDisplay = testProperty "parseMbid (mbidToString m) = Just m" $
   \validMbid -> validMbid ^. re mbid ^? mbid == Just validMbid
 
 --------------------------------------------------------------------------------
+newtype Year = Year (Maybe Int) deriving (Show)
+newtype Month = Month (Maybe Int) deriving (Show)
+newtype Day = Day (Maybe Int) deriving (Show)
+
+instance Arbitrary Year where arbitrary = Year <$> arbitrary
+
+instance Arbitrary Month where
+  arbitrary = Month <$> oneof [ return Nothing
+                              , Just <$> elements [1..12]
+                              ]
+
+instance Arbitrary Day where
+  arbitrary = Day <$> oneof [ return Nothing
+                            , Just <$> elements [1..31]
+                            ]
+
 testNonEmptyPartialDates :: Test
 testNonEmptyPartialDates =
-  testProperty "When any field is set, the date is not empty" $
-    \y m d -> any (not . isNothing) [y, m, d] ==>
-                not (isEmpty $ PartialDate y m d)
+  testProperty "Given any partial date with at least one component, the date is not empty" $
+    \(Year y) (Month m) (Day d) -> any (not . isNothing) [y, m, d] ==>
+      not (isEmpty $ (y, m, d) ^?! partialDate)
 
 testEmptyPartialDates :: Test
 testEmptyPartialDates =
   testCase "When all fields are Nothing, the date is empty" $
     assertBool "emptyPartial date is empty"
-      (isEmpty $ PartialDate Nothing Nothing Nothing)
+      (isEmpty $ (Nothing, Nothing, Nothing) ^?! partialDate)

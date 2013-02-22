@@ -63,7 +63,7 @@ module MusicBrainz.Types
       -- * Entity attributes
     , Barcode(..), barcode
     , MBID(..), mbid
-    , PartialDate(..)
+    , PartialDate, partialDate, dateYear, dateMonth, dateDay
     , emptyDate, isEmpty
 
       -- * Versioning
