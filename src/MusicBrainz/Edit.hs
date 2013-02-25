@@ -56,7 +56,7 @@ included in edits. -}
 class (FindLatest a, MasterRevision a, Mergeable (Tree a), NewEntityRevision a, RealiseTree a, ViewRevision a, ViewTree a) => Editable a where
   {-| Add a revision into an edit. -}
   linkRevisionToEdit :: Ref Edit -> Ref (Revision a) -> MusicBrainz ()
-  change :: SimplePrism Change (Ref (Revision a))
+  change :: Prism' Change (Ref (Revision a))
 
 
 --------------------------------------------------------------------------------
