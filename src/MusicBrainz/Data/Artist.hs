@@ -53,6 +53,7 @@ instance ViewAliases Artist where
 --------------------------------------------------------------------------------
 instance ViewIPICodes Artist where
   viewIpiCodes = Generic.viewIpiCodes "artist"
+  findIpiCodes = Generic.findIpiCodes "artist"
 
 
 --------------------------------------------------------------------------------

@@ -19,21 +19,26 @@ module MusicBrainz.Data.Generic
     , fetchEndPoints
     , reflectRelationshipChange
     , addRelationship
+    , findIpiCodes
     ) where
 
+import Control.Arrow ((&&&))
 import Control.Applicative
-import Control.Lens
+import Control.Lens hiding (cons)
 import Control.Monad (void)
 import Control.Monad.IO.Class
+import Data.Function (on)
+import Data.List (groupBy)
 import Data.Maybe (listToMaybe)
 import Data.String (fromString)
 import Data.Text (Text)
 import Data.Foldable (forM_)
-import Database.PostgreSQL.Simple (Only(..), (:.)(..))
+import Database.PostgreSQL.Simple (In(..), Only(..), (:.)(..))
 import Database.PostgreSQL.Simple.FromField (FromField)
 import Database.PostgreSQL.Simple.SqlQQ
 import Database.PostgreSQL.Simple.ToField (ToField)
 
+import qualified Data.Map as Map
 import qualified Data.Set as Set
 
 import MusicBrainz
@@ -42,7 +47,6 @@ import MusicBrainz.Data.FindLatest
 import MusicBrainz.Data.Revision.Internal
 import MusicBrainz.Data.Tree
 import MusicBrainz.Edit
-import MusicBrainz.Types.Internal
 
 import {-# SOURCE #-} MusicBrainz.Data.Artist ()
 import {-# SOURCE #-} MusicBrainz.Data.Label ()
@@ -327,3 +331,22 @@ realiseRelationships :: (Functor m, MonadIO m, TreeRelationships a)
   => String -> Ref (Tree a) -> Tree a -> MusicBrainzT m ()
 realiseRelationships tbl treeId =
   mapMOf_ (relationships.folded) (addRelationship tbl treeId)
+
+
+--------------------------------------------------------------------------------
+findIpiCodes :: (Functor m, MonadIO m, Monad m)
+  => String
+  -> Set.Set (Ref (Revision a))
+  -> MusicBrainzT m (Map.Map (Ref (Revision a)) (Set.Set IPI))
+findIpiCodes source revisionIds = associate <$> query q (Only $ In (Set.toList revisionIds))
+  where
+    associate =
+      Map.fromList .
+        map (fst . head &&& Set.fromList . map snd) .
+          groupBy ((==) `on` fst)
+    q = fromString $ unlines
+          [ "SELECT revision_id, ipi "
+          , "FROM " ++ source ++ "_ipi "
+          , "JOIN " ++ source ++ "_revision USING (" ++ source ++ "_tree_id) "
+          , "WHERE revision_id IN ?"
+          ]

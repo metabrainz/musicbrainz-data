@@ -144,6 +144,7 @@ instance ViewAnnotation Label where
 --------------------------------------------------------------------------------
 instance ViewIPICodes Label where
   viewIpiCodes = Generic.viewIpiCodes "label"
+  findIpiCodes = Generic.findIpiCodes "label"
 
 
 --------------------------------------------------------------------------------

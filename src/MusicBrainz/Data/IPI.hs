@@ -4,6 +4,7 @@ module MusicBrainz.Data.IPI
 
 import Control.Monad.IO.Class (MonadIO)
 
+import qualified Data.Map as Map
 import qualified Data.Set as Set
 
 import MusicBrainz
@@ -16,3 +17,6 @@ class ViewIPICodes a where
   viewIpiCodes :: (Functor m, MonadIO m)
     => Ref (Revision a) -> MusicBrainzT m (Set.Set IPI)
 
+  findIpiCodes :: (Functor m, MonadIO m, Monad m)
+    => Set.Set (Ref (Revision a))
+    -> MusicBrainzT m (Map.Map (Ref (Revision a)) (Set.Set IPI))

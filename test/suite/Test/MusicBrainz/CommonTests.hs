@@ -21,6 +21,7 @@ import           Control.Lens
 import           Data.Monoid (mempty)
 import           Data.Time (getCurrentTime)
 
+import qualified Data.Map as Map
 import qualified Data.Set as Set
 
 import           Test.MusicBrainz
@@ -201,9 +202,9 @@ testIpiCodes :: (Create a, FindLatest a, TreeIPICodes a, Update a, ViewIPICodes 
 testIpiCodes startTree = do
   editor <- entityRef <$> register acid2
 
-  entity <- autoEdit $ create editor (ipiCodes .~ Set.singleton expected $ startTree) >>= viewRevision
+  entity <- autoEdit $ create editor (ipiCodes .~ expected $ startTree) >>= viewRevision
   ipiPreUpdate <- viewIpiCodes (coreRevision entity)
-  liftIO $ ipiPreUpdate @?= Set.singleton expected
+  liftIO $ ipiPreUpdate @?= expected
 
   edit <- createEdit $
     update editor (coreRevision entity) startTree
@@ -214,8 +215,12 @@ testIpiCodes startTree = do
   ipiPostUpdate <- viewIpiCodes (coreRevision latest)
   liftIO $ ipiPostUpdate @?= mempty
 
+  let revId = coreRevision entity
+  ipis <- findIpiCodes $ Set.singleton revId
+  liftIO $ ipis @?= Map.singleton revId expected
+
   where
-    expected = "12345678912" ^?! ipi
+    expected = Set.singleton $ "12345678912" ^?! ipi
 
 
 --------------------------------------------------------------------------------
