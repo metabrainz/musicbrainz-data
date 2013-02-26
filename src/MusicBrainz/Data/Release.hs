@@ -7,7 +7,8 @@ The majority of operations on releases are common for all core entities, so you
 should see the documentation on the 'Release' type and notice all the type class
 instances. -}
 module MusicBrainz.Data.Release
-    ( viewMediums
+    ( findByLabel
+    , viewMediums
     , viewReleaseLabels
     ) where
 
@@ -249,3 +250,33 @@ instance CloneRevision Release where
 
 --------------------------------------------------------------------------------
 instance Merge Release
+
+
+
+--------------------------------------------------------------------------------
+findByLabel :: (Functor m, MonadIO m) => Ref Label -> MusicBrainzT m [CoreEntity Release]
+findByLabel labelId = query q (Only labelId)
+  where
+    q = [sql|
+          SELECT release_id, revision_id,
+            name.name, comment, artist_credit_id, release_group_id,
+            date_year, date_month, date_day, country_id, script_id, language_id,
+            release_packaging_id, release_status_id, barcode
+          FROM (
+            SELECT DISTINCT ON (release_id)
+              release_id, revision_id, release_tree_id, catalog_number
+            FROM release
+            JOIN release_revision USING (release_id)
+            JOIN release_label USING (release_tree_id)
+            WHERE label_id = ? AND master_revision_id = revision_id
+          ) q
+          JOIN release_tree USING (release_tree_id)
+          JOIN release_data USING (release_data_id)
+          JOIN release_name name ON (release_data.name = name.id)
+          LEFT JOIN country ON (country.id = release_data.country_id)
+          ORDER BY
+            date_year, date_month, date_day, catalog_number,
+            musicbrainz_collate(name.name),
+            musicbrainz_collate(country.name),
+            barcode
+          |]

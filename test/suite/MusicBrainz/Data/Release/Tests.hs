@@ -27,6 +27,7 @@ tests = [ testCreateFindLatest
         , testCdTocs
         , testMerge
         , testResolveRevisionReference
+        , testFindByLabel
         ]
 
 
@@ -123,3 +124,22 @@ testMerge = testCase "Can merge 2 distinct releases" $ do
 testResolveRevisionReference :: Test
 testResolveRevisionReference = testCase "Resolve revision reference" $ do
   CommonTests.testResolveRevisionReference dummyReleaseTree
+
+
+--------------------------------------------------------------------------------
+testFindByLabel :: Test
+testFindByLabel = testCase "Can find releases by their label" $ do
+  editor <- entityRef <$> register acid2
+  releaseTree <- dummyReleaseTree editor
+
+  (labelId, expected) <- autoEdit $ do
+    labelId <- coreRef <$> (create editor revolutionRecords >>= viewRevision)
+    let rLabels = Set.singleton $
+          ReleaseLabel { releaseLabel = Just labelId
+                       , releaseCatalogNumber = Nothing
+                       }
+    release <- create editor releaseTree { releaseLabels = rLabels } >>= viewRevision
+    return (labelId, release)
+
+  releases <- findByLabel labelId
+  liftIO $ releases @?= [expected]
