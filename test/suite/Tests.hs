@@ -10,6 +10,7 @@ import Test.Framework (buildTest, defaultMain)
 
 import qualified MusicBrainz.Data.AliasType.Tests
 import qualified MusicBrainz.Data.Artist.Tests
+import qualified MusicBrainz.Data.ArtistCredit.Tests
 import qualified MusicBrainz.Data.ArtistType.Tests
 import qualified MusicBrainz.Data.Country.Tests
 import qualified MusicBrainz.Data.Edit.Tests
@@ -61,6 +62,8 @@ main = defaultMain [buildTest (testRunner (testGroup "All tests" tests))]
                 MusicBrainz.Data.AliasType.Tests.tests
             , testGroup "MusicBrainz.Data.Artist"
                 MusicBrainz.Data.Artist.Tests.tests
+            , testGroup "MusicBrainz.Data.ArtistCredit"
+                MusicBrainz.Data.ArtistCredit.Tests.tests
             , testGroup "MusicBrainz.Data.ArtistType"
                 MusicBrainz.Data.ArtistType.Tests.tests
             , testGroup "MusicBrainz.Data.Country"

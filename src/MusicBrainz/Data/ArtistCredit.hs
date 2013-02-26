@@ -1,19 +1,28 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RecordWildCards #-}
 {-| Functions to manipulate 'ArtistCredit's. -}
 module MusicBrainz.Data.ArtistCredit
-    ( getRef ) where
+    ( expandCredits
+    , getRef
+    ) where
 
 import Control.Applicative
+import Control.Arrow ((&&&))
 import Control.Monad.IO.Class (MonadIO)
-import Data.List (intercalate, nub)
-import qualified Data.Map as Map
+import Data.Function
+import Data.Foldable (foldMap)
+import Data.List (groupBy, intercalate, intersperse, nub)
 import Data.Maybe (listToMaybe)
 import Data.String (fromString)
 import Data.Text (Text)
-import Database.PostgreSQL.Simple ((:.)(..), Only(..))
+import Database.PostgreSQL.Simple ((:.)(..), In(..), Only(..))
+import Database.PostgreSQL.Simple.SqlQQ (sql)
 import Database.PostgreSQL.Simple.ToField
 import Database.PostgreSQL.Simple.ToRow
+
+import qualified Data.Map as Map
+import qualified Data.Set as Set
 
 import MusicBrainz
 
@@ -54,7 +63,7 @@ getRef acs = do
       unwords [ "SELECT DISTINCT artist_credit_id FROM artist_credit"
               , unwords joins
               , "WHERE"
-              , unwords predicates
+              , unwords $ intersperse " AND " predicates
               ]
 
     parameters nameMap = AcParams (map param1 positionedAcs)
@@ -80,3 +89,22 @@ getRef acs = do
     positionedAcs = zip [1..] acs
 
     acnAlias i = "acn_" ++ show i
+
+
+--------------------------------------------------------------------------------
+expandCredits :: (Functor m, MonadIO m)
+  => Set.Set (Ref ArtistCredit)
+  -> MusicBrainzT m (Map.Map (Ref ArtistCredit) [ArtistCreditName])
+expandCredits acIds =
+    Map.fromList . groupRows partitionArtistCredit <$> query
+      [sql| SELECT artist_credit_id, artist_id, name.name, join_phrase
+            FROM artist_credit_name
+            JOIN artist_name name ON (name.id = artist_credit_name.name)
+            WHERE artist_credit_id IN ?
+            ORDER BY position ASC
+      |] (Only . In . Set.toList $ acIds)
+  where
+    groupRows splitRow =
+      map (fst . head &&& foldMap snd) . groupBy ((==) `on` fst) . map splitRow
+    partitionArtistCredit (acId, artistId, name, joinPhrase) =
+      (acId, [ArtistCreditName artistId name joinPhrase])
