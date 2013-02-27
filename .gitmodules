@@ -1,0 +1,3 @@
+[submodule "postgresql-musicbrainz-collate"]
+	path = postgresql-musicbrainz-collate
+	url = git@github.com:metabrainz/postgresql-musicbrainz-collate.git
