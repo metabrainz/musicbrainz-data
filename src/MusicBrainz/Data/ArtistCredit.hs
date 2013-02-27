@@ -114,5 +114,8 @@ expandCredits acIds =
 --------------------------------------------------------------------------------
 instance ResolveReference ArtistCredit where
   resolveReference acId = listToMaybe . map fromOnly <$>
-    query [sql| SELECT id FROM artist_credit WHERE artist_credit_id = ? |]
+    query [sql| SELECT artist_credit_id
+                FROM artist_credit
+                WHERE artist_credit_id = ?
+              |]
       (Only acId)
