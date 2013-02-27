@@ -131,6 +131,7 @@ main = do
       , "TRUNCATE gender CASCADE"
       , "TRUNCATE label_type CASCADE"
       , "TRUNCATE language CASCADE"
+      , "TRUNCATE link_type CASCADE"
       , "TRUNCATE medium_format CASCADE"
       , "TRUNCATE release_group_primary_type CASCADE"
       , "TRUNCATE release_group_secondary_type CASCADE"
