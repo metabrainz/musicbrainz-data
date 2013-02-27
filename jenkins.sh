@@ -18,4 +18,4 @@ cabal install --enable-tests --only-dependencies --force-reinstalls
 cabal configure --enable-tests
 cabal build
 
-cabal test --test-option='--jxml=junit.xml -j5'
+cabal test --test-option='--jxml=junit.xml' --test-option '-j5'
