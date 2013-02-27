@@ -23,6 +23,7 @@ module Test.MusicBrainz
     ) where
 
 import Control.Applicative
+import Control.Concurrent.Chan
 import Control.Monad (void)
 import Control.Monad.CatchIO
 import Control.Monad.IO.Class
@@ -39,7 +40,7 @@ import qualified Test.QuickCheck
 import MusicBrainz
 import MusicBrainz.Data.Edit
 
-data TestEnvironment = TestEnvironment { testContext :: Context }
+data TestEnvironment = TestEnvironment { testContexts :: Chan Context }
 
 type Test = ReaderT TestEnvironment IO (Test.Framework.Test)
 
@@ -61,9 +62,12 @@ testGroup groupName = fmap (Test.Framework.testGroup groupName) . sequence
 
 testCase :: TestName -> MusicBrainz a -> Test
 testCase testName test = do
-  ctx <- asks testContext
-  return $ Test.Framework.Providers.HUnit.testCase testName $
-    void $ runMbContext ctx $ withTransactionRollBack test
+  ctxChan <- asks testContexts
+  return $
+    Test.Framework.Providers.HUnit.testCase testName $ do
+      ctx <- readChan ctxChan
+      runMbContext ctx (withTransactionRollBack test)
+      writeChan ctxChan ctx
 
 testProperty :: Test.QuickCheck.Testable a => TestName -> a -> Test
 testProperty name p = return $ Test.Framework.Providers.QuickCheck2.testProperty name p

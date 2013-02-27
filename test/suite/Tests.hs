@@ -2,11 +2,14 @@
 module Main where
 
 import Control.Applicative
+import Control.Concurrent.Chan
 import Control.Monad (forM_)
 import Data.Configurator
+import Data.Maybe (fromMaybe)
+import System.Environment (getArgs)
 import System.IO.Error
 
-import Test.Framework (buildTest, defaultMain)
+import Test.Framework (buildTest, defaultMainWithOpts, interpretArgsOrExit, ropt_threads)
 
 import qualified MusicBrainz.Data.AliasType.Tests
 import qualified MusicBrainz.Data.Artist.Tests
@@ -38,9 +41,13 @@ import MusicBrainz
 import Test.MusicBrainz (TestEnvironment(..), execTest, testGroup)
 
 main :: IO ()
-main = defaultMain [buildTest (testRunner (testGroup "All tests" tests))]
+main = do
+    args <- getArgs >>= interpretArgsOrExit
+    defaultMainWithOpts
+      [buildTest (testRunner (ropt_threads args) (testGroup "All tests" tests))]
+      args
   where
-    testRunner t = do
+    testRunner contexts t = do
       testConfig <- load [ Required "test.cfg" ] `catchIOError`
         (\e -> if isDoesNotExistError e
                  then error "test.cfg not found. Please add a test.cfg file, see test.cfg.example for more information."
@@ -54,9 +61,15 @@ main = defaultMain [buildTest (testRunner (testGroup "All tests" tests))]
                 <*> opt "password" connectPassword
                 <*> opt "database" connectDatabase
 
-      ctx <- openContext conn
+      ctxChan <- newChan
+      forM_ [0..fromMaybe 0 contexts] $
+        const (openContext conn >>= writeChan ctxChan)
+
+      ctx <- readChan ctxChan
       runMbContext ctx cleanState
-      execTest t (TestEnvironment ctx)
+      writeChan ctxChan ctx
+
+      execTest t (TestEnvironment ctxChan)
 
     tests = [ testGroup "MusicBrainz.Data.AliasType"
                 MusicBrainz.Data.AliasType.Tests.tests
