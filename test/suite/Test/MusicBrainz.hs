@@ -24,11 +24,12 @@ module Test.MusicBrainz
 
 import Control.Applicative
 import Control.Concurrent.Chan
-import Control.Exception (finally)
+import Control.Exception (catchJust, finally)
 import Control.Monad (void)
 import Control.Monad.CatchIO (Exception, MonadCatchIO, tryJust)
 import Control.Monad.IO.Class
 import Control.Monad.Trans.Reader
+import Database.PostgreSQL.Simple (SqlError(..))
 import Test.Framework (TestName)
 import Test.QuickCheck hiding (Testable)
 
@@ -67,7 +68,17 @@ testCase testName test = do
   return $
     Test.Framework.Providers.HUnit.testCase testName $ do
       ctx <- readChan ctxChan
-      void $ runMbContext ctx (withTransactionRollBack test) `finally` writeChan ctxChan ctx
+      void $ go ctx (3 :: Int) `finally` writeChan ctxChan ctx
+  where
+    runTest ctx = runMbContext ctx (withTransactionRollBack test)
+
+    isDeadlock (SqlError "40P01" _ _) = Just ()
+    isDeadlock _ = Nothing
+
+    go ctx retriesRemaining
+      | retriesRemaining <= 0 = runTest ctx
+      | otherwise = catchJust isDeadlock (runTest ctx)
+                      (const $ go ctx (pred retriesRemaining))
 
 testProperty :: Test.QuickCheck.Testable a => TestName -> a -> Test
 testProperty name p = return $ Test.Framework.Providers.QuickCheck2.testProperty name p
