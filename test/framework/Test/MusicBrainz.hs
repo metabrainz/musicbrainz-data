@@ -7,6 +7,7 @@ module Test.MusicBrainz
       -- * Running tests
     , TestEnvironment(..)
     , execTest
+    , testRunner
 
       -- * Test utilities
     , testCase
@@ -25,12 +26,16 @@ module Test.MusicBrainz
 import Control.Applicative
 import Control.Concurrent.Chan
 import Control.Exception (catchJust, finally)
-import Control.Monad (void)
+import Control.Monad (forM_, void)
 import Control.Monad.CatchIO (Exception, MonadCatchIO, tryJust)
 import Control.Monad.IO.Class
 import Control.Monad.Trans.Reader
+import Data.Configurator
+import Data.Maybe (fromMaybe)
 import Database.PostgreSQL.Simple (SqlError(..))
-import Test.Framework (TestName)
+import System.Environment (getArgs)
+import System.IO.Error
+import Test.Framework (TestName, buildTest, interpretArgsOrExit, defaultMainWithOpts, ropt_threads)
 import Test.QuickCheck hiding (Testable)
 
 import qualified Test.HUnit
@@ -91,3 +96,53 @@ a @? msg = liftIO (a Test.HUnit.@? msg)
 
 assertBool :: MonadIO m => String -> Bool -> m ()
 assertBool message predicate = liftIO (Test.HUnit.assertBool message predicate)
+
+testRunner :: [Test] -> IO ()
+testRunner tests = do
+    args <- getArgs >>= interpretArgsOrExit
+    defaultMainWithOpts
+      [buildTest (runner (ropt_threads args) (testGroup "All tests" tests))]
+      args
+  where
+    runner contexts t = do
+      testConfig <- load [ Required "test.cfg" ] `catchIOError`
+        (\e -> if isDoesNotExistError e
+                 then error "test.cfg not found. Please add a test.cfg file, see test.cfg.example for more information."
+                 else ioError e)
+
+      let opt key def = lookupDefault (def defaultConnectInfo) testConfig key
+      conn <- ConnectInfo
+                <$> opt "host" connectHost
+                <*> opt "port" connectPort
+                <*> opt "user" connectUser
+                <*> opt "password" connectPassword
+                <*> opt "database" connectDatabase
+
+      ctxChan <- newChan
+      forM_ [0..fromMaybe 0 contexts] $
+        const (openContext conn >>= writeChan ctxChan)
+
+      ctx <- readChan ctxChan
+      runMbContext ctx cleanState
+      writeChan ctxChan ctx
+
+      execTest t (TestEnvironment ctxChan)
+
+    cleanState = forM_
+      [ "SET client_min_messages TO warning"
+      , "TRUNCATE artist_type CASCADE"
+      , "TRUNCATE country CASCADE"
+      , "TRUNCATE editor CASCADE"
+      , "TRUNCATE gender CASCADE"
+      , "TRUNCATE label_type CASCADE"
+      , "TRUNCATE language CASCADE"
+      , "TRUNCATE link_type CASCADE"
+      , "TRUNCATE medium_format CASCADE"
+      , "TRUNCATE release_group_primary_type CASCADE"
+      , "TRUNCATE release_group_secondary_type CASCADE"
+      , "TRUNCATE release_status CASCADE"
+      , "TRUNCATE script CASCADE"
+      , "TRUNCATE track CASCADE"
+      , "TRUNCATE work_type CASCADE"
+      , "ALTER SEQUENCE revision_revision_id_seq RESTART 1"
+      ] $ \q -> execute q ()
