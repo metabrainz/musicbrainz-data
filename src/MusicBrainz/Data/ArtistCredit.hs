@@ -102,11 +102,14 @@ expandCredits acIds =
             FROM artist_credit_name
             JOIN artist_name name ON (name.id = artist_credit_name.name)
             WHERE artist_credit_id IN ?
-            ORDER BY position ASC
+            ORDER BY artist_credit_id, position ASC
       |] (Only . In . Set.toList $ acIds)
   where
     groupRows splitRow =
-      map (fst . head &&& foldMap snd) . groupBy ((==) `on` fst) . map splitRow
+      map (fst . head &&& foldMap snd) .
+        groupBy ((==) `on` fst) .
+          map splitRow
+
     partitionArtistCredit (acId, artistId, name, joinPhrase) =
       (acId, [ArtistCreditName artistId name joinPhrase])
 
