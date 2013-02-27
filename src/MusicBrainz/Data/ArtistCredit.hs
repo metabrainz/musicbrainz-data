@@ -25,6 +25,7 @@ import qualified Data.Map as Map
 import qualified Data.Set as Set
 
 import MusicBrainz
+import MusicBrainz.Data
 
 --------------------------------------------------------------------------------
 data AcParam = AcParam !(Ref Artist) !Int !Int !Text
@@ -108,3 +109,10 @@ expandCredits acIds =
       map (fst . head &&& foldMap snd) . groupBy ((==) `on` fst) . map splitRow
     partitionArtistCredit (acId, artistId, name, joinPhrase) =
       (acId, [ArtistCreditName artistId name joinPhrase])
+
+
+--------------------------------------------------------------------------------
+instance ResolveReference ArtistCredit where
+  resolveReference acId = listToMaybe . map fromOnly <$>
+    query [sql| SELECT id FROM artist_credit WHERE artist_credit_id = ? |]
+      (Only acId)
