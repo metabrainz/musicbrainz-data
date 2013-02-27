@@ -24,8 +24,9 @@ module Test.MusicBrainz
 
 import Control.Applicative
 import Control.Concurrent.Chan
+import Control.Exception (finally)
 import Control.Monad (void)
-import Control.Monad.CatchIO
+import Control.Monad.CatchIO (Exception, MonadCatchIO, tryJust)
 import Control.Monad.IO.Class
 import Control.Monad.Trans.Reader
 import Test.Framework (TestName)
@@ -66,8 +67,7 @@ testCase testName test = do
   return $
     Test.Framework.Providers.HUnit.testCase testName $ do
       ctx <- readChan ctxChan
-      runMbContext ctx (withTransactionRollBack test)
-      writeChan ctxChan ctx
+      void $ runMbContext ctx (withTransactionRollBack test) `finally` writeChan ctxChan ctx
 
 testProperty :: Test.QuickCheck.Testable a => TestName -> a -> Test
 testProperty name p = return $ Test.Framework.Providers.QuickCheck2.testProperty name p
