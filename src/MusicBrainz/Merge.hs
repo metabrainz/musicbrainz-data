@@ -28,7 +28,7 @@ class Render a b where
 instance Render a () where render = const ()
 
 --------------------------------------------------------------------------------
-data MergeScope a = MergeScope { new :: a, current :: a, ancestor :: a }
+data MergeScope a = MergeScope { new :: !a, current :: !a, ancestor :: !a }
 
 instance Functor MergeScope where
   fmap f m = MergeScope { new = f $ new m
@@ -49,7 +49,7 @@ newtype Merge e mo a = Merge { getMerge :: Compose ((->) (MergeScope e)) (Produc
 {-| When traversing a merge, hunks will be output. 'Hunk's form a forest, where
 nodes can be a 'Section' containing a forest of 'Hunk's, or they can either be
 'Ok' or in 'Conflict'. -}
-data Hunk a = Section String [Hunk a] | Ok a | Conflict a
+data Hunk a = Section !String ![Hunk a] | Ok !a | Conflict !a
   deriving (Show)
 
 {-| Scope the output forest of 'Hunk's from 'Merge' into a new 'Section' with

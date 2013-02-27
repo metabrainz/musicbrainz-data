@@ -31,23 +31,23 @@ import MusicBrainz.Monad
 import MusicBrainz.Types
 
 --------------------------------------------------------------------------------
-data Change = ArtistChange (Ref (Revision Artist))
-            | LabelChange (Ref (Revision Label))
-            | RecordingChange (Ref (Revision Recording))
-            | ReleaseChange (Ref (Revision Release))
-            | ReleaseGroupChange (Ref (Revision ReleaseGroup))
-            | UrlChange (Ref (Revision Url))
-            | WorkChange (Ref (Revision Work))
+data Change = ArtistChange !(Ref (Revision Artist))
+            | LabelChange !(Ref (Revision Label))
+            | RecordingChange !(Ref (Revision Recording))
+            | ReleaseChange !(Ref (Revision Release))
+            | ReleaseGroupChange !(Ref (Revision ReleaseGroup))
+            | UrlChange !(Ref (Revision Url))
+            | WorkChange !(Ref (Revision Work))
 
 
 --------------------------------------------------------------------------------
-data CoreEntityRef = ArtistRef (Ref Artist)
-                   | LabelRef (Ref Label)
-                   | RecordingRef (Ref Recording)
-                   | ReleaseRef (Ref Release)
-                   | ReleaseGroupRef (Ref ReleaseGroup)
-                   | UrlRef (Ref Url)
-                   | WorkRef (Ref Work)
+data CoreEntityRef = ArtistRef !(Ref Artist)
+                   | LabelRef !(Ref Label)
+                   | RecordingRef !(Ref Recording)
+                   | ReleaseRef !(Ref Release)
+                   | ReleaseGroupRef !(Ref ReleaseGroup)
+                   | UrlRef !(Ref Url)
+                   | WorkRef !(Ref Work)
 
 
 --------------------------------------------------------------------------------

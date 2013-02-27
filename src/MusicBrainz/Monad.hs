@@ -42,9 +42,9 @@ import qualified Database.PostgreSQL.Simple as PG
 --------------------------------------------------------------------------------
 {-| Context available when executing 'MusicBrainz' actions. -}
 data Context = Context
-    { _mbDb :: Connection
+    { _mbDb :: !Connection
       -- ^ The underlying PostgreSQL 'Connection'.
-    , _transactionDepth :: Natural
+    , _transactionDepth :: !Natural
     }
 
 makeLenses ''Context

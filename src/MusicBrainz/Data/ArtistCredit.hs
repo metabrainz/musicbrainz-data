@@ -27,7 +27,7 @@ import qualified Data.Set as Set
 import MusicBrainz
 
 --------------------------------------------------------------------------------
-data AcParam = AcParam (Ref Artist) Int Int Text
+data AcParam = AcParam !(Ref Artist) !Int !Int !Text
 newtype AcParams = AcParams { getAcParams :: [AcParam] }
 
 instance ToRow AcParam where

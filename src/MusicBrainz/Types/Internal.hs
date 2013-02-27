@@ -94,7 +94,7 @@ import qualified Data.Text as T
 --------------------------------------------------------------------------------
 {-| A reference to a specific entity. In the database, this a foreign key
 relationship to an entity of type @a@. -}
-data Ref a = Referenceable a => Ref (RefSpec a)
+data Ref a = Referenceable a => Ref !(RefSpec a)
 
 deriving instance Eq (Ref a)
 deriving instance Ord (Ref a)
@@ -208,14 +208,14 @@ in use.
 
 @a@ is a phantom type describing what type of entity this alias belongs to.-}
 data Alias a = Alias
-    { aliasName :: Text
-    , aliasSortName :: Text
-    , aliasBeginDate :: PartialDate
-    , aliasEndDate :: PartialDate
-    , aliasEnded :: Bool
-    , aliasType :: Maybe (Ref (AliasType a))
-    , aliasLocale :: Maybe Text
-    , aliasPrimaryForLocale :: Bool
+    { aliasName :: !Text
+    , aliasSortName :: !Text
+    , aliasBeginDate :: !PartialDate
+    , aliasEndDate :: !PartialDate
+    , aliasEnded :: !Bool
+    , aliasType :: !(Maybe (Ref (AliasType a)))
+    , aliasLocale :: !(Maybe Text)
+    , aliasPrimaryForLocale :: !Bool
     }
   deriving (Eq, Ord, Show)
 
@@ -226,22 +226,22 @@ be one of 'ArtistAlias', 'LabelAlias' or 'WorkAlias'. It is used to signify
 exactly which type of alias this is (as each entity has its own distinct
 set of possible alias types.) -}
 data AliasType a = AliasType
-    { aliasTypeName :: Text }
+    { aliasTypeName :: !Text }
   deriving (Eq, Show)
 
 
 --------------------------------------------------------------------------------
 {-| The data about an artist in MusicBrainz. -}
 data Artist = Artist
-    { artistName :: Text
-    , artistSortName :: Text
-    , artistComment :: Text
-    , artistBeginDate :: PartialDate
-    , artistEndDate :: PartialDate
-    , artistEnded :: Bool
-    , artistGender :: Maybe (Ref Gender)
-    , artistType :: Maybe (Ref ArtistType)
-    , artistCountry :: Maybe (Ref Country)
+    { artistName :: !Text
+    , artistSortName :: !Text
+    , artistComment :: !Text
+    , artistBeginDate :: !PartialDate
+    , artistEndDate :: !PartialDate
+    , artistEnded :: !Bool
+    , artistGender :: !(Maybe (Ref Gender))
+    , artistType :: !(Maybe (Ref ArtistType))
+    , artistCountry :: !(Maybe (Ref Country))
     }
   deriving (Eq, Show)
 
@@ -260,9 +260,9 @@ data ArtistCredit
 {-| An individual artist credit in an 'ArtistCredit'. This can also be thought
 of as a single 'Artist' appearing in an 'ArtistCredit'. -}
 data ArtistCreditName = ArtistCreditName
-    { acnArtist :: Ref Artist
-    , acnName :: Text
-    , acnJoinPhrase :: Text
+    { acnArtist :: !(Ref Artist)
+    , acnName :: !Text
+    , acnJoinPhrase :: !Text
     }
   deriving (Eq, Show)
 
@@ -270,7 +270,7 @@ data ArtistCreditName = ArtistCreditName
 --------------------------------------------------------------------------------
 {-| The definition of a type of an artist (e.g., \"person\" or \"group\") . -}
 data ArtistType = ArtistType
-    { artistTypeName :: Text }
+    { artistTypeName :: !Text }
   deriving (Eq, Show)
 
 
@@ -278,17 +278,17 @@ data ArtistType = ArtistType
 {-| A country where artists resides, labels are founded, releases are released
 in, etc. -}
 data Country = Country
-    { countryIsoCode :: Text
+    { countryIsoCode :: !Text
       -- ^ The ISO-3166 code for this country
-    , countryName :: Text
+    , countryName :: !Text
     }
   deriving (Eq, Show)
 
 
 --------------------------------------------------------------------------------
 {-| A MusicBrainz editor who makes changes to the database. -}
-data Editor = Editor { editorName :: Text
-                     , editorPassword :: Text
+data Editor = Editor { editorName :: !Text
+                     , editorPassword :: !Text
                      }
   deriving (Eq, Show)
 
@@ -297,8 +297,8 @@ data Editor = Editor { editorName :: Text
 {-| An 'Entity' is something that has been loaded from the database. It cotains
 both data about itself (in @entityData@), and also a reference to itself (in
 @entityRef@) so that other data/entities can refer to it. -}
-data Entity a = Entity { entityRef :: Ref a
-                       , entityData :: a
+data Entity a = Entity { entityRef :: !(Ref a)
+                       , entityData :: !a
                        }
 
 deriving instance (Eq a, Show a) => Eq (Entity a)
@@ -307,7 +307,7 @@ deriving instance (Eq a, Show a) => Show (Entity a)
 --------------------------------------------------------------------------------
 {-| The gender of an artist or editor. -}
 data Gender = Gender
-    { genderName :: Text }
+    { genderName :: !Text }
   deriving (Eq, Show)
 
 
@@ -328,15 +328,15 @@ ipi = parsecPrism (\(IPI i) -> i) ipiParser
 
 --------------------------------------------------------------------------------
 {-| A label who is repsonsible for releasing/distributing music. -}
-data Label = Label { labelName :: Text
-                   , labelSortName :: Text
-                   , labelComment :: Text
-                   , labelBeginDate :: PartialDate
-                   , labelEndDate :: PartialDate
-                   , labelEnded :: Bool
-                   , labelType :: Maybe (Ref LabelType)
-                   , labelCode :: Maybe Int
-                   , labelCountry :: Maybe (Ref Country)
+data Label = Label { labelName :: !Text
+                   , labelSortName :: !Text
+                   , labelComment :: !Text
+                   , labelBeginDate :: !PartialDate
+                   , labelEndDate :: !PartialDate
+                   , labelEnded :: !Bool
+                   , labelType :: !(Maybe (Ref LabelType))
+                   , labelCode :: !(Maybe Int)
+                   , labelCountry :: !(Maybe (Ref Country))
                    }
   deriving (Eq, Show)
 
@@ -344,17 +344,17 @@ data Label = Label { labelName :: Text
 --------------------------------------------------------------------------------
 {-| The definition of a type of an label (e.g., \"person\" or \"group\") . -}
 data LabelType = LabelType
-    { labelTypeName :: Text }
+    { labelTypeName :: !Text }
   deriving (Eq, Show)
 
 
 --------------------------------------------------------------------------------
 {-| A language that is written or spoken. -}
-data Language = Language { languageName :: Text
-                         , languageIsoCode2t :: Text
-                         , languageIsoCode2b :: Text
-                         , languageIsoCode1 :: Text
-                         , languageIsoCode3  :: Text
+data Language = Language { languageName :: !Text
+                         , languageIsoCode2t :: !Text
+                         , languageIsoCode2b :: !Text
+                         , languageIsoCode1 :: !Text
+                         , languageIsoCode3  :: !Text
                          }
   deriving (Eq, Show)
 
@@ -363,10 +363,10 @@ data Language = Language { languageName :: Text
 {-| A recording in MusicBrainz (which is realised on 'Tracklist' as a
 'Track'. -}
 data Recording = Recording
-    { recordingName :: Text
-    , recordingComment :: Text
-    , recordingArtistCredit :: Ref ArtistCredit
-    , recordingDuration :: Maybe Int
+    { recordingName :: !Text
+    , recordingComment :: !Text
+    , recordingArtistCredit :: !(Ref ArtistCredit)
+    , recordingDuration :: !(Maybe Int)
     }
   deriving (Eq, Show)
 
@@ -376,17 +376,17 @@ data Recording = Recording
 and belongs to a 'ReleaseGroup' and consists of some information along with
 multiple 'Medium's. -}
 data Release = Release
-    { releaseName :: Text
-    , releaseComment :: Text
-    , releaseArtistCredit :: Ref ArtistCredit
-    , releaseReleaseGroup :: Ref ReleaseGroup
-    , releaseDate :: PartialDate
-    , releaseCountry :: Maybe (Ref Country)
-    , releaseScript :: Maybe (Ref Script)
-    , releaseLanguage :: Maybe (Ref Language)
-    , releasePackaging :: Maybe (Ref ReleasePackaging)
-    , releaseStatus :: Maybe (Ref ReleaseStatus)
-    , releaseBarcode :: Maybe Barcode
+    { releaseName :: !Text
+    , releaseComment :: !Text
+    , releaseArtistCredit :: !(Ref ArtistCredit)
+    , releaseReleaseGroup :: !(Ref ReleaseGroup)
+    , releaseDate :: !PartialDate
+    , releaseCountry :: !(Maybe (Ref Country))
+    , releaseScript :: !(Maybe (Ref Script))
+    , releaseLanguage :: !(Maybe (Ref Language))
+    , releasePackaging :: !(Maybe (Ref ReleasePackaging))
+    , releaseStatus :: !(Maybe (Ref ReleaseStatus))
+    , releaseBarcode :: !(Maybe Barcode)
     }
   deriving (Eq, Show)
 
@@ -397,11 +397,11 @@ data Release = Release
 various different formats of albums, such as the vinyl release and the CD
 release. -}
 data ReleaseGroup = ReleaseGroup
-    { releaseGroupName :: Text
-    , releaseGroupComment :: Text
-    , releaseGroupArtistCredit :: Ref ArtistCredit
-    , releaseGroupPrimaryType :: Maybe (Ref (ReleaseGroupType Primary))
-    , releaseGroupSecondaryTypes :: Set.Set (Ref (ReleaseGroupType Secondary))
+    { releaseGroupName :: !Text
+    , releaseGroupComment :: !Text
+    , releaseGroupArtistCredit :: !(Ref ArtistCredit)
+    , releaseGroupPrimaryType :: !(Maybe (Ref (ReleaseGroupType Primary)))
+    , releaseGroupSecondaryTypes :: !(Set.Set (Ref (ReleaseGroupType Secondary)))
     }
   deriving (Eq, Show)
 
@@ -422,53 +422,53 @@ indicate a remix album.
 The parameter to 'ReleaseGroupType' indicates whether the release group
 type is primary or secondary. -}
 data ReleaseGroupType a = ReleaseGroupType
-    { releaseGroupTypeName :: Text }
+    { releaseGroupTypeName :: !Text }
   deriving (Eq, Show)
 
 
 --------------------------------------------------------------------------------
 {-| The type of packaging a release came in. -}
-data ReleasePackaging = ReleasePackaging { releasePackagingName :: Text }
+data ReleasePackaging = ReleasePackaging { releasePackagingName :: !Text }
   deriving (Eq, Show)
 
 
 --------------------------------------------------------------------------------
 {-| A release status indicates whether a 'Release' was released official,
 promotionally, as a bootleg, etc. -}
-data ReleaseStatus = ReleaseStatus { releaseStatusName :: Text }
+data ReleaseStatus = ReleaseStatus { releaseStatusName :: !Text }
   deriving (Eq, Show)
 
 
 --------------------------------------------------------------------------------
 {-| The script that text is written. -}
-data Script = Script { scriptIsoCode :: Text
-                     , scriptIsoNumber :: Text
-                     , scriptName :: Text
+data Script = Script { scriptIsoCode :: !Text
+                     , scriptIsoNumber :: !Text
+                     , scriptName :: !Text
                      }
   deriving (Eq, Show)
 
 
 --------------------------------------------------------------------------------
 data Work = Work
-    { workName :: Text
-    , workComment :: Text
-    , workType :: Maybe (Ref WorkType)
-    , workLanguage :: Maybe (Ref Language)
+    { workName :: !Text
+    , workComment :: !Text
+    , workType :: !(Maybe (Ref WorkType))
+    , workLanguage :: !(Maybe (Ref Language))
     }
   deriving (Eq, Show)
 
 
 --------------------------------------------------------------------------------
-data WorkType = WorkType { workTypeName :: Text }
+data WorkType = WorkType { workTypeName :: !Text }
   deriving (Eq, Show)
 
 
 --------------------------------------------------------------------------------
 {-| A partial date consisting of an optional year, month and day.-}
 data PartialDate = PartialDate
-    { dateYear :: Maybe Int
-    , dateMonth :: Maybe Int
-    , dateDay :: Maybe Int
+    { dateYear :: !(Maybe Int)
+    , dateMonth :: !(Maybe Int)
+    , dateDay :: !(Maybe Int)
     }
   deriving (Eq, Ord, Show)
 
@@ -521,9 +521,9 @@ mbid = uuid.wrapped
 {-| Represents a view of a versioned MusicBrainz \'core\' entity at a specific
 point in time (a specific 'Revision'). -}
 data CoreEntity a = CoreEntity
-    { coreRef :: Ref a
-    , coreRevision :: Ref (Revision a)
-    , coreData :: a
+    { coreRef :: !(Ref a)
+    , coreRevision :: !(Ref (Revision a))
+    , coreData :: !a
     }
 
 deriving instance (Eq a, Show a) => Eq (CoreEntity a)
@@ -534,7 +534,7 @@ deriving instance (Eq a, Show a) => Show (CoreEntity a)
 {-| A revision is a version of an entity at a specific point in time. The type
 @a@ indicates what type of entity this is a revision of (e.g., @Revision Artist@
 means a specific revision of an 'Artist'). -}
-data Revision a = Revision { revisionCreatedAt :: UTCTime }
+data Revision a = Revision { revisionCreatedAt :: !UTCTime }
   deriving (Eq, Show)
 
 
@@ -544,54 +544,54 @@ versioning works. A tree consists of all the data that is versioned for a
 specific entity (of type @a@). -}
 data Tree a where
   ArtistTree :: {
-    artistData :: Artist
-  , artistRelationships :: Set.Set LinkedRelationship
-  , artistAliases :: Set.Set (Alias Artist)
-  , artistIpiCodes :: Set.Set IPI
-  , artistAnnotation :: Text
+    artistData :: !Artist
+  , artistRelationships :: !(Set.Set LinkedRelationship)
+  , artistAliases :: !(Set.Set (Alias Artist))
+  , artistIpiCodes :: !(Set.Set IPI)
+  , artistAnnotation :: !Text
   } -> Tree Artist
 
   LabelTree :: {
-    labelData :: Label
-  , labelRelationships :: Set.Set LinkedRelationship
-  , labelAliases :: Set.Set (Alias Label)
-  , labelIpiCodes :: Set.Set IPI
-  , labelAnnotation :: Text
+    labelData :: !Label
+  , labelRelationships :: !(Set.Set LinkedRelationship)
+  , labelAliases :: !(Set.Set (Alias Label))
+  , labelIpiCodes :: !(Set.Set IPI)
+  , labelAnnotation :: !Text
   } -> Tree Label
 
   RecordingTree :: {
-    recordingData :: Recording
-  , recordingRelationships :: Set.Set LinkedRelationship
-  , recordingAnnotation :: Text
-  , recordingIsrcs :: Set.Set ISRC
-  , recordingPuids :: Set.Set PUID
+    recordingData :: !Recording
+  , recordingRelationships :: !(Set.Set LinkedRelationship)
+  , recordingAnnotation :: !Text
+  , recordingIsrcs :: !(Set.Set ISRC)
+  , recordingPuids :: !(Set.Set PUID)
   } -> Tree Recording
 
   ReleaseTree :: {
-    releaseData :: Release
-  , releaseRelationships :: Set.Set LinkedRelationship
-  , releaseAnnotation :: Text
-  , releaseLabels :: Set.Set ReleaseLabel
-  , releaseMediums :: [Medium]
+    releaseData :: !Release
+  , releaseRelationships :: !(Set.Set LinkedRelationship)
+  , releaseAnnotation :: !Text
+  , releaseLabels :: !(Set.Set ReleaseLabel)
+  , releaseMediums :: ![Medium]
   } -> Tree Release
 
   ReleaseGroupTree :: {
-    releaseGroupData :: ReleaseGroup
-  , releaseGroupRelationships :: Set.Set LinkedRelationship
-  , releaseGroupAnnotation :: Text
+    releaseGroupData :: !ReleaseGroup
+  , releaseGroupRelationships :: !(Set.Set LinkedRelationship)
+  , releaseGroupAnnotation :: !Text
   } -> Tree ReleaseGroup
 
   UrlTree :: {
-    urlData :: Url
-  , urlRelationships :: Set.Set LinkedRelationship
+    urlData :: !Url
+  , urlRelationships :: !(Set.Set LinkedRelationship)
   } -> Tree Url
 
   WorkTree :: {
-    workData :: Work
-  , workRelationships :: Set.Set LinkedRelationship
-  , workAliases :: Set.Set (Alias Work)
-  , workAnnotation :: Text
-  , workIswcs :: Set.Set ISWC
+    workData :: !Work
+  , workRelationships :: !(Set.Set LinkedRelationship)
+  , workAliases :: !(Set.Set (Alias Work))
+  , workAnnotation :: !Text
+  , workIswcs :: !(Set.Set ISWC)
   } -> Tree Work
 
 deriving instance Eq (Tree a)
@@ -664,9 +664,9 @@ instance Bounded VoteScore where
 
 --------------------------------------------------------------------------------
 {-| A vote on an edit. -}
-data Vote = Vote { voteVote :: VoteScore
-                 , voteEditor :: Ref Editor
-                 , voteSuperceded :: Bool
+data Vote = Vote { voteVote :: !VoteScore
+                 , voteEditor :: !(Ref Editor)
+                 , voteSuperceded :: !Bool
                  }
   deriving (Eq, Show)
 
@@ -676,8 +676,8 @@ data Vote = Vote { voteVote :: VoteScore
 have a discussion about the changes being made, or to provide references for
 other editors to verify changes against. -}
 data EditNote = EditNote
-    { editNoteBody :: Text
-    , editNoteAuthor :: Ref Editor
+    { editNoteBody :: !Text
+    , editNoteAuthor :: !(Ref Editor)
     }
   deriving (Eq, Show)
 
@@ -686,24 +686,24 @@ data EditNote = EditNote
 {-| A 'LinkedRelationship' is an end-point 'Ref', along with the data
 describing the 'Relationship' itself. -}
 data LinkedRelationship
-  = ArtistRelationship (Ref Artist) Relationship
-  | LabelRelationship (Ref Label) Relationship
-  | RecordingRelationship (Ref Recording) Relationship
-  | ReleaseRelationship (Ref Release) Relationship
-  | ReleaseGroupRelationship (Ref ReleaseGroup) Relationship
-  | UrlRelationship (Ref Url) Relationship
-  | WorkRelationship (Ref Work) Relationship
+  = ArtistRelationship !(Ref Artist) !Relationship
+  | LabelRelationship !(Ref Label) !Relationship
+  | RecordingRelationship !(Ref Recording) !Relationship
+  | ReleaseRelationship !(Ref Release) !Relationship
+  | ReleaseGroupRelationship !(Ref ReleaseGroup) !Relationship
+  | UrlRelationship !(Ref Url) !Relationship
+  | WorkRelationship !(Ref Work) !Relationship
   deriving (Eq, Ord, Show)
 
 
 --------------------------------------------------------------------------------
 {-| Metadata about a relationship between 2 entities. -}
 data Relationship = Relationship
-    { relType :: Ref RelationshipType
-    , relAttributes :: Set.Set (Ref RelationshipAttribute)
-    , relBeginDate :: PartialDate
-    , relEndDate :: PartialDate
-    , relEnded :: Bool
+    { relType :: !(Ref RelationshipType)
+    , relAttributes :: !(Set.Set (Ref RelationshipAttribute))
+    , relBeginDate :: !PartialDate
+    , relEndDate :: !PartialDate
+    , relEnded :: !Bool
     }
   deriving (Eq, Ord, Show)
 
@@ -711,17 +711,17 @@ data Relationship = Relationship
 --------------------------------------------------------------------------------
 {-| The type of a relationship between 2 entities. -}
 data RelationshipType = RelationshipType
-    { relName :: Text
-    , relTypeAttributes :: Set.Set RelationshipAttributeUse
-    , relParent :: Maybe (Ref RelationshipType)
-    , relChildOrder :: Int
-    , relLeftTarget :: RelationshipTarget
-    , relRightTarget :: RelationshipTarget
-    , relDescription :: Text
-    , relLinkPhrase :: Text
-    , relReverseLinkPhrase :: Text
-    , relShortLinkPhrase :: Text
-    , relPriority :: Int
+    { relName :: !Text
+    , relTypeAttributes :: !(Set.Set RelationshipAttributeUse)
+    , relParent :: !(Maybe (Ref RelationshipType))
+    , relChildOrder :: !Int
+    , relLeftTarget :: !RelationshipTarget
+    , relRightTarget :: !RelationshipTarget
+    , relDescription :: !Text
+    , relLinkPhrase :: !Text
+    , relReverseLinkPhrase :: !Text
+    , relShortLinkPhrase :: !Text
+    , relPriority :: !Int
     }
   deriving (Eq, Ord, Show)
 
@@ -730,9 +730,9 @@ data RelationshipType = RelationshipType
 {-| A description of the usage of a 'RelationshipAttribute' by a
 'RelationshipType'. -}
 data RelationshipAttributeUse = RelationshipAttributeUse
-     { relAttribute :: Ref RelationshipAttribute
-     , relAttributeMinOccurances :: Maybe Int
-     , relAttributeMaxOccurances :: Maybe Int
+     { relAttribute :: !(Ref RelationshipAttribute)
+     , relAttributeMinOccurances :: !(Maybe Int)
+     , relAttributeMaxOccurances :: !(Maybe Int)
      }
   deriving (Eq, Ord, Show)
 
@@ -741,11 +741,11 @@ data RelationshipAttributeUse = RelationshipAttributeUse
 {-| An attribute of a relationship (for example, indicating whether the
 relationship is additional). -}
 data RelationshipAttribute = RelationshipAttribute
-    { relAttributeName :: Text
-    , relAttributeParent :: Maybe (Ref RelationshipAttribute)
-    , relAttributeRoot :: Ref RelationshipAttribute
-    , relAttributeChildOrder :: Int
-    , relAttributeDescription :: Text
+    { relAttributeName :: !Text
+    , relAttributeParent :: !(Maybe (Ref RelationshipAttribute))
+    , relAttributeRoot :: !(Ref RelationshipAttribute)
+    , relAttributeChildOrder :: !Int
+    , relAttributeDescription :: !Text
     }
   deriving (Eq, Ord, Show)
 
@@ -796,41 +796,41 @@ isrc = parsecPrism (\(ISRC i) -> i) isrcParser
 
 
 --------------------------------------------------------------------------------
-data Url = Url { urlUrl :: URI }
+data Url = Url { urlUrl :: !URI }
   deriving (Eq, Show)
 
 
 --------------------------------------------------------------------------------
 data ReleaseLabel = ReleaseLabel
-    { releaseLabel :: Maybe (Ref Label)
-    , releaseCatalogNumber :: Maybe Text
+    { releaseLabel :: !(Maybe (Ref Label))
+    , releaseCatalogNumber :: !(Maybe Text)
     }
   deriving (Eq, Ord, Show)
 
 
 --------------------------------------------------------------------------------
 data Medium = Medium
-    { mediumName :: Text
-    , mediumFormat :: Maybe (Ref MediumFormat)
-    , mediumPosition :: Int
-    , mediumTracks :: [Track]
-    , mediumCdTocs :: Set.Set CdToc
+    { mediumName :: !Text
+    , mediumFormat :: !(Maybe (Ref MediumFormat))
+    , mediumPosition :: !Int
+    , mediumTracks :: ![Track]
+    , mediumCdTocs :: !(Set.Set CdToc)
     }
   deriving (Eq, Show)
 
 
 --------------------------------------------------------------------------------
-data MediumFormat = MediumFormat { mediumFormatName :: Text }
+data MediumFormat = MediumFormat { mediumFormatName :: !Text }
   deriving (Eq, Show)
 
 
 --------------------------------------------------------------------------------
 data Track = Track
-    { trackName :: Text
-    , trackRecording :: Ref Recording
-    , trackDuration :: Maybe Int
-    , trackArtistCredit :: Ref ArtistCredit
-    , trackPosition :: Text
+    { trackName :: !Text
+    , trackRecording :: !(Ref Recording)
+    , trackDuration :: !(Maybe Int)
+    , trackArtistCredit :: !(Ref ArtistCredit)
+    , trackPosition :: !Text
     }
   deriving (Eq, Show)
 
@@ -864,8 +864,8 @@ parsecPrism extract parser = prism extract runParse
 
 --------------------------------------------------------------------------------
 data CdToc = CdToc
-    { cdTocTrackOffsets :: [Int]
-    , cdTocLeadoutOffset :: Int
+    { cdTocTrackOffsets :: ![Int]
+    , cdTocLeadoutOffset :: !Int
     }
   deriving (Eq, Ord, Show)
 
