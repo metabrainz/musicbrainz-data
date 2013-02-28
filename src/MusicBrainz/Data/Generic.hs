@@ -46,6 +46,7 @@ import MusicBrainz.Lens
 import MusicBrainz.Data.FindLatest
 import MusicBrainz.Data.Revision.Internal
 import MusicBrainz.Data.Tree
+import MusicBrainz.Data.Util (groupMap)
 import MusicBrainz.Edit
 
 import {-# SOURCE #-} MusicBrainz.Data.Artist ()
@@ -120,15 +121,21 @@ linkRevisionToEdit table editId revisionId = void $
 
 --------------------------------------------------------------------------------
 viewIpiCodes :: (Functor m, MonadIO m)
-                 => String -> Ref (Revision a) -> MusicBrainzT m (Set.Set IPI)
-viewIpiCodes entityName r = Set.fromList <$> query q (Only r)
-  where q = fromString $ unlines
-            [ "SELECT ipi "
-            , "FROM " ++ entityName ++ "_ipi "
-            , "JOIN " ++ entityName ++ "_tree USING (" ++ entityName ++ "_tree_id) "
-            , "JOIN " ++ entityName ++ "_revision USING (" ++ entityName ++ "_tree_id) "
-            , "WHERE revision_id = ?"
-            ]
+                 => String
+                 -> Set.Set (Ref (Revision a))
+                 -> MusicBrainzT m (Map.Map (Ref (Revision a)) (Set.Set IPI))
+viewIpiCodes entityName rs =
+    groupMap partitionIpis rs' <$> query q (Only . In $ rs')
+  where
+    rs' = Set.toList rs
+    partitionIpis (revisionId, ipi) = (revisionId, Set.singleton ipi)
+    q = fromString $ unlines
+          [ "SELECT revision_id, ipi "
+          , "FROM " ++ entityName ++ "_ipi "
+          , "JOIN " ++ entityName ++ "_tree USING (" ++ entityName ++ "_tree_id) "
+          , "JOIN " ++ entityName ++ "_revision USING (" ++ entityName ++ "_tree_id) "
+          , "WHERE revision_id = ?"
+          ]
 
 
 --------------------------------------------------------------------------------
@@ -169,7 +176,7 @@ resolveMbid eName entityMbid =
         , "SELECT " ++ eName ++ "_id "
         , "FROM path "
         , "WHERE is_master_revision_id "
-        , "ORDER BY created_at, revision_id DESC "
+        , "ORDER BY created_at DESC, revision_id DESC "
         , "LIMIT 1 "
         ]
 

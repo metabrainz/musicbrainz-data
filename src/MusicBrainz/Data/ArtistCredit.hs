@@ -26,6 +26,7 @@ import qualified Data.Set as Set
 
 import MusicBrainz
 import MusicBrainz.Data
+import MusicBrainz.Data.Util (groupMapTotal)
 
 --------------------------------------------------------------------------------
 data AcParam = AcParam !(Ref Artist) !Int !Int !Text
@@ -97,7 +98,7 @@ expandCredits :: (Functor m, MonadIO m)
   => Set.Set (Ref ArtistCredit)
   -> MusicBrainzT m (Map.Map (Ref ArtistCredit) [ArtistCreditName])
 expandCredits acIds =
-    Map.fromList . groupRows partitionArtistCredit <$> query
+    groupMapTotal partitionArtistCredit <$> query
       [sql| SELECT artist_credit_id, artist_id, name.name, join_phrase
             FROM artist_credit_name
             JOIN artist_name name ON (name.id = artist_credit_name.name)
@@ -105,11 +106,6 @@ expandCredits acIds =
             ORDER BY artist_credit_id, position ASC
       |] (Only . In . Set.toList $ acIds)
   where
-    groupRows splitRow =
-      map (fst . head &&& foldMap snd) .
-        groupBy ((==) `on` fst) .
-          map splitRow
-
     partitionArtistCredit (acId, artistId, name, joinPhrase) =
       (acId, [ArtistCreditName artistId name joinPhrase])
 

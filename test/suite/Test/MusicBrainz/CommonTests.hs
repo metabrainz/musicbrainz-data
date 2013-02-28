@@ -32,6 +32,7 @@ import           MusicBrainz.Lens
 import           MusicBrainz.Data
 import           MusicBrainz.Data.Edit
 import           MusicBrainz.Data.Editor (register)
+import           MusicBrainz.Data.Util (viewOnce)
 
 --------------------------------------------------------------------------------
 createAndUpdateSubtree ::
@@ -203,7 +204,7 @@ testIpiCodes startTree = do
   editor <- entityRef <$> register acid2
 
   entity <- autoEdit $ create editor (ipiCodes .~ expected $ startTree) >>= viewRevision
-  ipiPreUpdate <- viewIpiCodes (coreRevision entity)
+  ipiPreUpdate <- viewOnce viewIpiCodes (coreRevision entity)
   liftIO $ ipiPreUpdate @?= expected
 
   edit <- createEdit $
@@ -212,12 +213,8 @@ testIpiCodes startTree = do
   apply edit
 
   latest <- findLatest (coreRef entity)
-  ipiPostUpdate <- viewIpiCodes (coreRevision latest)
+  ipiPostUpdate <- viewOnce viewIpiCodes (coreRevision latest)
   liftIO $ ipiPostUpdate @?= mempty
-
-  let revId = coreRevision entity
-  ipis <- findIpiCodes $ Set.singleton revId
-  liftIO $ ipis @?= Map.singleton revId expected
 
   where
     expected = Set.singleton $ "12345678912" ^?! ipi

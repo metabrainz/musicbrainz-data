@@ -65,6 +65,7 @@ Library
     MusicBrainz.Data.Tree
     MusicBrainz.Data.Update
     MusicBrainz.Data.Url
+    MusicBrainz.Data.Util
     MusicBrainz.Data.Work
     MusicBrainz.Data.WorkType
     MusicBrainz.Edit

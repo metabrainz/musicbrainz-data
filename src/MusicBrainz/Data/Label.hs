@@ -27,6 +27,7 @@ import MusicBrainz.Data.Relationship.Internal
 import MusicBrainz.Data.Revision.Internal
 import MusicBrainz.Data.Tree
 import MusicBrainz.Data.Update
+import MusicBrainz.Data.Util (viewOnce)
 import MusicBrainz.Edit
 
 import qualified MusicBrainz.Data.Generic as Generic
@@ -118,7 +119,7 @@ instance ViewTree Label where
   viewTree r = LabelTree <$> fmap coreData (viewRevision r)
                          <*> viewRelationships r
                          <*> viewAliases r
-                         <*> viewIpiCodes r
+                         <*> viewOnce viewIpiCodes r
                          <*> viewAnnotation r
 
 
@@ -144,7 +145,6 @@ instance ViewAnnotation Label where
 --------------------------------------------------------------------------------
 instance ViewIPICodes Label where
   viewIpiCodes = Generic.viewIpiCodes "label"
-  findIpiCodes = Generic.findIpiCodes "label"
 
 
 --------------------------------------------------------------------------------

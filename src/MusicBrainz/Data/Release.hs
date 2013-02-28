@@ -38,6 +38,7 @@ import MusicBrainz.Data.Relationship
 import MusicBrainz.Data.Relationship.Internal
 import MusicBrainz.Data.Revision.Internal
 import MusicBrainz.Data.Update
+import MusicBrainz.Data.Util (groupMap, groupRows, viewOnce)
 import MusicBrainz.Data.Tree
 import MusicBrainz.Edit
 
@@ -163,10 +164,8 @@ instance ViewTree Release where
   viewTree r = ReleaseTree <$> fmap coreData (viewRevision r)
                            <*> viewRelationships r
                            <*> viewAnnotation r
-                           <*> viewOne viewReleaseLabels
-                           <*> viewOne viewMediums
-    where
-      viewOne f = fmap (Map.! r) (f $ Set.singleton r)
+                           <*> viewOnce viewReleaseLabels r
+                           <*> viewOnce viewMediums r
 
 
 --------------------------------------------------------------------------------
@@ -174,11 +173,9 @@ viewReleaseLabels :: (Functor m, Monad m, MonadIO m)
   => Set.Set (Ref (Revision Release))
   -> MusicBrainzT m (Map.Map (Ref (Revision Release)) (Set.Set ReleaseLabel))
 viewReleaseLabels r =
-    (flip Map.union) defaults . Map.fromList . groupRows partition <$> query q r'
+    groupMap partition r' <$> query q r'
   where
     r' = Set.toList r
-
-    defaults = Map.fromList . map (, mempty) $ r'
 
     q = [sql| SELECT revision_id, label_id, catalog_number
               FROM release_label
@@ -186,11 +183,6 @@ viewReleaseLabels r =
               WHERE revision_id = ? |]
 
     partition ((Only revisionId) :. rl) = (revisionId, Set.singleton rl)
-
-    groupRows splitRow =
-      map (fst . head &&& foldMap snd) .
-        groupBy ((==) `on` fst) .
-          map splitRow
 
 
 --------------------------------------------------------------------------------
@@ -202,12 +194,10 @@ viewMediums revisionIds = do
   tracks <- groupTracks <$>
     query selectTracks (Only $ In (mediums ^.. traverse._2 :: [Int]))
   cdtocs <- groupCdTocs <$> query selectCdTocs (Only $ In revisionIds')
-  pure $ (flip Map.union) defaults . Map.fromList $ associateMediums mediums tracks cdtocs
+  pure $ associateMediums mediums tracks cdtocs revisionIds'
 
   where
     revisionIds' = Set.toList revisionIds
-
-    defaults = Map.fromList . map (, mempty) $ revisionIds'
 
     selectMediums =
       [sql| SELECT release_tree_id, tracklist_id, name, medium_format_id, position, revision_id
@@ -233,9 +223,6 @@ viewMediums revisionIds = do
             WHERE revision_id = ?
           |]
 
-    groupRows splitRow =
-      map (fst . head &&& foldMap snd) . groupBy ((==) `on` fst) . map splitRow
-
     groupTracks = groupRows $
       \(Only tracklistId :. track) -> (tracklistId :: Int, [track])
 
@@ -245,7 +232,7 @@ viewMediums revisionIds = do
         , Set.singleton cdtoc
         )
 
-    associateMediums mediums tracks cdtocs =
+    associateMediums mediums tracks cdtocs ks =
       let formMedium (releaseTreeId, tracklistId, name, format, position) =
             Medium { mediumName = name
                    , mediumFormat = format
@@ -258,9 +245,10 @@ viewMediums revisionIds = do
                          (releaseTreeId, position) `lookup` cdtocs
 
                    }
-      in groupRows
+      in groupMap
            (\(releaseTreeId, tracklistId, name, format, position, revision) ->
                (revision, [formMedium (releaseTreeId, tracklistId, name, format, position)]))
+           ks
            mediums
 
 
