@@ -3105,8 +3105,8 @@ ALTER SEQUENCE release_group_secondary_type_id_seq OWNED BY release_group_second
 --
 
 CREATE TABLE release_group_tag (
-    release_group_id uuid NOT NULL,
-    tag_id integer NOT NULL,
+    release_group uuid NOT NULL,
+    tag integer NOT NULL,
     count positive_integer NOT NULL
 );
 
@@ -3118,9 +3118,9 @@ ALTER TABLE musicbrainz.release_group_tag OWNER TO musicbrainz;
 --
 
 CREATE TABLE release_group_tag_raw (
-    release_group_id uuid NOT NULL,
-    tag_id integer NOT NULL,
-    editor_id integer NOT NULL
+    release_group uuid NOT NULL,
+    tag integer NOT NULL,
+    editor integer NOT NULL
 );
 
 
@@ -5486,7 +5486,7 @@ ALTER TABLE ONLY release_group_secondary_type
 --
 
 ALTER TABLE ONLY release_group_tag
-    ADD CONSTRAINT release_group_tag_pkey PRIMARY KEY (release_group_id, tag_id);
+    ADD CONSTRAINT release_group_tag_pkey PRIMARY KEY (release_group, tag);
 
 
 --
@@ -5494,7 +5494,7 @@ ALTER TABLE ONLY release_group_tag
 --
 
 ALTER TABLE ONLY release_group_tag_raw
-    ADD CONSTRAINT release_group_tag_raw_pkey PRIMARY KEY (release_group_id, tag_id, editor_id);
+    ADD CONSTRAINT release_group_tag_raw_pkey PRIMARY KEY (release_group, tag, editor);
 
 
 --
@@ -7903,7 +7903,7 @@ ALTER TABLE ONLY release_group_revision
 --
 
 ALTER TABLE ONLY release_group_tag
-    ADD CONSTRAINT release_group_tag_release_group_id_fkey FOREIGN KEY (release_group_id) REFERENCES release_group(release_group_id);
+    ADD CONSTRAINT release_group_tag_release_group_id_fkey FOREIGN KEY (release_group) REFERENCES release_group(release_group_id);
 
 
 --
@@ -7911,7 +7911,7 @@ ALTER TABLE ONLY release_group_tag
 --
 
 ALTER TABLE ONLY release_group_tag
-    ADD CONSTRAINT release_group_tag_tag_id_fkey FOREIGN KEY (tag_id) REFERENCES tag(id);
+    ADD CONSTRAINT release_group_tag_tag_id_fkey FOREIGN KEY (tag) REFERENCES tag(id);
 
 
 --
