@@ -6,6 +6,7 @@ import Control.Applicative
 import Control.Lens
 import Data.Monoid (mempty)
 
+import qualified Data.Map as Map
 import qualified Data.Set as Set
 
 import Test.MusicBrainz
@@ -54,7 +55,7 @@ testReleaseLabels = testCase "Releases can have release labels" $ do
     dummyReleaseTree
     (releaseLabelsLens .~ Set.singleton revRec)
     releaseLabels
-    viewReleaseLabels
+    (\r -> (Map.! r) <$> viewReleaseLabels (Set.singleton r))
 
   where
     releaseLabelsLens f t = f (releaseLabels t) <&> \b -> t { releaseLabels = b }

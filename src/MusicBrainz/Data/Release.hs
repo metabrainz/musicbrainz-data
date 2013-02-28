@@ -1,6 +1,7 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TupleSections #-}
 {-| Functions for interacting with 'Release's in the MusicBrainz database.
 
 The majority of operations on releases are common for all core entities, so you
@@ -25,6 +26,7 @@ import Data.Monoid (mempty)
 import Database.PostgreSQL.Simple (Only(..), (:.)(..), In(..))
 import Database.PostgreSQL.Simple.SqlQQ (sql)
 
+import qualified Data.Map as Map
 import qualified Data.Set as Set
 
 import MusicBrainz
@@ -161,18 +163,32 @@ instance ViewTree Release where
   viewTree r = ReleaseTree <$> fmap coreData (viewRevision r)
                            <*> viewRelationships r
                            <*> viewAnnotation r
-                           <*> viewReleaseLabels r
+                           <*> fmap (Map.! r) (viewReleaseLabels $ Set.singleton r)
                            <*> viewMediums r
 
 
 --------------------------------------------------------------------------------
 viewReleaseLabels :: (Functor m, Monad m, MonadIO m)
-  => Ref (Revision Release) -> MusicBrainzT m (Set.Set ReleaseLabel)
-viewReleaseLabels r = Set.fromList <$> query q (Only r)
-  where q = [sql| SELECT label_id, catalog_number
-                  FROM release_label
-                  JOIN release_revision USING (release_tree_id)
-                  WHERE revision_id = ? |]
+  => Set.Set (Ref (Revision Release))
+  -> MusicBrainzT m (Map.Map (Ref (Revision Release)) (Set.Set ReleaseLabel))
+viewReleaseLabels r =
+    (flip Map.union) defaults . Map.fromList . groupRows partition <$> query q r'
+  where
+    r' = Set.toList r
+
+    defaults = Map.fromList . map (, mempty) $ r'
+
+    q = [sql| SELECT revision_id, label_id, catalog_number
+              FROM release_label
+              JOIN release_revision USING (release_tree_id)
+              WHERE revision_id = ? |]
+
+    partition ((Only revisionId) :. rl) = (revisionId, Set.singleton rl)
+
+    groupRows splitRow =
+      map (fst . head &&& foldMap snd) .
+        groupBy ((==) `on` fst) .
+          map splitRow
 
 
 --------------------------------------------------------------------------------
