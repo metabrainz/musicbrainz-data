@@ -201,11 +201,12 @@ findByArtist artistId = query q (Only artistId)
                   WHERE artist_credit_name.artist_id = ?
                     AND revision_id = master_revision_id
                 ) rgs
-                JOIN release_tree USING (release_group_id)
-                JOIN release_data USING (release_data_id)
-                JOIN release_revision USING (release_tree_id)
-                JOIN release USING (release_id)
-                WHERE release.master_revision_id = release_revision.revision_id
+                LEFT JOIN release_tree USING (release_group_id)
+                LEFT JOIN release_data USING (release_data_id)
+                LEFT JOIN release_revision USING (release_tree_id)
+                LEFT JOIN release USING (release_id)
+                WHERE release.master_revision_id IS NULL
+                  OR release.master_revision_id = release_revision.revision_id
                 WINDOW w AS (
                   ORDER BY date_year ASC NULLS LAST,
                     date_month ASC NULLS LAST,
