@@ -425,7 +425,7 @@ $$;
 ALTER FUNCTION musicbrainz.find_or_insert_recording_tree(in_data_id integer) OWNER TO musicbrainz;
 
 --
--- Name: find_or_insert_release_data(text, text, integer, integer, integer, integer, integer, integer, integer, integer, integer); Type: FUNCTION; Schema: musicbrainz; Owner: musicbrainz
+-- Name: find_or_insert_release_data(text, text, integer, integer, integer, integer, integer, integer, integer, integer, integer, text); Type: FUNCTION; Schema: musicbrainz; Owner: postgres
 --
 
 CREATE FUNCTION find_or_insert_release_data(in_name text, in_comment text, in_ac integer, in_date_year integer, in_date_month integer, in_date_day integer, in_country_id integer, in_script_id integer, in_language_id integer, in_packaging_id integer, in_status_id integer, in_barcode text) RETURNS integer
@@ -469,54 +469,7 @@ CREATE FUNCTION find_or_insert_release_data(in_name text, in_comment text, in_ac
 $$;
 
 
-ALTER FUNCTION musicbrainz.find_or_insert_release_data(in_name text, in_comment text, in_ac integer, in_date_year integer, in_date_month integer, in_date_day integer, in_country_id integer, in_script_id integer, in_language_id integer, in_packaging_id integer, in_status_id integer) OWNER TO musicbrainz;
-
---
--- Name: find_or_insert_release_data(text, text, integer, uuid, integer, integer, integer, integer, integer, integer, integer, integer); Type: FUNCTION; Schema: musicbrainz; Owner: musicbrainz
---
-
-CREATE FUNCTION find_or_insert_release_data(in_name text, in_comment text, in_ac integer, in_rg uuid, in_date_year integer, in_date_month integer, in_date_day integer, in_country_id integer, in_script_id integer, in_language_id integer, in_packaging_id integer, in_status_id integer) RETURNS integer
-    LANGUAGE plpgsql
-    AS $$
-  DECLARE
-    found_id INT;
-    name_id INT;
-  BEGIN
-    SELECT find_or_insert_release_name(in_name) INTO name_id;
-
-    SELECT release_data_id INTO found_id
-    FROM release_data
-    WHERE name = name_id AND
-      comment = in_comment AND
-      artist_credit_id = in_ac AND
-      release_group_id = in_rg AND
-      date_year IS NOT DISTINCT FROM in_date_year AND
-      date_month IS NOT DISTINCT FROM in_date_month AND
-      date_day IS NOT DISTINCT FROM in_date_day AND
-      country_id IS NOT DISTINCT FROM in_country_id AND
-      script_id IS NOT DISTINCT FROM in_script_id AND
-      language_id IS NOT DISTINCT FROM in_language_id AND
-      release_packaging_id IS NOT DISTINCT FROM in_packaging_id AND
-      release_status_id IS NOT DISTINCT FROM in_status_id;
-
-    IF FOUND
-    THEN
-      RETURN found_id;
-    ELSE
-      INSERT INTO release_data (name, comment, artist_credit_id, release_group_id,
-        date_year, date_month, date_day, country_id, script_id, language_id,
-        release_packaging_id, release_status_id)
-      VALUES (name_id, in_comment, in_ac, in_rg, in_date_year, in_date_month,
-        in_date_day, in_country_id, in_script_id, in_language_id, in_packaging_id,
-        in_status_id)
-      RETURNING release_data_id INTO found_id;
-      RETURN found_id;
-    END IF;
-  END;
-$$;
-
-
-ALTER FUNCTION musicbrainz.find_or_insert_release_data(in_name text, in_comment text, in_ac integer, in_rg uuid, in_date_year integer, in_date_month integer, in_date_day integer, in_country_id integer, in_script_id integer, in_language_id integer, in_packaging_id integer, in_status_id integer) OWNER TO musicbrainz;
+ALTER FUNCTION musicbrainz.find_or_insert_release_data(in_name text, in_comment text, in_ac integer, in_date_year integer, in_date_month integer, in_date_day integer, in_country_id integer, in_script_id integer, in_language_id integer, in_packaging_id integer, in_status_id integer, in_barcode text) OWNER TO postgres;
 
 --
 -- Name: find_or_insert_release_group_data(text, text, integer, integer); Type: FUNCTION; Schema: musicbrainz; Owner: musicbrainz
@@ -1037,8 +990,8 @@ ALTER TABLE musicbrainz.artist_revision OWNER TO musicbrainz;
 --
 
 CREATE TABLE artist_tag (
-    artist_id uuid NOT NULL,
-    tag_id integer NOT NULL,
+    artist uuid NOT NULL,
+    tag integer NOT NULL,
     count positive_integer NOT NULL
 );
 
@@ -1050,9 +1003,9 @@ ALTER TABLE musicbrainz.artist_tag OWNER TO musicbrainz;
 --
 
 CREATE TABLE artist_tag_raw (
-    artist_id uuid NOT NULL,
-    tag_id integer NOT NULL,
-    editor_id integer NOT NULL
+    artist uuid NOT NULL,
+    tag integer NOT NULL,
+    editor integer NOT NULL
 );
 
 
@@ -2346,9 +2299,9 @@ ALTER SEQUENCE label_name_id_seq OWNED BY label_name.id;
 --
 
 CREATE TABLE label_rating_raw (
-    label_id uuid NOT NULL,
+    label uuid NOT NULL,
     rating rating NOT NULL,
-    editor_id integer NOT NULL
+    editor integer NOT NULL
 );
 
 
@@ -2372,8 +2325,8 @@ ALTER TABLE musicbrainz.label_revision OWNER TO musicbrainz;
 --
 
 CREATE TABLE label_tag (
-    label_id uuid NOT NULL,
-    tag_id integer NOT NULL,
+    label uuid NOT NULL,
+    tag integer NOT NULL,
     count positive_integer NOT NULL
 );
 
@@ -2385,9 +2338,9 @@ ALTER TABLE musicbrainz.label_tag OWNER TO musicbrainz;
 --
 
 CREATE TABLE label_tag_raw (
-    label_id uuid NOT NULL,
-    tag_id integer NOT NULL,
-    editor_id integer NOT NULL
+    label uuid NOT NULL,
+    tag integer NOT NULL,
+    editor integer NOT NULL
 );
 
 
@@ -3120,7 +3073,7 @@ ALTER TABLE musicbrainz.release_group_revision OWNER TO musicbrainz;
 
 CREATE TABLE release_group_secondary_type (
     id integer NOT NULL,
-    name non_empty_presentational_text NOT NULL
+    name text NOT NULL
 );
 
 
@@ -4517,7 +4470,7 @@ ALTER TABLE ONLY artist_revision
 --
 
 ALTER TABLE ONLY artist_tag
-    ADD CONSTRAINT artist_tag_pkey PRIMARY KEY (artist_id, tag_id);
+    ADD CONSTRAINT artist_tag_pkey PRIMARY KEY (artist, tag);
 
 
 --
@@ -4525,7 +4478,7 @@ ALTER TABLE ONLY artist_tag
 --
 
 ALTER TABLE ONLY artist_tag_raw
-    ADD CONSTRAINT artist_tag_raw_pkey PRIMARY KEY (artist_id, tag_id, editor_id);
+    ADD CONSTRAINT artist_tag_raw_pkey PRIMARY KEY (artist, tag, editor);
 
 
 --
@@ -5125,7 +5078,7 @@ ALTER TABLE ONLY label
 --
 
 ALTER TABLE ONLY label_rating_raw
-    ADD CONSTRAINT label_rating_raw_pkey PRIMARY KEY (label_id, editor_id);
+    ADD CONSTRAINT label_rating_raw_pkey PRIMARY KEY (label, editor);
 
 
 --
@@ -5141,7 +5094,7 @@ ALTER TABLE ONLY label_revision
 --
 
 ALTER TABLE ONLY label_tag
-    ADD CONSTRAINT label_tag_pkey PRIMARY KEY (label_id, tag_id);
+    ADD CONSTRAINT label_tag_pkey PRIMARY KEY (label, tag);
 
 
 --
@@ -5149,7 +5102,7 @@ ALTER TABLE ONLY label_tag
 --
 
 ALTER TABLE ONLY label_tag_raw
-    ADD CONSTRAINT label_tag_raw_pkey PRIMARY KEY (label_id, tag_id, editor_id);
+    ADD CONSTRAINT label_tag_raw_pkey PRIMARY KEY (label, tag, editor);
 
 
 --
@@ -6142,7 +6095,7 @@ ALTER TABLE ONLY artist_revision
 --
 
 ALTER TABLE ONLY artist_tag
-    ADD CONSTRAINT artist_tag_artist_id_fkey FOREIGN KEY (artist_id) REFERENCES artist(artist_id);
+    ADD CONSTRAINT artist_tag_artist_id_fkey FOREIGN KEY (artist) REFERENCES artist(artist_id);
 
 
 --
@@ -6150,7 +6103,7 @@ ALTER TABLE ONLY artist_tag
 --
 
 ALTER TABLE ONLY artist_tag
-    ADD CONSTRAINT artist_tag_tag_id_fkey FOREIGN KEY (tag_id) REFERENCES tag(id);
+    ADD CONSTRAINT artist_tag_tag_id_fkey FOREIGN KEY (tag) REFERENCES tag(id);
 
 
 --
@@ -7606,7 +7559,7 @@ ALTER TABLE ONLY label_revision
 --
 
 ALTER TABLE ONLY label_tag
-    ADD CONSTRAINT label_tag_label_id_fkey FOREIGN KEY (label_id) REFERENCES label(label_id);
+    ADD CONSTRAINT label_tag_label_id_fkey FOREIGN KEY (label) REFERENCES label(label_id);
 
 
 --
@@ -7614,7 +7567,7 @@ ALTER TABLE ONLY label_tag
 --
 
 ALTER TABLE ONLY label_tag
-    ADD CONSTRAINT label_tag_tag_id_fkey FOREIGN KEY (tag_id) REFERENCES tag(id);
+    ADD CONSTRAINT label_tag_tag_id_fkey FOREIGN KEY (tag) REFERENCES tag(id);
 
 
 --
@@ -8055,6 +8008,22 @@ ALTER TABLE ONLY release_tag
 
 ALTER TABLE ONLY release_tag
     ADD CONSTRAINT release_tag_tag_id_fkey FOREIGN KEY (tag_id) REFERENCES tag(id);
+
+
+--
+-- Name: release_tree_release_data_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY release_tree
+    ADD CONSTRAINT release_tree_release_data_id_fkey FOREIGN KEY (release_data_id) REFERENCES release_data(release_data_id);
+
+
+--
+-- Name: release_tree_release_group_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY release_tree
+    ADD CONSTRAINT release_tree_release_group_id_fkey FOREIGN KEY (release_group_id) REFERENCES release_group(release_group_id);
 
 
 --
