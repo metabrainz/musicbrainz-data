@@ -169,8 +169,8 @@ instance ResolveReference (Revision ReleaseGroup) where
 
 
 --------------------------------------------------------------------------------
-findByArtist :: MonadIO m => Ref Artist -> MusicBrainzT m [CoreEntity ReleaseGroup]
-findByArtist artistId = query q (Only artistId)
+findByArtist :: (Functor m, MonadIO m) => Ref Artist -> MusicBrainzT m [CoreEntity ReleaseGroup]
+findByArtist artistId = mapM addSecondaryTypes =<< query q (Only artistId)
   where
     q = [sql| SELECT release_group_id, revision_id,
                  name.name, comment, artist_credit_id, release_group_primary_type_id

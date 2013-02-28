@@ -89,8 +89,10 @@ testFindByArtist = testCase "Can find release groups by artist" $ do
 
   edit <- openEdit
   ac <- singleArtistAc editor portishead
+  comp <- add compilation
   expected <- withEdit edit $
-    viewRevision =<< (create editor $ minimalTree (dummy ac))
+    viewRevision =<< (create editor $ minimalTree (dummy ac)
+                        { releaseGroupSecondaryTypes = Set.singleton (entityRef comp) })
 
   apply edit
 
