@@ -88,8 +88,8 @@ createReleaseTreeTest make = do
   mediums <- make editor
   tree <- (\t -> t { releaseMediums = mediums }) <$> dummyReleaseTree editor
 
-  release <- autoEdit $ create editor tree >>= viewRevision
-  createdMediums <- viewMediums (coreRevision release)
+  release <- autoEdit $ create editor tree >>= fmap coreRevision . viewRevision
+  createdMediums <- (Map.! release) <$> viewMediums (Set.singleton release)
 
   liftIO $ createdMediums @?= mediums
 

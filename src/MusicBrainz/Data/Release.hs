@@ -163,8 +163,10 @@ instance ViewTree Release where
   viewTree r = ReleaseTree <$> fmap coreData (viewRevision r)
                            <*> viewRelationships r
                            <*> viewAnnotation r
-                           <*> fmap (Map.! r) (viewReleaseLabels $ Set.singleton r)
-                           <*> viewMediums r
+                           <*> viewOne viewReleaseLabels
+                           <*> viewOne viewMediums
+    where
+      viewOne f = fmap (Map.! r) (f $ Set.singleton r)
 
 
 --------------------------------------------------------------------------------
@@ -193,39 +195,49 @@ viewReleaseLabels r =
 
 --------------------------------------------------------------------------------
 viewMediums :: (Applicative m, Functor m, Monad m, MonadIO m)
-  => Ref (Revision Release) -> MusicBrainzT m [Medium]
-viewMediums revisionId = do
-  mediums <- query selectMediums (Only revisionId)
+  => Set.Set (Ref (Revision Release))
+  -> MusicBrainzT m (Map.Map (Ref (Revision Release)) [Medium])
+viewMediums revisionIds = do
+  mediums <- query selectMediums (Only $ In revisionIds')
   tracks <- groupTracks <$>
     query selectTracks (Only $ In (mediums ^.. traverse._2 :: [Int]))
-  cdtocs <- groupCdTocs <$> query selectCdTocs (Only revisionId)
-  pure $ associateMediums mediums tracks cdtocs
+  cdtocs <- groupCdTocs <$> query selectCdTocs (Only $ In revisionIds')
+  pure $ (flip Map.union) defaults . Map.fromList $ associateMediums mediums tracks cdtocs
 
   where
+    revisionIds' = Set.toList revisionIds
+
+    defaults = Map.fromList . map (, mempty) $ revisionIds'
+
     selectMediums =
-      [sql| SELECT release_tree_id, tracklist_id, name, medium_format_id, position
+      [sql| SELECT release_tree_id, tracklist_id, name, medium_format_id, position, revision_id
             FROM medium
             JOIN release_revision
             USING (release_tree_id)
-            WHERE revision_id = ? |]
+            WHERE revision_id = ?
+            ORDER by release_tree_id, position ASC
+          |]
 
     selectTracks =
       [sql| SELECT tracklist_id, track_name.name, recording_id, length, artist_credit_id, number
             FROM track
             JOIN track_name ON (track_name.id = track.name)
-            WHERE tracklist_id IN ? |]
+            WHERE tracklist_id IN ?
+            ORDER BY tracklist_id, position ASC
+          |]
 
     selectCdTocs =
       [sql| SELECT release_tree_id, position, track_offsets, leadout_offset
             FROM medium_cdtoc
             JOIN release_revision USING (release_tree_id)
-            WHERE revision_id = ? |]
+            WHERE revision_id = ?
+          |]
 
     groupRows splitRow =
       map (fst . head &&& foldMap snd) . groupBy ((==) `on` fst) . map splitRow
 
     groupTracks = groupRows $
-      \(Only id' :. track) -> (id' :: Int, [track])
+      \(Only tracklistId :. track) -> (tracklistId :: Int, [track])
 
     groupCdTocs = groupRows $
       \((releaseTreeId, position) :. cdtoc) ->
@@ -246,7 +258,10 @@ viewMediums revisionId = do
                          (releaseTreeId, position) `lookup` cdtocs
 
                    }
-      in map formMedium mediums
+      in groupRows
+           (\(releaseTreeId, tracklistId, name, format, position, revision) ->
+               (revision, [formMedium (releaseTreeId, tracklistId, name, format, position)]))
+           mediums
 
 
 --------------------------------------------------------------------------------
