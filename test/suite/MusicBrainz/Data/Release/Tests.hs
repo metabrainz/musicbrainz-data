@@ -29,6 +29,7 @@ tests = [ testCreateFindLatest
         , testMerge
         , testResolveRevisionReference
         , testFindByLabel
+        , testFindByReleaseGroup
         ]
 
 
@@ -143,4 +144,17 @@ testFindByLabel = testCase "Can find releases by their label" $ do
     return (labelId, release)
 
   releases <- findByLabel labelId
-  liftIO $ releases @?= [expected]
+  releases @?= [expected]
+
+
+--------------------------------------------------------------------------------
+testFindByReleaseGroup :: Test
+testFindByReleaseGroup = testCase "Can find releases by their release group" $ do
+  editor <- entityRef <$> register acid2
+  releaseTree <- dummyReleaseTree editor
+
+  expected <- autoEdit $
+    create editor releaseTree >>= viewRevision
+
+  releases <- findByReleaseGroup (releaseReleaseGroup . releaseData $ releaseTree)
+  releases @?= [expected]
