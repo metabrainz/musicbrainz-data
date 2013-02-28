@@ -8,12 +8,17 @@ import qualified Data.Set as Set
 
 import Test.MusicBrainz
 import Test.MusicBrainz.Data
-import Test.MusicBrainz.Repository (portishead, dummy, dummyReleaseGroupTree, compilation, minimalTree)
+import Test.MusicBrainz.Repository
 
 import qualified Test.MusicBrainz.CommonTests as CommonTests
 
 import MusicBrainz
 import MusicBrainz.Data
+import MusicBrainz.Data.ArtistCredit
+import MusicBrainz.Data.Edit
+import MusicBrainz.Data.Editor
+import MusicBrainz.Data.ReleaseGroup (findByArtist)
+import MusicBrainz.Data.Util (viewOnce)
 
 --------------------------------------------------------------------------------
 tests :: [Test]
@@ -22,6 +27,7 @@ tests = [ testCreateFindLatest
         , testSecondaryTypes
         , testMerge
         , testResolveRevisionReference
+        , testFindByArtist
         ]
 
 
@@ -74,3 +80,21 @@ testMerge = testCase "Can merge two release groups" $ do
 testResolveRevisionReference :: Test
 testResolveRevisionReference = testCase "Resolve revision reference" $ do
   CommonTests.testResolveRevisionReference dummyReleaseGroupTree
+
+
+--------------------------------------------------------------------------------
+testFindByArtist :: Test
+testFindByArtist = testCase "Can find release groups by artist" $ do
+  editor <- entityRef <$> register acid2
+
+  edit <- openEdit
+  ac <- singleArtistAc editor portishead
+  expected <- withEdit edit $
+    viewRevision =<< (create editor $ minimalTree (dummy ac))
+
+  apply edit
+
+  [acn] <- viewOnce expandCredits ac
+
+  actual <- findByArtist (acnArtist acn)
+  actual @?= [expected]

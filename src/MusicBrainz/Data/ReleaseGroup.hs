@@ -7,7 +7,7 @@ The majority of operations on releases are common for all core entities, so you
 should see the documentation on the 'Release' type and notice all the type class
 instances. -}
 module MusicBrainz.Data.ReleaseGroup
-    ( ) where
+    ( findByArtist ) where
 
 import Control.Applicative
 import Control.Lens (prism)
@@ -166,3 +166,58 @@ instance ResolveReference ReleaseGroup where
 --------------------------------------------------------------------------------
 instance ResolveReference (Revision ReleaseGroup) where
   resolveReference = Generic.resolveRevision "release_group"
+
+
+--------------------------------------------------------------------------------
+findByArtist :: MonadIO m => Ref Artist -> MusicBrainzT m [CoreEntity ReleaseGroup]
+findByArtist artistId = query q (Only artistId)
+  where
+    q = [sql| SELECT release_group_id, revision_id,
+                 name.name, comment, artist_credit_id, release_group_primary_type_id
+              FROM (
+                SELECT DISTINCT release_group_id, rgs.revision_id,
+                    rgs.name, rgs.comment, rgs.artist_credit_id,
+                    release_group_primary_type_id,
+                  array(
+                    SELECT name
+                    FROM release_group_secondary_type
+                    JOIN release_group_tree_secondary_type
+                      ON (release_group_secondary_type_id = release_group_secondary_type.id)
+                    WHERE release_group_tree_id = rgs.release_group_tree_id
+                    ORDER BY musicbrainz_collate(name) ASC
+                  ) secondary_types,
+                  first_value(date_year) OVER w AS first_release_date_year,
+                  first_value(date_month) OVER w AS first_release_date_month,
+                  first_value(date_day) OVER w AS first_release_date_day
+                FROM (
+                  SELECT DISTINCT release_group_id, revision_id,
+                    release_group_data.name, comment, artist_credit_id,
+                    release_group_primary_type_id, release_group_tree_id
+                  FROM release_group
+                  JOIN release_group_revision USING (release_group_id)
+                  JOIN release_group_tree USING (release_group_tree_id)
+                  JOIN release_group_data USING (release_group_data_id)
+                  JOIN artist_credit_name USING (artist_credit_id)
+                  WHERE artist_credit_name.artist_id = ?
+                    AND revision_id = master_revision_id
+                ) rgs
+                JOIN release_tree USING (release_group_id)
+                JOIN release_data USING (release_data_id)
+                JOIN release_revision USING (release_tree_id)
+                JOIN release USING (release_id)
+                WHERE release.master_revision_id = release_revision.revision_id
+                WINDOW w AS (
+                  ORDER BY date_year ASC NULLS LAST,
+                    date_month ASC NULLS LAST,
+                    date_day ASC NULLS LAST
+                )
+              ) rgs_type
+              JOIN release_name name ON (name.id = rgs_type.name)
+              ORDER BY
+                release_group_primary_type_id,
+                secondary_types,
+                first_release_date_year NULLS LAST,
+                first_release_date_month NULLS LAST,
+                first_release_date_day NULLS LAST,
+                musicbrainz_collate(name.name)
+            |]
