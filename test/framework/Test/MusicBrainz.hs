@@ -140,6 +140,7 @@ testRunner tests = do
       , "TRUNCATE medium_format CASCADE"
       , "TRUNCATE release_group_primary_type CASCADE"
       , "TRUNCATE release_group_secondary_type CASCADE"
+      , "TRUNCATE release_packaging CASCADE"
       , "TRUNCATE release_status CASCADE"
       , "TRUNCATE script CASCADE"
       , "TRUNCATE track CASCADE"
