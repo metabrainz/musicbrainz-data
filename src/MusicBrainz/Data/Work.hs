@@ -48,16 +48,16 @@ instance HoldsRelationships Work where
 
 --------------------------------------------------------------------------------
 instance FindLatest Work where
-  findLatest workId = head <$> query q (Only workId)
-    where q = [sql|
-       SELECT work_id, revision_id,
+  findLatest = Generic.findLatest
+    [sql|
+      SELECT work_id, revision_id,
         name.name, comment, work_type_id, language_id
       FROM work
       JOIN work_revision USING (work_id)
       JOIN work_tree USING (work_tree_id)
       JOIN work_data USING (work_data_id)
       JOIN work_name name ON (work_data.name = name.id)
-      WHERE work_id = ?
+      WHERE work_id IN ?
         AND revision_id = master_revision_id  |]
 
 

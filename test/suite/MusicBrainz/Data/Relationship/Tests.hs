@@ -16,6 +16,7 @@ import MusicBrainz hiding (ArtistTree, LabelTree, RecordingTree, ReleaseTree, Re
 import MusicBrainz.Data
 import MusicBrainz.Data.Edit
 import MusicBrainz.Data.Editor
+import MusicBrainz.Data.Util (viewOnce)
 import MusicBrainz.Lens
 
 import qualified MusicBrainz.Data.Relationship as Relationship
@@ -142,8 +143,8 @@ testRelationships = testGroup "Can have relationships between core entities"
       relationshipsChanged a mempty (Set.singleton $ rc (coreRef b) rel)
       relationshipsChanged b mempty (Set.singleton $ lc (coreRef a) rel)
 
-      changedA <- findLatest (coreRef a)
-      changedB <- findLatest (coreRef b)
+      changedA <- viewOnce findLatest (coreRef a)
+      changedB <- viewOnce findLatest (coreRef b)
 
       edit2 <- createEdit $
         update editor (coreRevision $ changedB) right
@@ -162,7 +163,7 @@ testRelationships = testGroup "Can have relationships between core entities"
                        <*> pure False
 
         relationshipsChanged for old new = do
-          latest <- findLatest (coreRef for)
+          latest <- viewOnce findLatest (coreRef for)
           oldRels <- Relationship.viewRelationships (coreRevision for)
           newRels <- Relationship.viewRelationships (coreRevision latest)
 

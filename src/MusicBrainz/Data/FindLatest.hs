@@ -4,7 +4,11 @@ module MusicBrainz.Data.FindLatest
     , ResolveReference(..)
     ) where
 
+import Control.Applicative
 import Control.Monad.IO.Class
+
+import qualified Data.Map as Map
+import qualified Data.Set as Set
 
 import MusicBrainz.Monad
 import MusicBrainz.Types
@@ -14,7 +18,8 @@ import MusicBrainz.Types
 'Ref'. To obtain the reference, you can use
 'MusicBrainz.Data.Merge.resolveMbid'. -}
 class FindLatest a where
-  findLatest :: (Functor m, MonadIO m) => Ref a -> MusicBrainzT m (CoreEntity a)
+  findLatest :: (Applicative m, Functor m, MonadIO m) =>
+    Set.Set (Ref a) -> MusicBrainzT m (Map.Map (Ref a) (CoreEntity a))
 
 
 --------------------------------------------------------------------------------

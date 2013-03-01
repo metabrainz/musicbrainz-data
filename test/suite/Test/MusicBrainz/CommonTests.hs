@@ -58,7 +58,7 @@ createAndUpdateSubtree makeInitialTree modifyTree extractSubtree viewSubtree = d
 
   apply edit
 
-  latest <- findLatest (coreRef entity)
+  latest <- viewOnce findLatest (coreRef entity)
   postUpdate <- viewSubtree (coreRevision latest)
   liftIO $ postUpdate @?= extractSubtree tree
 
@@ -70,7 +70,7 @@ testCreateFindLatest makeTree = do
   editor <- entityRef <$> register acid2
   tree <- makeTree editor
   created <- autoEdit $ create editor tree >>= viewRevision
-  found <- findLatest (coreRef created)
+  found <- viewOnce findLatest (coreRef created)
   liftIO $ found @?= created
 
 
@@ -104,7 +104,7 @@ testUpdate start end = do
 
   apply editId
 
-  found <- findLatest entityId
+  found <- viewOnce findLatest entityId
   latestTree <- viewTree (coreRevision found)
   liftIO $ latestTree @?= end
 
@@ -151,7 +151,7 @@ testAliases tree alias = do
 
   apply edit
 
-  latest <- findLatest (coreRef artist)
+  latest <- viewOnce findLatest (coreRef artist)
   aliasesPostUpdate <- viewAliases (coreRevision latest)
   liftIO $ aliasesPostUpdate @?= mempty
 
@@ -172,7 +172,7 @@ testAnnotation startTree = do
 
   apply edit
 
-  latest <- findLatest (coreRef entity)
+  latest <- viewOnce findLatest (coreRef entity)
   annPostUpdate <- viewAnnotation (coreRevision latest)
   liftIO $ annPostUpdate @?= ""
 
@@ -212,7 +212,7 @@ testIpiCodes startTree = do
 
   apply edit
 
-  latest <- findLatest (coreRef entity)
+  latest <- viewOnce findLatest (coreRef entity)
   ipiPostUpdate <- viewOnce viewIpiCodes (coreRevision latest)
   liftIO $ ipiPostUpdate @?= mempty
 

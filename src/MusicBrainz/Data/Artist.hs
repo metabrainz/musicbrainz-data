@@ -78,9 +78,9 @@ instance MasterRevision Artist where
 
 --------------------------------------------------------------------------------
 instance FindLatest Artist where
-  findLatest artistId = head <$> query q (Only artistId)
-    where q = [sql|
-       SELECT artist_id, revision_id,
+  findLatest = Generic.findLatest
+    [sql|
+      SELECT artist_id, revision_id,
         name.name, sort_name.name, comment,
         begin_date_year, begin_date_month, begin_date_day,
         end_date_year, end_date_month, end_date_day, ended,
@@ -91,8 +91,9 @@ instance FindLatest Artist where
       JOIN artist_data USING (artist_data_id)
       JOIN artist_name name ON (artist_data.name = name.id)
       JOIN artist_name sort_name ON (artist_data.sort_name = sort_name.id)
-      WHERE artist_id = ?
-        AND revision_id = master_revision_id  |]
+      WHERE artist_id IN ?
+        AND revision_id = master_revision_id
+    |]
 
 
 --------------------------------------------------------------------------------

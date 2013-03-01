@@ -43,16 +43,16 @@ instance HoldsRelationships Recording where
 
 --------------------------------------------------------------------------------
 instance FindLatest Recording where
-  findLatest recordingId = head <$> query q (Only recordingId)
-    where q = [sql|
-       SELECT recording_id, revision_id,
+  findLatest = Generic.findLatest
+    [sql|
+      SELECT recording_id, revision_id,
         name.name, comment, artist_credit_id, length
       FROM recording
       JOIN recording_revision USING (recording_id)
       JOIN recording_tree USING (recording_tree_id)
       JOIN recording_data USING (recording_data_id)
       JOIN track_name name ON (recording_data.name = name.id)
-      WHERE recording_id = ?
+      WHERE recording_id IN ?
         AND revision_id = master_revision_id  |]
 
 

@@ -40,9 +40,9 @@ instance HoldsRelationships Label where
 
 --------------------------------------------------------------------------------
 instance FindLatest Label where
-  findLatest labelId = head <$> query q (Only labelId)
-    where q = [sql|
-       SELECT label_id, revision_id,
+  findLatest = Generic.findLatest
+    [sql|
+      SELECT label_id, revision_id,
         name.name, sort_name.name, comment,
         begin_date_year, begin_date_month, begin_date_day,
         end_date_year, end_date_month, end_date_day,
@@ -53,7 +53,7 @@ instance FindLatest Label where
       JOIN label_data USING (label_data_id)
       JOIN label_name name ON (label_data.name = name.id)
       JOIN label_name sort_name ON (label_data.sort_name = sort_name.id)
-      WHERE label_id = ?
+      WHERE label_id IN ?
         AND revision_id = master_revision_id  |]
 
 

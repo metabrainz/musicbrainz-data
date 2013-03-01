@@ -87,14 +87,14 @@ instance ViewTree Url where
 
 --------------------------------------------------------------------------------
 instance FindLatest Url where
-  findLatest urlId = head <$> query q (Only urlId)
-    where q = [sql|
-       SELECT url_id, revision_id, url
+  findLatest = Generic.findLatest
+    [sql|
+      SELECT url_id, revision_id, url
       FROM url
       JOIN url_revision USING (url_id)
       JOIN url_tree USING (url_tree_id)
       JOIN url_data USING (url_data_id)
-      WHERE url_id = ?
+      WHERE url_id IN ?
         AND revision_id = master_revision_id  |]
 
 

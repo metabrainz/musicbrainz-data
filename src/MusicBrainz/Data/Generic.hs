@@ -20,6 +20,7 @@ module MusicBrainz.Data.Generic
     , reflectRelationshipChange
     , addRelationship
     , findIpiCodes
+    , findLatest
     ) where
 
 import Control.Arrow ((&&&))
@@ -33,8 +34,9 @@ import Data.Maybe (listToMaybe)
 import Data.String (fromString)
 import Data.Text (Text)
 import Data.Foldable (forM_)
-import Database.PostgreSQL.Simple (In(..), Only(..), (:.)(..))
+import Database.PostgreSQL.Simple (In(..), Only(..), Query, (:.)(..))
 import Database.PostgreSQL.Simple.FromField (FromField)
+import Database.PostgreSQL.Simple.FromRow (FromRow)
 import Database.PostgreSQL.Simple.SqlQQ
 import Database.PostgreSQL.Simple.ToField (ToField)
 
@@ -43,11 +45,12 @@ import qualified Data.Set as Set
 
 import MusicBrainz
 import MusicBrainz.Lens
-import MusicBrainz.Data.FindLatest
 import MusicBrainz.Data.Revision.Internal
 import MusicBrainz.Data.Tree
-import MusicBrainz.Data.Util (groupMap)
+import MusicBrainz.Data.Util (groupMap, viewOnce)
 import MusicBrainz.Edit
+
+import qualified MusicBrainz.Data.FindLatest as MB
 
 import {-# SOURCE #-} MusicBrainz.Data.Artist ()
 import {-# SOURCE #-} MusicBrainz.Data.Label ()
@@ -299,7 +302,7 @@ reflectRelationshipChange returnCon editor endpoint f toReflect =
   where
     reflect targetId rel = do
       let returnRelationship = returnCon endpoint rel
-      target <- findLatest targetId
+      target <- viewOnce MB.findLatest targetId
       targetTree <- over relationships (f returnRelationship) <$> viewTree (coreRevision target)
       void $ runUpdate editor (coreRevision target) targetTree
 
@@ -357,3 +360,10 @@ findIpiCodes source revisionIds = associate <$> query q (Only $ In (Set.toList r
           , "JOIN " ++ source ++ "_revision USING (" ++ source ++ "_tree_id) "
           , "WHERE revision_id IN ?"
           ]
+
+
+--------------------------------------------------------------------------------
+findLatest :: (MB.FindLatest a, Functor m, MonadIO m, ToField (Ref a), FromRow a, FromField (Ref a))
+  => Query -> Set.Set (Ref a) -> MusicBrainzT m (Map.Map (Ref a) (CoreEntity a))
+findLatest q = fmap toMap . query q . Only . In . Set.toList
+  where toMap = Map.fromList . map (coreRef &&& id)

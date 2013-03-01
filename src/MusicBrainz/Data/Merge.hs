@@ -8,6 +8,7 @@ import MusicBrainz
 import MusicBrainz.Data.FindLatest
 import MusicBrainz.Edit
 import MusicBrainz.Data.Revision.Internal
+import MusicBrainz.Data.Util (viewOnce)
 
 class (CloneRevision a, Editable a, NewEntityRevision a) => Merge a
 
@@ -17,7 +18,7 @@ merge :: Merge a
   => Ref Editor -> Ref (Revision a) -> Ref a -> EditM (Ref (Revision a))
 merge editor baseRev targetId = do
   -- Find the latest revision to merge into
-  latestTarget <- findLatest targetId
+  latestTarget <- viewOnce findLatest targetId
   mergeInto <- cloneRevision latestTarget editor
 
   -- Link this revision to both the old tree and the latest version,

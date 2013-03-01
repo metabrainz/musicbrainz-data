@@ -42,6 +42,7 @@ import MusicBrainz.Data.Revision (mergeBase)
 import MusicBrainz.Data.Revision.Internal (addChild, newChildRevision)
 import MusicBrainz.Data.Tree (viewTree, ViewTree)
 import MusicBrainz.Data.Url ()
+import MusicBrainz.Data.Util (viewOnce)
 import MusicBrainz.Data.Work ()
 import MusicBrainz.Edit
 import MusicBrainz.Merge
@@ -139,7 +140,7 @@ mergeRevisionUpstream new = do
   newVer <- viewRevision new
   let artistId = coreRef newVer
 
-  current <- findLatest artistId
+  current <- viewOnce findLatest artistId
   if coreRevision current == new
     -- We aren't doing a merge at all, but we're simply 'creating' this
     -- entity (by setting an upstream revision).
@@ -259,7 +260,7 @@ viewChanges e =
       newVer <- viewRevision new
       let artistId = coreRef newVer
 
-      current <- findLatest artistId
+      current <- viewOnce findLatest artistId
       ancestor' <- mergeBase new (coreRevision current) >>= traverse viewRevision
       case ancestor' of
         Nothing -> error "Unable to merge: no common ancestor"
