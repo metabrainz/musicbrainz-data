@@ -14,14 +14,11 @@ module MusicBrainz.Data.Release
     , viewReleaseLabels
     ) where
 
-import Control.Arrow ((&&&))
 import Control.Applicative
 import Control.Lens
 import Control.Monad (void)
 import Control.Monad.IO.Class
-import Data.Function
-import Data.Foldable (foldMap, forM_)
-import Data.List
+import Data.Foldable (forM_)
 import Data.Maybe (fromMaybe)
 import Data.Monoid (mempty)
 import Database.PostgreSQL.Simple (Only(..), (:.)(..), In(..))

@@ -117,12 +117,12 @@ testEligibleForCleanup = testCase "Artist with relationships is not eligible for
     CommonTests.testEligibleForCleanup makeTree
   where
     makeTree editor = do
-      portishead <- autoEdit $ create editor (minimalTree portishead) >>= viewRevision
+      a <- autoEdit $ create editor (minimalTree portishead) >>= viewRevision
       relationshipMeta <-
         Relationship <$> fmap entityRef (add performer)
                      <*> pure mempty
                      <*> pure emptyDate
                      <*> pure emptyDate
                      <*> pure False
-      let rel = ArtistRelationship (coreRef portishead) relationshipMeta
+      let rel = ArtistRelationship (coreRef a) relationshipMeta
       return $ relationships .~ Set.singleton rel $ freddie

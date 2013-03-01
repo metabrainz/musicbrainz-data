@@ -45,7 +45,7 @@ import MusicBrainz.Data.Url ()
 import MusicBrainz.Data.Util (viewOnce)
 import MusicBrainz.Data.Work ()
 import MusicBrainz.Edit
-import MusicBrainz.Merge
+import MusicBrainz.Merge hiding (new, current, ancestor)
 import MusicBrainz.Types.Internal
 
 --------------------------------------------------------------------------------

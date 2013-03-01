@@ -8,11 +8,8 @@ module MusicBrainz.Data.ArtistCredit
     ) where
 
 import Control.Applicative
-import Control.Arrow ((&&&))
 import Control.Monad.IO.Class (MonadIO)
-import Data.Function
-import Data.Foldable (foldMap)
-import Data.List (groupBy, intercalate, intersperse, nub)
+import Data.List (intercalate, intersperse, nub)
 import Data.Maybe (listToMaybe)
 import Data.String (fromString)
 import Data.Text (Text)
@@ -50,7 +47,7 @@ getRef :: (Functor m, Monad m, MonadIO m)
 getRef acs = do
   nameMap <- Map.fromList <$> returning "SELECT name, find_or_insert_artist_name(name) FROM (VALUES (?)) names (name)" (nub $ map (Only . acnName) acs)
 
-  existing <- fmap fromOnly . listToMaybe <$> query sql (parameters nameMap)
+  existing <- fmap fromOnly . listToMaybe <$> query q (parameters nameMap)
 
   case existing of
     Just r -> return r
@@ -61,7 +58,7 @@ getRef acs = do
       return id'
 
   where
-    sql = fromString $
+    q = fromString $
       unwords [ "SELECT DISTINCT artist_credit_id FROM artist_credit"
               , unwords joins
               , "WHERE"

@@ -43,7 +43,7 @@ import Database.PostgreSQL.Simple.ToField (ToField)
 import qualified Data.Map as Map
 import qualified Data.Set as Set
 
-import MusicBrainz
+import MusicBrainz hiding (ipi)
 import MusicBrainz.Lens
 import MusicBrainz.Data.Revision.Internal
 import MusicBrainz.Data.Tree

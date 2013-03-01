@@ -4,7 +4,6 @@ import Control.Monad.IO.Class
 import Data.Set as Set
 import MusicBrainz
 import MusicBrainz.Edit
-import MusicBrainz.Types.Internal
 
 class HoldsRelationships a where
   fetchEndPoints :: (Functor m, MonadIO m)

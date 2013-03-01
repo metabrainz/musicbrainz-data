@@ -16,7 +16,6 @@ import MusicBrainz
 import MusicBrainz.Data.Relationship (viewRelationships)
 import MusicBrainz.Edit
 import MusicBrainz.Lens
-import MusicBrainz.Types.Internal
 
 --------------------------------------------------------------------------------
 {-| This type class is implemented for any entities that may have

@@ -17,11 +17,10 @@ module Test.MusicBrainz.CommonTests
     ) where
 
 import           Control.Applicative
-import           Control.Lens
+import           Control.Lens hiding (children)
 import           Data.Monoid (mempty)
 import           Data.Time (getCurrentTime)
 
-import qualified Data.Map as Map
 import qualified Data.Set as Set
 
 import           Test.MusicBrainz
