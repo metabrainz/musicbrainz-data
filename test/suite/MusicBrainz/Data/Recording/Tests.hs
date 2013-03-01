@@ -2,17 +2,21 @@
 module MusicBrainz.Data.Recording.Tests
     ( tests ) where
 
+import Control.Applicative
 import Control.Lens
 import Data.Maybe (fromJust)
+import Data.Monoid (mempty)
 import qualified Data.Set as Set
 
 import Test.MusicBrainz
 import Test.MusicBrainz.Data (singleArtistAc)
-import Test.MusicBrainz.Repository (mysterons, portishead, minimalTree)
+import Test.MusicBrainz.Repository
 
 import qualified Test.MusicBrainz.CommonTests as CommonTests
 
 import MusicBrainz
+import MusicBrainz.Data
+import MusicBrainz.Data.Editor
 import MusicBrainz.Data.Recording
 
 --------------------------------------------------------------------------------
@@ -23,6 +27,7 @@ tests = [ testCreateFindLatest
         , testPuid
         , testMerge
         , testResolveRevisionReference
+        , testFindRecordingTracks
         ]
 
 
@@ -93,3 +98,43 @@ strangers editor = do
 testResolveRevisionReference :: Test
 testResolveRevisionReference = testCase "Resolve revision reference" $ do
   CommonTests.testResolveRevisionReference mysterons
+
+
+--------------------------------------------------------------------------------
+testFindRecordingTracks :: Test
+testFindRecordingTracks = testCase "Can find tracks for a given recording" $ do
+  editor <- entityRef <$> register acid2
+  recTree <- strangers editor
+  rtree <- dummyReleaseTree editor
+  ac <- singleArtistAc editor portishead
+
+  (recording, expected) <- autoEdit $ do
+    recording <- create editor recTree >>= fmap coreRef . viewRevision
+    let t1 = Track { trackArtistCredit = ac
+                   , trackName = "T1"
+                   , trackRecording = recording
+                   , trackDuration = Nothing
+                   , trackPosition = "1"
+                   }
+    let t2 = t1 { trackName = "Track 1" }
+    let medium = Medium { mediumName = ""
+                        , mediumPosition = 1
+                        , mediumFormat = Nothing
+                        , mediumCdTocs = mempty
+                        , mediumTracks = mempty
+                        }
+
+    r1 <- viewRevision =<< create editor
+      rtree { releaseMediums = [ medium { mediumTracks = [ t1 ] } ] }
+
+    r2 <- viewRevision =<< create editor
+      rtree { releaseMediums = [ medium { mediumTracks = [ t2 ] } ] }
+
+    return ( recording
+           , [ RecordingUse t1 r1
+             , RecordingUse t2 r2
+             ]
+           )
+
+  actual <- findRecordingTracks recording
+  actual @?= expected

@@ -7,7 +7,9 @@ The majority of operations on recordings are common for all core entities, so yo
 should see the documentation on the 'Recording' type and notice all the type class
 instances. -}
 module MusicBrainz.Data.Recording
-    ( viewIsrcs
+    ( RecordingUse(..)
+    , findRecordingTracks
+    , viewIsrcs
     , viewPuids
     ) where
 
@@ -16,7 +18,7 @@ import Control.Lens (prism)
 import Control.Monad (void)
 import Control.Monad.IO.Class
 import Data.Foldable (forM_)
-import Database.PostgreSQL.Simple (Only(..))
+import Database.PostgreSQL.Simple (Only(..), (:.)(..))
 import Database.PostgreSQL.Simple.SqlQQ (sql)
 
 import qualified Data.Set as Set
@@ -184,3 +186,42 @@ instance Merge Recording
 --------------------------------------------------------------------------------
 instance CloneRevision Recording where
   cloneRevision = Generic.cloneRevision "recording"
+
+
+--------------------------------------------------------------------------------
+data RecordingUse = RecordingUse
+    { recordingTrack :: Track
+    , recordingTrackRelease :: CoreEntity Release
+    }
+  deriving (Eq, Show)
+
+findRecordingTracks :: (MonadIO m, Functor m)
+  => Ref Recording -> MusicBrainzT m [RecordingUse]
+findRecordingTracks recordingId =
+    map toUsage <$> query q (Only recordingId)
+  where
+    toUsage (track :. release) = RecordingUse track release
+    q = [sql|
+          SELECT
+            track_name.name, track.recording_id, track.length, track.artist_credit_id,
+            track.number,
+
+            release.release_id, release_revision.revision_id,
+            name.name, release_data.comment, release_data.artist_credit_id,
+            release_tree.release_group_id, release_data.date_year,
+            release_data.date_month, release_data.date_day, release_data.country_id,
+            release_data.script_id, release_data.language_id,
+            release_data.release_packaging_id, release_data.release_status_id,
+            release_data.barcode
+          FROM track
+          JOIN track_name ON (track_name.id = track.name)
+          JOIN medium USING (tracklist_id)
+          JOIN release_revision USING (release_tree_id)
+          JOIN release_tree USING (release_tree_id)
+          JOIN release_data USING (release_data_id)
+          JOIN release USING (release_id)
+          JOIN release_name name ON (name.id = release_data.name)
+          WHERE recording_id = ?
+            AND revision_id = master_revision_id
+          ORDER BY date_year, date_month, date_day, musicbrainz_collate(name.name)
+        |]
