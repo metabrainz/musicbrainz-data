@@ -110,14 +110,20 @@ testFindRecordingTracks = testCase "Can find tracks for a given recording" $ do
 
   (recording, expected) <- autoEdit $ do
     recording <- create editor recTree >>= fmap coreRef . viewRevision
-    let t1 = Track { trackArtistCredit = ac
+    other <- create editor recTree >>= fmap coreRef . viewRevision
+    let t = Track { trackArtistCredit = ac
                    , trackName = "T1"
                    , trackRecording = recording
                    , trackDuration = Nothing
                    , trackPosition = "1"
                    }
-    let t2 = t1 { trackName = "Track 1" }
-    let medium = Medium { mediumName = ""
+        r1_t1 = t { trackName = "Track 1" }
+        r1_t2 = t { trackPosition = "2", trackRecording = other }
+        r2_t1 = t { trackRecording = other }
+        r2_t2 = t { trackPosition = "2" }
+        r3_t1 = t { trackRecording = other }
+
+        medium = Medium { mediumName = ""
                         , mediumPosition = 1
                         , mediumFormat = Nothing
                         , mediumCdTocs = mempty
@@ -125,14 +131,17 @@ testFindRecordingTracks = testCase "Can find tracks for a given recording" $ do
                         }
 
     r1 <- viewRevision =<< create editor
-      rtree { releaseMediums = [ medium { mediumTracks = [ t1 ] } ] }
+      rtree { releaseMediums = [ medium { mediumTracks = [ r1_t1, r1_t2 ] } ] }
 
     r2 <- viewRevision =<< create editor
-      rtree { releaseMediums = [ medium { mediumTracks = [ t2 ] } ] }
+      rtree { releaseMediums = [ medium { mediumTracks = [ r2_t1, r2_t2 ] } ] }
+
+    create editor
+      rtree { releaseMediums = [ medium { mediumTracks = [ r3_t1 ] } ] }
 
     return ( recording
-           , [ RecordingUse t1 r1
-             , RecordingUse t2 r2
+           , [ RecordingUse r1_t1 r1 2
+             , RecordingUse r2_t2 r2 2
              ]
            )
 

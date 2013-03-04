@@ -192,6 +192,7 @@ instance CloneRevision Recording where
 data RecordingUse = RecordingUse
     { recordingTrack :: Track
     , recordingTrackRelease :: CoreEntity Release
+    , recordingMediumTrackCount :: Int
     }
   deriving (Eq, Show)
 
@@ -200,7 +201,8 @@ findRecordingTracks :: (MonadIO m, Functor m)
 findRecordingTracks recordingId =
     map toUsage <$> query q (Only recordingId)
   where
-    toUsage (track :. release) = RecordingUse track release
+    toUsage (track :. release :. (Only totalTracks)) =
+      RecordingUse track release totalTracks
     q = [sql|
           SELECT
             track_name.name, track.recording_id, track.length, track.artist_credit_id,
@@ -212,7 +214,12 @@ findRecordingTracks recordingId =
             release_data.date_month, release_data.date_day, release_data.country_id,
             release_data.script_id, release_data.language_id,
             release_data.release_packaging_id, release_data.release_status_id,
-            release_data.barcode
+            release_data.barcode,
+
+            (SELECT count(*)
+             FROM track
+             JOIN medium USING (tracklist_id)
+             WHERE medium.release_tree_id = release_tree.release_tree_id) total_tracks
           FROM track
           JOIN track_name ON (track_name.id = track.name)
           JOIN medium USING (tracklist_id)
