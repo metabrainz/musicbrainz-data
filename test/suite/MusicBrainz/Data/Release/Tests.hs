@@ -16,8 +16,10 @@ import qualified Test.MusicBrainz.CommonTests as CommonTests
 
 import MusicBrainz
 import MusicBrainz.Data
+import MusicBrainz.Data.ArtistCredit
 import MusicBrainz.Data.Editor (register)
 import MusicBrainz.Data.Release
+import MusicBrainz.Data.Util (viewOnce)
 
 --------------------------------------------------------------------------------
 tests :: [Test]
@@ -30,6 +32,7 @@ tests = [ testCreateFindLatest
         , testResolveRevisionReference
         , testFindByLabel
         , testFindByReleaseGroup
+        , testFindByArtist
         ]
 
 
@@ -157,4 +160,20 @@ testFindByReleaseGroup = testCase "Can find releases by their release group" $ d
     create editor releaseTree >>= viewRevision
 
   releases <- findByReleaseGroup (releaseReleaseGroup . releaseData $ releaseTree)
+  releases @?= [expected]
+
+
+--------------------------------------------------------------------------------
+testFindByArtist :: Test
+testFindByArtist = testCase "Can find releases by their artist" $ do
+  editor <- entityRef <$> register acid2
+  releaseTree <- dummyReleaseTree editor
+
+  expected <- autoEdit $
+    create editor releaseTree >>= viewRevision
+
+  artist <- acnArtist . head <$> viewOnce expandCredits
+    (releaseArtistCredit . releaseData $ releaseTree)
+
+  releases <- findByArtist artist
   releases @?= [expected]

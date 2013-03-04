@@ -8,7 +8,8 @@ The majority of operations on releases are common for all core entities, so you
 should see the documentation on the 'Release' type and notice all the type class
 instances. -}
 module MusicBrainz.Data.Release
-    ( findByReleaseGroup
+    ( findByArtist
+    , findByReleaseGroup
     , findByLabel
     , viewMediums
     , viewReleaseLabels
@@ -320,4 +321,36 @@ findByLabel labelId = query q (Only labelId)
             musicbrainz_collate(name.name),
             musicbrainz_collate(country.name),
             barcode
+          |]
+
+
+--------------------------------------------------------------------------------
+findByArtist :: (Functor m, MonadIO m) => Ref Artist -> MusicBrainzT m [CoreEntity Release]
+findByArtist artistId = query q (Only artistId)
+  where
+    q = [sql|
+          SELECT release_id, revision_id,
+            name.name, comment, artist_credit_id, release_group_id,
+            date_year, date_month, date_day, country_id, script_id, language_id,
+            release_packaging_id, release_status_id, barcode
+          FROM (
+            SELECT DISTINCT
+              release_id, revision_id, release_tree_id,
+              release_data.name, comment, artist_credit_id, release_group_id,
+              date_year, date_month, date_day, country_id, script_id, language_id,
+              release_packaging_id, release_status_id, barcode
+            FROM release
+            JOIN release_revision USING (release_id)
+            JOIN release_tree USING (release_tree_id)
+            JOIN release_data USING (release_data_id)
+            JOIN artist_credit_name USING (artist_credit_id)
+            WHERE artist_id = ? AND master_revision_id = revision_id
+          ) q
+          JOIN release_name name ON (q.name = name.id)
+          LEFT JOIN country ON (country.id = country_id)
+          ORDER BY
+            date_year, date_month, date_day,
+            musicbrainz_collate(country.name),
+            barcode,
+            musicbrainz_collate(name.name)
           |]
