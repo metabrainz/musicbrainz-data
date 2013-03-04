@@ -5,6 +5,7 @@
 module MusicBrainz.Data.ArtistCredit
     ( expandCredits
     , getRef
+    , allArtistCredits
     ) where
 
 import Control.Applicative
@@ -102,9 +103,12 @@ expandCredits acIds =
             WHERE artist_credit_id IN ?
             ORDER BY artist_credit_id, position ASC
       |] (Only . In . Set.toList $ acIds)
-  where
-    partitionArtistCredit (acId, artistId, name, joinPhrase) =
-      (acId, [ArtistCreditName artistId name joinPhrase])
+
+
+partitionArtistCredit :: (Ref ArtistCredit, Ref Artist, Text, Text)
+                      -> (Ref ArtistCredit, [ArtistCreditName])
+partitionArtistCredit (acId, artistId, name, joinPhrase) =
+  (acId, [ArtistCreditName artistId name joinPhrase])
 
 
 --------------------------------------------------------------------------------
@@ -115,3 +119,56 @@ instance ResolveReference ArtistCredit where
                 WHERE artist_credit_id = ?
               |]
       (Only acId)
+
+
+--------------------------------------------------------------------------------
+allArtistCredits :: (Functor m, MonadIO m) =>
+  Ref Artist -> MusicBrainzT m [[ArtistCreditName]]
+allArtistCredits artistId =
+    Map.elems . groupMapTotal partitionArtistCredit <$> query q (Only artistId)
+  where
+    q = [sql| SELECT artist_credit_id, artist_id, name.name, join_phrase
+              FROM (
+                SELECT artist_credit_id
+                FROM (
+                  SELECT DISTINCT artist_credit_id
+                  FROM recording_data
+                  JOIN recording_tree USING (recording_data_id)
+                  JOIN recording_revision USING (recording_tree_id)
+                  JOIN recording USING (recording_id)
+                  WHERE master_revision_id = revision_id
+
+                  UNION
+
+                  SELECT DISTINCT artist_credit_id
+                  FROM release_group_data
+                  JOIN release_group_tree USING (release_group_data_id)
+                  JOIN release_group_revision USING (release_group_tree_id)
+                  JOIN release_group USING (release_group_id)
+                  WHERE master_revision_id = revision_id
+
+                  UNION
+
+                  SELECT DISTINCT artist_credit_id
+                  FROM release_data
+                  JOIN release_tree USING (release_data_id)
+                  JOIN release_revision USING (release_tree_id)
+                  JOIN release USING (release_id)
+                  WHERE master_revision_id = revision_id
+
+                  UNION
+
+                  SELECT DISTINCT artist_credit_id
+                  FROM track
+                  JOIN medium USING (tracklist_id)
+                  JOIN release_revision USING (release_tree_id)
+                  JOIN release USING (release_id)
+                  WHERE master_revision_id = revision_id
+                ) q
+                JOIN artist_credit_name USING (artist_credit_id)
+                WHERE artist_credit_name.artist_id = ?
+              ) acn
+              JOIN artist_credit_name USING (artist_credit_id)
+              JOIN artist_name name ON (name.id = artist_credit_name.name)
+              ORDER BY artist_credit_id, position ASC
+          |]
