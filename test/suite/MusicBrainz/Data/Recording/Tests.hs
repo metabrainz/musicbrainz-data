@@ -31,6 +31,7 @@ tests = [ testCreateFindLatest
         , testResolveRevisionReference
         , testFindRecordingTracks
         , testFindByArtist
+        , testFindByIsrc
         ]
 
 
@@ -164,4 +165,18 @@ testFindByArtist = testCase "Can find recordings by artist" $ do
     (recordingArtistCredit . recordingData $ recTree)
 
   recordings <- findByArtist artist
+  recordings @?= [expected]
+
+
+--------------------------------------------------------------------------------
+testFindByIsrc :: Test
+testFindByIsrc = testCase "Can find recordings by ISRC" $ do
+  editor <- entityRef <$> register acid2
+  recTree <- strangers editor
+
+  let i = "GBAAA9800322" ^?! isrc
+  expected <- autoEdit $ viewRevision =<< create editor recTree
+    { recordingIsrcs = Set.singleton i }
+
+  recordings <- findByIsrc i
   recordings @?= [expected]

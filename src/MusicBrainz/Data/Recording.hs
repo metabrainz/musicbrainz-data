@@ -9,6 +9,7 @@ instances. -}
 module MusicBrainz.Data.Recording
     ( RecordingUse(..)
     , findByArtist
+    , findByIsrc
     , findRecordingTracks
     , viewIsrcs
     , viewPuids
@@ -254,6 +255,31 @@ findByArtist artistId = query q (Only artistId)
               AND revision_id = master_revision_id
           ) q
           JOIN track_name name ON (q.name = name.id)
+          ORDER BY
+            musicbrainz_collate(name.name),
+            musicbrainz_collate(comment)
+        |]
+
+
+
+--------------------------------------------------------------------------------
+findByIsrc :: (Functor m, MonadIO m) => ISRC -> MusicBrainzT m [CoreEntity Recording]
+findByIsrc isrc = query q (Only isrc)
+  where
+    q = [sql|
+          SELECT recording_id, revision_id,
+            name.name, comment, artist_credit_id, length
+          FROM (
+            SELECT DISTINCT recording_id, revision_id, recording_tree_id
+            FROM recording
+            JOIN recording_revision USING (recording_id)
+            JOIN isrc USING (recording_tree_id)
+            WHERE isrc.isrc = ?
+              AND revision_id = master_revision_id
+          ) q
+          JOIN recording_tree USING (recording_tree_id)
+          JOIN recording_data USING (recording_data_id)
+          JOIN track_name name ON (recording_data.name = name.id)
           ORDER BY
             musicbrainz_collate(name.name),
             musicbrainz_collate(comment)
