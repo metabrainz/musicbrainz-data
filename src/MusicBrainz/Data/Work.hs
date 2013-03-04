@@ -8,6 +8,7 @@ should see the documentation on the 'Work' type and notice all the type class
 instances. -}
 module MusicBrainz.Data.Work
     ( findByArtist
+    , findByIswc
 
       -- * ISWCs
     , findIswcs
@@ -226,6 +227,29 @@ findByArtist artistId = query q (artistId, artistId)
             JOIN work_revision USING (work_tree_id)
             JOIN work USING (work_id)
             WHERE artist_id = ?
+              AND work_revision.revision_id = work.master_revision_id
+          ) q
+          JOIN work_tree USING (work_tree_id)
+          JOIN work_data USING (work_data_id)
+          JOIN work_name name ON (work_data.name = name.id)
+          ORDER BY
+            musicbrainz_collate(name.name)
+        |]
+
+
+--------------------------------------------------------------------------------
+findByIswc :: (Functor m, MonadIO m) => ISWC -> MusicBrainzT m [CoreEntity Work]
+findByIswc iswc = query q (Only iswc)
+  where
+    q = [sql|
+          SELECT work_id, revision_id,
+            name.name, comment, work_type_id, language_id
+          FROM (
+            SELECT DISTINCT work_id, work_revision.revision_id, work_tree_id
+            FROM work
+            JOIN work_revision USING (work_id)
+            JOIN iswc USING (work_tree_id)
+            WHERE iswc.iswc = ?
               AND work_revision.revision_id = work.master_revision_id
           ) q
           JOIN work_tree USING (work_tree_id)

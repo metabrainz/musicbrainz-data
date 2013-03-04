@@ -33,6 +33,7 @@ tests = [ testCreateFindLatest
         , testResolveRevisionReference
         , testFindIswcs
         , testFindByArtist
+        , testFindByIswc
         ]
 
 
@@ -109,6 +110,19 @@ testIswc = testCase "Can add and remove ISWCs" $
     workIswcs
     viewIswcs
 
+  where
+    expected = "T-070.116.442-2" ^?! iswc
+    withIswc x = x { workIswcs = Set.singleton expected }
+
+
+--------------------------------------------------------------------------------
+testFindByIswc :: Test
+testFindByIswc = testCase "Can find works by ISWCs" $ do
+    editor <- entityRef <$> register acid2
+    createEdit $ do
+      work <- viewRevision =<< create editor (withIswc honeysuckleRose)
+      actual <- findByIswc expected
+      actual @?= [ work ]
   where
     expected = "T-070.116.442-2" ^?! iswc
     withIswc x = x { workIswcs = Set.singleton expected }
