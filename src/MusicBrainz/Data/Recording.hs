@@ -8,6 +8,7 @@ should see the documentation on the 'Recording' type and notice all the type cla
 instances. -}
 module MusicBrainz.Data.Recording
     ( RecordingUse(..)
+    , findByArtist
     , findRecordingTracks
     , viewIsrcs
     , viewPuids
@@ -231,4 +232,29 @@ findRecordingTracks recordingId =
           WHERE recording_id = ?
             AND revision_id = master_revision_id
           ORDER BY date_year, date_month, date_day, musicbrainz_collate(name.name)
+        |]
+
+
+--------------------------------------------------------------------------------
+findByArtist :: (Functor m, MonadIO m) => Ref Artist -> MusicBrainzT m [CoreEntity Recording]
+findByArtist artistId = query q (Only artistId)
+  where
+    q = [sql|
+          SELECT recording_id, revision_id,
+            name.name, comment, artist_credit_id, length
+          FROM (
+            SELECT DISTINCT recording_id, revision_id,
+              recording_data.name, comment, artist_credit_id, length
+            FROM recording
+            JOIN recording_revision USING (recording_id)
+            JOIN recording_tree USING (recording_tree_id)
+            JOIN recording_data USING (recording_data_id)
+            JOIN artist_credit_name USING (artist_credit_id)
+            WHERE artist_credit_name.artist_id = ?
+              AND revision_id = master_revision_id
+          ) q
+          JOIN track_name name ON (q.name = name.id)
+          ORDER BY
+            musicbrainz_collate(name.name),
+            musicbrainz_collate(comment)
         |]

@@ -16,8 +16,10 @@ import qualified Test.MusicBrainz.CommonTests as CommonTests
 
 import MusicBrainz
 import MusicBrainz.Data
+import MusicBrainz.Data.ArtistCredit
 import MusicBrainz.Data.Editor
 import MusicBrainz.Data.Recording
+import MusicBrainz.Data.Util (viewOnce)
 
 --------------------------------------------------------------------------------
 tests :: [Test]
@@ -28,6 +30,7 @@ tests = [ testCreateFindLatest
         , testMerge
         , testResolveRevisionReference
         , testFindRecordingTracks
+        , testFindByArtist
         ]
 
 
@@ -147,3 +150,18 @@ testFindRecordingTracks = testCase "Can find tracks for a given recording" $ do
 
   actual <- findRecordingTracks recording
   actual @?= expected
+
+
+--------------------------------------------------------------------------------
+testFindByArtist :: Test
+testFindByArtist = testCase "Can find recordings by artist" $ do
+  editor <- entityRef <$> register acid2
+  recTree <- strangers editor
+
+  expected <- autoEdit $ viewRevision =<< create editor recTree
+
+  artist <- acnArtist . head <$> viewOnce expandCredits
+    (recordingArtistCredit . recordingData $ recTree)
+
+  recordings <- findByArtist artist
+  recordings @?= [expected]
