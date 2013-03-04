@@ -4,19 +4,22 @@ module MusicBrainz.Data.Work.Tests ( tests ) where
 import Control.Applicative
 import Control.Lens
 import Control.Monad (void)
+import Data.Monoid (mempty)
 
 import qualified Data.Map as Map
 import qualified Data.Set as Set
 
 import Test.MusicBrainz
-import Test.MusicBrainz.Repository (acid2, minimalTree, wildRose)
+import Test.MusicBrainz.Repository
 
 import qualified Test.MusicBrainz.CommonTests as CommonTests
 
 import MusicBrainz
 import MusicBrainz.Data
+import MusicBrainz.Data.ArtistCredit
 import MusicBrainz.Data.Edit
 import MusicBrainz.Data.Editor
+import MusicBrainz.Data.Util (viewOnce)
 import MusicBrainz.Data.Work
 
 --------------------------------------------------------------------------------
@@ -29,6 +32,7 @@ tests = [ testCreateFindLatest
         , testIswc
         , testResolveRevisionReference
         , testFindIswcs
+        , testFindByArtist
         ]
 
 
@@ -121,16 +125,91 @@ testFindIswcs :: Test
 testFindIswcs = testCase "Can find ISWCs for multiple works" $ do
   editor <- entityRef <$> register acid2
   void $ createEdit $ do
-    revId <- create editor honeysuckleRose
+    revId <- create editor honeysuckleRose { workIswcs = expected }
     iswcs <- findIswcs $ Set.singleton revId
     liftIO $ iswcs @?= Map.singleton revId expected
 
   where
-    honeysuckleRose =
-      (minimalTree
-         Work { workName = "Honeysuckle Rose"
-              , workComment = ""
-              , workType = Nothing
-              , workLanguage = Nothing
-              }) { workIswcs = expected }
     expected = Set.singleton $ "T-070.074.170-3"^?!iswc
+
+
+honeysuckleRose :: Tree Work
+honeysuckleRose = minimalTree
+  Work { workName = "Honeysuckle Rose"
+       , workComment = ""
+       , workType = Nothing
+       , workLanguage = Nothing
+       }
+
+--------------------------------------------------------------------------------
+testFindByArtist :: Test
+testFindByArtist = testGroup "Find works by artists"
+  [ testCase "Find by recording artist" $ do
+      editor <- entityRef <$> register acid2
+      recTree <- mysterons editor
+      createEdit $ do
+        recording <- create editor recTree >>= viewRevision
+        artist <- acnArtist . head <$> viewOnce expandCredits
+          (recordingArtistCredit . coreData $ recording)
+
+        performance <- add RelationshipType
+          { relName = "performance"
+          , relTypeAttributes = mempty
+          , relParent = Nothing
+          , relLeftTarget = ToRecording
+          , relRightTarget = ToWork
+          , relLinkPhrase = "performance"
+          , relReverseLinkPhrase = "has performance"
+          , relShortLinkPhrase = "performance"
+          , relPriority = 0
+          , relChildOrder = 0
+          , relDescription = ""
+          }
+
+        work <- viewRevision =<< create editor honeysuckleRose
+          { workRelationships = Set.singleton $
+              RecordingRelationship (coreRef recording)
+                Relationship { relType = entityRef performance
+                             , relAttributes = mempty
+                             , relBeginDate = emptyDate
+                             , relEndDate = emptyDate
+                             , relEnded = False
+                             }
+          }
+
+        actual <- findByArtist artist
+        actual @?= [ work ]
+
+  , testCase "Find by artist relationship" $ do
+      editor <- entityRef <$> register acid2
+      createEdit $ do
+        artist <- fmap coreRef . viewRevision =<< create editor freddie
+
+        composer <- add RelationshipType
+          { relName = "composer"
+          , relTypeAttributes = mempty
+          , relParent = Nothing
+          , relLeftTarget = ToArtist
+          , relRightTarget = ToWork
+          , relLinkPhrase = "composed"
+          , relReverseLinkPhrase = "was composed by"
+          , relShortLinkPhrase = "composer"
+          , relPriority = 0
+          , relChildOrder = 0
+          , relDescription = ""
+          }
+
+        work <- viewRevision =<< create editor honeysuckleRose
+          { workRelationships = Set.singleton $
+              ArtistRelationship artist
+                Relationship { relType = entityRef composer
+                             , relAttributes = mempty
+                             , relBeginDate = emptyDate
+                             , relEndDate = emptyDate
+                             , relEnded = False
+                             }
+          }
+
+        actual <- findByArtist artist
+        actual @?= [ work ]
+  ]

@@ -7,8 +7,10 @@ The majority of operations on works are common for all core entities, so you
 should see the documentation on the 'Work' type and notice all the type class
 instances. -}
 module MusicBrainz.Data.Work
-    ( -- * ISWCs
-      findIswcs
+    ( findByArtist
+
+      -- * ISWCs
+    , findIswcs
     , viewIswcs
     ) where
 
@@ -194,3 +196,41 @@ findIswcs revisionIds =
               FROM iswc
               JOIN work_revision USING (work_tree_id)
               WHERE revision_id IN ? |]
+
+
+--------------------------------------------------------------------------------
+findByArtist :: (Functor m, MonadIO m) => Ref Artist -> MusicBrainzT m [CoreEntity Work]
+findByArtist artistId = query q (artistId, artistId)
+  where
+    q = [sql|
+          SELECT work_id, revision_id,
+            name.name, comment, work_type_id, language_id
+          FROM (
+            SELECT DISTINCT work_id, work_revision.revision_id, work_tree_id
+            FROM l_work_recording
+            JOIN recording USING (recording_id)
+            JOIN recording_revision USING (recording_id)
+            JOIN recording_tree USING (recording_tree_id)
+            JOIN recording_data USING (recording_data_id)
+            JOIN artist_credit_name USING (artist_credit_id)
+            JOIN work_revision USING (work_tree_id)
+            JOIN work USING (work_id)
+            WHERE artist_id = ?
+              AND recording_revision.revision_id = recording.master_revision_id
+              AND work_revision.revision_id = work.master_revision_id
+
+            UNION
+
+            SELECT DISTINCT work_id, work_revision.revision_id, work_tree_id
+            FROM l_work_artist
+            JOIN work_revision USING (work_tree_id)
+            JOIN work USING (work_id)
+            WHERE artist_id = ?
+              AND work_revision.revision_id = work.master_revision_id
+          ) q
+          JOIN work_tree USING (work_tree_id)
+          JOIN work_data USING (work_data_id)
+          JOIN work_name name ON (work_data.name = name.id)
+          ORDER BY
+            musicbrainz_collate(name.name)
+        |]
