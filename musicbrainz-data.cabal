@@ -24,7 +24,7 @@ Library
     nats >= 0.1,
     network >= 2.3.0.10,
     parsec >= 3.1.2,
-    postgresql-simple >= 0.2.4.1 && < 0.3,
+    postgresql-simple >= 0.3.1 && < 0.4,
     text >= 0.11.1.13 && < 0.12,
     time >= 1.4,
     transformers >= 0.2.2.0 && < 0.4,
@@ -74,7 +74,6 @@ Library
     MusicBrainz.Schema
     MusicBrainz.Types
   other-modules:
-    Database.PostgreSQL.Simple.Arrays
     MusicBrainz.Data.Generic
     MusicBrainz.Data.Relationship.Internal
     MusicBrainz.Data.Revision.Internal
@@ -99,7 +98,7 @@ Test-Suite integration-tests
     MonadCatchIO-mtl >= 0.3.0.0 && <0.4,
     musicbrainz-data,
     network >= 2.3.0.10,
-    postgresql-simple >= 0.2.4.1 && < 0.3,
+    postgresql-simple >= 0.3.1 && < 0.4,
     QuickCheck >= 2.4.2 && < 2.6,
     test-framework >= 0.6.1 && <0.9,
     test-framework-hunit >= 0.2.7 && <0.4,

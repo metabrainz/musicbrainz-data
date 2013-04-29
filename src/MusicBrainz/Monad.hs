@@ -156,7 +156,7 @@ withTransaction' conclude action = view transactionDepth >>= runAt
 {-| Begin a transaction. This is a low-level operation, and generally *not*
 what you are really looking for, which is 'withTransaction'. -}
 begin :: MonadIO m => MusicBrainzT m ()
-begin = withMBConn (PG.beginMode PG.defaultTransactionMode)
+begin = withMBConn PG.begin
 
 
 {-| Commit a transaction. This is a low-level operation, and generally *not*

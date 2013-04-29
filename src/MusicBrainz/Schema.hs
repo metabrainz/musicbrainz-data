@@ -203,8 +203,11 @@ instance FromField URI where
 
 instance FromField UUID where
   fromField f Nothing = returnError UnexpectedNull f "UUID cannot be null"
-  fromField f (Just v) | typename f /= "uuid" = incompatible
-                       | otherwise            = tryParse
+  fromField f (Just v) = do
+    t <- typename f
+    if t /= "uuid"
+        then incompatible
+        else tryParse
     where
       incompatible = returnError Incompatible f "UUIDs must be PG type 'uuid'"
       tryParse = case UUID.fromString (LBS.unpack v) of

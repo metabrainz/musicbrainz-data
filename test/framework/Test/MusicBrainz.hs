@@ -77,7 +77,7 @@ testCase testName test = do
   where
     runTest ctx = runMbContext ctx (withTransactionRollBack test)
 
-    isDeadlock (SqlError "40P01" _ _) = Just ()
+    isDeadlock (SqlError "40P01" _ _ _ _) = Just ()
     isDeadlock _ = Nothing
 
     go ctx retriesRemaining
