@@ -74,7 +74,6 @@ import Prelude hiding ((.))
 import Control.Applicative hiding (optional)
 import Control.Category ((.))
 import Control.Lens
-import Control.Monad (mfilter)
 import Data.Char (digitToInt, intToDigit, isDigit)
 import Data.Functor.Identity (Identity)
 import Data.Ix (inRange)
@@ -791,7 +790,7 @@ isrc = parsecPrism (\(ISRC i) -> i) isrcParser
       ISRC . mconcat . map T.pack <$>
         sequence [ countryCode, count 3 upperNum, count 7 digit ] <* eof
       where
-        countryCode = mfilter (/= "TC") $ count 2 upper
+        countryCode = count 2 upper
         upperNum = upper <|> digit
 
 
