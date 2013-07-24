@@ -44,6 +44,7 @@ module MusicBrainz.Types
     , Gender(..)
     , IPI, ipi
     , ISRC, isrc
+    , ISNI, isni
     , ISWC, iswc
     , Language(..)
     , Medium(..)

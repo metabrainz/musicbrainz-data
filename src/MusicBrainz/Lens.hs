@@ -88,3 +88,16 @@ instance TreeIPICodes Artist where
 
 instance TreeIPICodes Label where
   ipiCodes f label = f (labelIpiCodes label) <&> \b -> label { labelIpiCodes = b }
+
+
+--------------------------------------------------------------------------------
+{-| Provide a single lens to view the ISNI codes inside a 'Tree'. -}
+class TreeISNICodes a where
+  {-| A 'Lens' into the annotation for any 'Tree'. -}
+  isniCodes :: Lens' (Tree a) (Set.Set ISNI)
+
+instance TreeISNICodes Artist where
+  isniCodes f artist = f (artistIsniCodes artist) <&> \b -> artist { artistIsniCodes = b }
+
+instance TreeISNICodes Label where
+  isniCodes f label = f (labelIsniCodes label) <&> \b -> label { labelIsniCodes = b }

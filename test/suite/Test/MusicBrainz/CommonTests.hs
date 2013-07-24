@@ -8,6 +8,7 @@ module Test.MusicBrainz.CommonTests
     , testCreateFindLatest
     , testEligibleForCleanup
     , testIpiCodes
+    , testIsniCodes
     , testMerge
     , testResolveReference
     , testResolveRevisionReference
@@ -217,6 +218,29 @@ testIpiCodes startTree = do
 
   where
     expected = Set.singleton $ "12345678912" ^?! ipi
+
+
+--------------------------------------------------------------------------------
+testIsniCodes :: (Create a, FindLatest a, TreeISNICodes a, Update a, ViewISNICodes a, ViewRevision a)
+  => Tree a -> MusicBrainz ()
+testIsniCodes startTree = do
+  editor <- entityRef <$> register acid2
+
+  entity <- autoEdit $ create editor (isniCodes .~ expected $ startTree) >>= viewRevision
+  isniPreUpdate <- viewOnce viewIsniCodes (coreRevision entity)
+  liftIO $ isniPreUpdate @?= expected
+
+  edit <- createEdit $
+    update editor (coreRevision entity) startTree
+
+  apply edit
+
+  latest <- viewOnce findLatest (coreRef entity)
+  isniPostUpdate <- viewOnce viewIsniCodes (coreRevision latest)
+  liftIO $ isniPostUpdate @?= mempty
+
+  where
+    expected = Set.singleton $ "1234567898765432" ^?! isni
 
 
 --------------------------------------------------------------------------------

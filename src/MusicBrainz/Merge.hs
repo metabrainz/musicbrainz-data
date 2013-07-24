@@ -123,6 +123,7 @@ instance Mergeable (Tree Artist) where
     , Render (Maybe (Ref Gender)) mo
     , Render (Set.Set (Alias Artist)) mo
     , Render (Set.Set IPI) mo
+    , Render (Set.Set ISNI) mo
     , Render (Set.Set LinkedRelationship) mo
     , Render Bool mo
     , Render PartialDate mo
@@ -138,6 +139,8 @@ instance Mergeable (Tree Artist) where
                      artistAliases `mergedVia` merge
                <*> "IPI Codes" .>
                      artistIpiCodes `mergedVia` merge
+               <*> "ISNI Codes" .>
+                     artistIsniCodes `mergedVia` merge
                <*> "Annotation" .>
                      artistAnnotation `mergedVia` mergeEq
     where
@@ -161,6 +164,7 @@ instance Mergeable (Tree Label) where
     , Render (Maybe (Ref Country)) mo
     , Render (Set.Set (Alias Label)) mo
     , Render (Set.Set IPI) mo
+    , Render (Set.Set ISNI) mo
     , Render (Set.Set LinkedRelationship) mo
     , Render Bool mo
     , Render PartialDate mo
@@ -172,6 +176,7 @@ instance Mergeable (Tree Label) where
               <*> labelRelationships `mergedVia` merge
               <*> labelAliases `mergedVia` merge
               <*> labelIpiCodes `mergedVia` merge
+              <*> labelIsniCodes `mergedVia` merge
               <*> labelAnnotation `mergedVia` mergeEq
     where
       mergeLabelData =

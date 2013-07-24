@@ -17,6 +17,7 @@ tests = [ testAliases
         , testMerge
         , testUpdate
         , testResolveRevisionReference
+        , testIsniCodes
         ]
 
 
@@ -75,6 +76,12 @@ testAnnotation = testCase "Can add and remove label annotations" $ do
 testIpiCodes :: Test
 testIpiCodes = testCase "Can add and remove label IPI codes" $ do
   CommonTests.testIpiCodes revolutionRecords
+
+
+--------------------------------------------------------------------------------
+testIsniCodes :: Test
+testIsniCodes = testCase "Can add and remove label ISNI codes" $ do
+  CommonTests.testIsniCodes revolutionRecords
 
 
 --------------------------------------------------------------------------------

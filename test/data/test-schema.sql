@@ -872,6 +872,18 @@ CREATE TABLE artist_ipi (
 ALTER TABLE musicbrainz.artist_ipi OWNER TO musicbrainz;
 
 --
+-- Name: artist_isni; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE artist_isni (
+    artist_tree_id integer NOT NULL,
+    isni text NOT NULL
+);
+
+
+ALTER TABLE musicbrainz.artist_isni OWNER TO musicbrainz;
+
+--
 -- Name: artist_meta; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
 --
 
@@ -2205,6 +2217,18 @@ CREATE TABLE label_ipi (
 
 
 ALTER TABLE musicbrainz.label_ipi OWNER TO musicbrainz;
+
+--
+-- Name: label_isni; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+CREATE TABLE label_isni (
+    label_tree_id integer NOT NULL,
+    isni text NOT NULL
+);
+
+
+ALTER TABLE musicbrainz.label_isni OWNER TO musicbrainz;
 
 --
 -- Name: label_meta; Type: TABLE; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
@@ -4376,6 +4400,14 @@ ALTER TABLE ONLY artist_ipi
 
 
 --
+-- Name: artist_isni_pkey; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+ALTER TABLE ONLY artist_isni
+    ADD CONSTRAINT artist_isni_pkey PRIMARY KEY (artist_tree_id, isni);
+
+
+--
 -- Name: artist_meta_pkey; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
 --
 
@@ -4997,6 +5029,14 @@ ALTER TABLE ONLY label_data
 
 ALTER TABLE ONLY label_ipi
     ADD CONSTRAINT label_ipi_pkey PRIMARY KEY (label_tree_id, ipi);
+
+
+--
+-- Name: label_isni_pkey; Type: CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz; Tablespace: 
+--
+
+ALTER TABLE ONLY label_isni
+    ADD CONSTRAINT label_isni_pkey PRIMARY KEY (label_tree_id, isni);
 
 
 --
@@ -5998,6 +6038,14 @@ ALTER TABLE ONLY artist_data
 
 ALTER TABLE ONLY artist_ipi
     ADD CONSTRAINT artist_ipi_artist_tree_id_fkey FOREIGN KEY (artist_tree_id) REFERENCES artist_tree(artist_tree_id);
+
+
+--
+-- Name: artist_isni_artist_tree_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY artist_isni
+    ADD CONSTRAINT artist_isni_artist_tree_id_fkey FOREIGN KEY (artist_tree_id) REFERENCES artist_tree(artist_tree_id);
 
 
 --
@@ -7462,6 +7510,14 @@ ALTER TABLE ONLY label_data
 
 ALTER TABLE ONLY label_ipi
     ADD CONSTRAINT label_ipi_label_tree_id_fkey FOREIGN KEY (label_tree_id) REFERENCES label_tree(label_tree_id);
+
+
+--
+-- Name: label_isni_label_tree_id_fkey; Type: FK CONSTRAINT; Schema: musicbrainz; Owner: musicbrainz
+--
+
+ALTER TABLE ONLY label_isni
+    ADD CONSTRAINT label_isni_label_tree_id_fkey FOREIGN KEY (label_tree_id) REFERENCES label_tree(label_tree_id);
 
 
 --

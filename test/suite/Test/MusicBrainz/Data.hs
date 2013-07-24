@@ -27,5 +27,6 @@ singleArtistAc editor artist = do
                         , artistRelationships = mempty
                         , artistAliases = mempty
                         , artistIpiCodes = mempty
+                        , artistIsniCodes = mempty
                         , artistAnnotation = ""
                         }

@@ -15,12 +15,14 @@ module MusicBrainz.Data.Generic
     , MusicBrainz.Data.Generic.setMasterRevision
     , realiseAliases
     , realiseIpiCodes
+    , realiseIsniCodes
     , realiseRelationships
     , fetchEndPoints
     , reflectRelationshipChange
     , addRelationship
     , findIpiCodes
     , findLatest
+    , viewIsniCodes
     ) where
 
 import Control.Arrow ((&&&))
@@ -43,7 +45,7 @@ import Database.PostgreSQL.Simple.ToField (ToField)
 import qualified Data.Map as Map
 import qualified Data.Set as Set
 
-import MusicBrainz hiding (ipi)
+import MusicBrainz hiding (ipi, isni)
 import MusicBrainz.Lens
 import MusicBrainz.Data.Revision.Internal
 import MusicBrainz.Data.Tree
@@ -140,6 +142,24 @@ viewIpiCodes entityName rs =
           , "WHERE revision_id = ?"
           ]
 
+
+--------------------------------------------------------------------------------
+viewIsniCodes :: (Functor m, MonadIO m)
+                 => String
+                 -> Set.Set (Ref (Revision a))
+                 -> MusicBrainzT m (Map.Map (Ref (Revision a)) (Set.Set ISNI))
+viewIsniCodes entityName rs =
+    groupMap partitionIsnis rs' <$> query q (Only . In $ rs')
+  where
+    rs' = Set.toList rs
+    partitionIsnis (revisionId, isni) = (revisionId, Set.singleton isni)
+    q = fromString $ unlines
+          [ "SELECT revision_id, isni "
+          , "FROM " ++ entityName ++ "_isni "
+          , "JOIN " ++ entityName ++ "_tree USING (" ++ entityName ++ "_tree_id) "
+          , "JOIN " ++ entityName ++ "_revision USING (" ++ entityName ++ "_tree_id) "
+          , "WHERE revision_id = ?"
+          ]
 
 --------------------------------------------------------------------------------
 resolveMbid :: (Functor m, MonadIO m, FromField (Ref a))
@@ -255,6 +275,14 @@ realiseIpiCodes :: (Functor m, MonadIO m, TreeIPICodes a)
 realiseIpiCodes eName treeId tree = void $ executeMany q
       $ map (Only treeId :.) (Set.toList $ tree^.ipiCodes)
   where q = fromString $ "INSERT INTO " ++ eName ++ "_ipi (" ++ eName ++ "_tree_id, ipi) VALUES (?, ?)"
+
+
+--------------------------------------------------------------------------------
+realiseIsniCodes :: (Functor m, MonadIO m, TreeISNICodes a)
+  => String -> Ref (Tree a) -> Tree a -> MusicBrainzT m ()
+realiseIsniCodes eName treeId tree = void $ executeMany q
+      $ map (Only treeId :.) (Set.toList $ tree^.isniCodes)
+  where q = fromString $ "INSERT INTO " ++ eName ++ "_Isni (" ++ eName ++ "_tree_id, isni) VALUES (?, ?)"
 
 
 --------------------------------------------------------------------------------

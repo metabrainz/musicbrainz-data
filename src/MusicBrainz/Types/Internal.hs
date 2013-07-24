@@ -29,6 +29,7 @@ module MusicBrainz.Types.Internal
     , Entity(..)
     , Gender(..)
     , IPI, ipi
+    , ISNI, isni
     , ISRC, isrc
     , ISWC, iswc
     , Label(..)
@@ -73,6 +74,7 @@ import Prelude hiding ((.))
 
 import Control.Applicative hiding (optional)
 import Control.Category ((.))
+import Control.Error (hush)
 import Control.Lens
 import Data.Char (digitToInt, intToDigit, isDigit)
 import Data.Functor.Identity (Identity)
@@ -326,6 +328,21 @@ ipi = parsecPrism (\(IPI i) -> i) ipiParser
 
 
 --------------------------------------------------------------------------------
+{-| An \'International Standard Name Identifier\' that can be attached to various
+entities. -}
+newtype ISNI = ISNI Text
+  deriving (Eq, Ord, Show, Typeable)
+
+isni :: Prism' Text ISNI
+isni = parsecPrism (\(ISNI i) -> i) isniParser
+  where
+    isniParser = ISNI . T.pack . mconcat <$>
+      sequence [ count 15 digit
+               , return <$> (digit <|> char 'X')
+               ]
+
+
+--------------------------------------------------------------------------------
 {-| A label who is repsonsible for releasing/distributing music. -}
 data Label = Label { labelName :: !Text
                    , labelSortName :: !Text
@@ -547,6 +564,7 @@ data Tree a where
   , artistRelationships :: !(Set.Set LinkedRelationship)
   , artistAliases :: !(Set.Set (Alias Artist))
   , artistIpiCodes :: !(Set.Set IPI)
+  , artistIsniCodes :: !(Set.Set ISNI)
   , artistAnnotation :: !Text
   } -> Tree Artist
 
@@ -555,6 +573,7 @@ data Tree a where
   , labelRelationships :: !(Set.Set LinkedRelationship)
   , labelAliases :: !(Set.Set (Alias Label))
   , labelIpiCodes :: !(Set.Set IPI)
+  , labelIsniCodes :: !(Set.Set ISNI)
   , labelAnnotation :: !Text
   } -> Tree Label
 
@@ -855,10 +874,7 @@ uuid = prism toString parseUUID
 
 --------------------------------------------------------------------------------
 parsecPrism :: Stream a Identity Char => (c -> a) -> Parsec a () c -> Prism' a c
-parsecPrism extract parser = prism extract runParse
-  where
-    runParse t = either (const $ Left t) Right $
-      parse parser "" t
+parsecPrism extract parser = prism' extract (hush . parse parser "")
 
 
 --------------------------------------------------------------------------------

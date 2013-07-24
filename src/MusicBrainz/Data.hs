@@ -10,6 +10,7 @@ module MusicBrainz.Data
     , ViewAliases(..)
     , ViewAnnotation(..)
     , ViewIPICodes(..)
+    , ViewISNICodes(..)
     , ViewTree(..)
     , viewRelationships
 
@@ -61,6 +62,7 @@ import MusicBrainz.Data.Create
 import MusicBrainz.Data.FindLatest
 import MusicBrainz.Data.GetEntity
 import MusicBrainz.Data.IPI
+import MusicBrainz.Data.ISNI
 import MusicBrainz.Data.Merge
 import MusicBrainz.Data.Revision
 import MusicBrainz.Data.Tree

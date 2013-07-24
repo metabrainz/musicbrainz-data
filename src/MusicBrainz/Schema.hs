@@ -35,7 +35,7 @@ import qualified Data.ByteString.Char8 as LBS
 import qualified Data.UUID as UUID
 
 --------------------------------------------------------------------------------
-fieldFromPrism :: (FromField s, Typeable a) => Prism s t a b -> FieldParser a
+fieldFromPrism :: (FromField s, Typeable a) => Prism' s a -> FieldParser a
 fieldFromPrism p f v = do
   fromField f v >>= maybe conversionFailure return . preview p
   where
@@ -49,6 +49,10 @@ instance FromField Barcode where
 
 instance FromField IPI where
   fromField = fieldFromPrism ipi
+
+
+instance FromField ISNI where
+  fromField = fieldFromPrism isni
 
 
 instance FromField ISRC where
@@ -606,6 +610,10 @@ instance ToRow Gender where
 
 instance ToRow IPI where
   toRow = pure . toField . view (re ipi)
+
+
+instance ToRow ISNI where
+  toRow = pure . toField . view (re isni)
 
 
 instance ToRow Label where

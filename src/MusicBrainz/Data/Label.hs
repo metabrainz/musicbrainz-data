@@ -21,6 +21,7 @@ import MusicBrainz.Data.Annotation
 import MusicBrainz.Data.Create
 import MusicBrainz.Data.FindLatest
 import MusicBrainz.Data.IPI
+import MusicBrainz.Data.ISNI
 import MusicBrainz.Data.Merge
 import MusicBrainz.Data.Relationship
 import MusicBrainz.Data.Relationship.Internal
@@ -81,6 +82,7 @@ instance RealiseTree Label where
     Generic.realiseRelationships "label" treeId label
     Generic.realiseAliases "label" treeId label
     Generic.realiseIpiCodes "label" treeId label
+    Generic.realiseIsniCodes "label" treeId label
 
     return treeId
     where
@@ -120,6 +122,7 @@ instance ViewTree Label where
                          <*> viewRelationships r
                          <*> viewAliases r
                          <*> viewOnce viewIpiCodes r
+                         <*> viewOnce viewIsniCodes r
                          <*> viewAnnotation r
 
 
@@ -145,6 +148,11 @@ instance ViewAnnotation Label where
 --------------------------------------------------------------------------------
 instance ViewIPICodes Label where
   viewIpiCodes = Generic.viewIpiCodes "label"
+
+
+--------------------------------------------------------------------------------
+instance ViewISNICodes Label where
+  viewIsniCodes = Generic.viewIsniCodes "label"
 
 
 --------------------------------------------------------------------------------

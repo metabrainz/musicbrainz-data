@@ -101,6 +101,7 @@ freddie = ArtistTree
   , artistRelationships = mempty
   , artistAliases = mempty
   , artistIpiCodes = mempty
+  , artistIsniCodes= mempty
   , artistAnnotation = ""
   }
 
@@ -150,10 +151,10 @@ class MinimalTree a where
   minimalTree :: a -> Tree a
 
 instance MinimalTree Artist where
-  minimalTree dat' = ArtistTree dat' mempty mempty mempty ""
+  minimalTree dat' = ArtistTree dat' mempty mempty mempty mempty ""
 
 instance MinimalTree Label where
-  minimalTree dat' = LabelTree dat' mempty mempty mempty ""
+  minimalTree dat' = LabelTree dat' mempty mempty mempty mempty ""
 
 instance MinimalTree Recording where
   minimalTree dat' = RecordingTree dat' mempty "" mempty mempty

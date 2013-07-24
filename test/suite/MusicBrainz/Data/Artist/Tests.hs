@@ -22,6 +22,7 @@ tests = [ testCreateFindLatest
         , testUpdate
         , testAliases
         , testIpiCodes
+        , testIsniCodes
         , testAnnotation
         , testMerge
         , testResolveRevisionReference
@@ -54,6 +55,7 @@ testCreateFindLatest = testCase "create >>= findLatest == create" $ do
                        }
                    , artistAliases = mempty
                    , artistIpiCodes = mempty
+                   , artistIsniCodes = mempty
                    , artistRelationships = mempty
                    , artistAnnotation = ""
                    }
@@ -97,6 +99,12 @@ testAliases = testCase "Can add and remove aliases" $ do
 testIpiCodes :: Test
 testIpiCodes = testCase "Can add and remove artist IPI codes" $ do
   CommonTests.testIpiCodes freddie
+
+
+--------------------------------------------------------------------------------
+testIsniCodes :: Test
+testIsniCodes = testCase "Can add and remove artist ISNI codes" $ do
+  CommonTests.testIsniCodes freddie
 
 
 --------------------------------------------------------------------------------
