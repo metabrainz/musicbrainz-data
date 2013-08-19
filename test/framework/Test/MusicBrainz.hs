@@ -27,7 +27,7 @@ import Control.Applicative
 import Control.Concurrent.Chan
 import Control.Exception (catchJust, finally)
 import Control.Monad (forM_, void)
-import Control.Monad.CatchIO (Exception, MonadCatchIO, tryJust)
+import Control.Monad.Catch (Exception, MonadCatch, tryJust)
 import Control.Monad.IO.Class
 import Control.Monad.Trans.Reader
 import Data.Configurator
@@ -49,12 +49,12 @@ import MusicBrainz.Data.Edit
 
 data TestEnvironment = TestEnvironment { testContexts :: Chan Context }
 
-type Test = ReaderT TestEnvironment IO (Test.Framework.Test)
+type Test = ReaderT TestEnvironment IO Test.Framework.Test
 
 execTest :: Test -> TestEnvironment -> IO Test.Framework.Test
-execTest (ReaderT test) env = test env
+execTest (ReaderT test) = test
 
-assertException :: (Exception e, Eq e, Functor m, MonadCatchIO m) => (e -> Maybe b) -> m a -> m ()
+assertException :: (Exception e, Eq e, Functor m, MonadCatch m, MonadIO m) => (e -> Maybe b) -> m a -> m ()
 assertException isWanted action =
   tryJust isWanted action >>=
     either (const $ return ()) (const $ liftIO $ Test.HUnit.assertFailure "No exception thrown")

@@ -26,7 +26,7 @@ module MusicBrainz.Monad
 
 import Control.Applicative
 import Control.Lens hiding (Context)
-import Control.Monad.CatchIO
+import Control.Monad.Catch
 import Control.Monad.IO.Class (MonadIO, liftIO)
 import Control.Monad.Reader (ReaderT, runReaderT)
 import Control.Monad.Reader.Class (MonadReader, ask, local)
@@ -61,7 +61,7 @@ and this transformer allows you to use almost any monad as a base monad to
 add extra functionality. -}
 newtype MusicBrainzT m a = MusicBrainzT (ReaderT Context m a)
   deriving ( Monad, Functor, Applicative, MonadReader Context, MonadIO
-           , MonadCatchIO, MonadTrans )
+           , MonadCatch, MonadTrans )
 
 
 {-| Execute MusicBrainz actions in the IO monad. This will open a connection
@@ -135,17 +135,17 @@ selectValue = fmap (fromOnly . head)
 
 {-| Run a series of MusicBrainz actions within a single PostgreSQL
 transaction. -}
-withTransaction :: (MonadIO m, Applicative m, MonadCatchIO m) => MusicBrainzT m a -> MusicBrainzT m a
+withTransaction :: (MonadIO m, Applicative m, MonadCatch m) => MusicBrainzT m a -> MusicBrainzT m a
 withTransaction = withTransaction' commit
 
 {-| Run a series of MusicBrainz actions within a single PostgreSQL
 transaction. At the end of the action, roll back the transaction.
 This is mostly useful for testing things but leaving with a clean
 state. -}
-withTransactionRollBack :: (MonadIO m, Applicative m, MonadCatchIO m) => MusicBrainzT m a -> MusicBrainzT m a
+withTransactionRollBack :: (MonadIO m, Applicative m, MonadCatch m) => MusicBrainzT m a -> MusicBrainzT m a
 withTransactionRollBack = withTransaction' rollback
 
-withTransaction' :: (MonadIO m, Applicative m, MonadCatchIO m) => MusicBrainzT m () -> MusicBrainzT m a -> MusicBrainzT m a
+withTransaction' :: (MonadIO m, Applicative m, MonadCatch m) => MusicBrainzT m () -> MusicBrainzT m a -> MusicBrainzT m a
 withTransaction' conclude action = view transactionDepth >>= runAt
   where
     action' = local (transactionDepth +~ 1) action
