@@ -14,10 +14,12 @@ import Control.Lens (prism)
 import Control.Monad.IO.Class (MonadIO)
 import Database.PostgreSQL.Simple (Only(..))
 import Database.PostgreSQL.Simple.SqlQQ
+import Data.Tagged
 
 import MusicBrainz
 import MusicBrainz.Data.Alias
 import MusicBrainz.Data.Annotation
+import MusicBrainz.Data.CoreEntity
 import MusicBrainz.Data.Create
 import MusicBrainz.Data.FindLatest
 import MusicBrainz.Data.IPI
@@ -34,8 +36,27 @@ import MusicBrainz.Edit
 import qualified MusicBrainz.Data.Generic as Generic
 
 --------------------------------------------------------------------------------
+instance CloneRevision Label
+instance Create Label
+instance MasterRevision Label
+instance Merge Label
+instance NewEntityRevision Label
+instance ResolveReference (Revision Label)
+instance ResolveReference Label
+instance Update Label
+instance ViewAliases Label
+instance ViewAnnotation Label
+instance ViewIPICodes Label
+instance ViewISNICodes Label
+
+
+--------------------------------------------------------------------------------
+instance CoreEntityTable Label where
+  rootTable = Tagged "label"
+
+
+--------------------------------------------------------------------------------
 instance HoldsRelationships Label where
-  fetchEndPoints = Generic.fetchEndPoints "label"
   reflectRelationshipChange = Generic.reflectRelationshipChange LabelRelationship
 
 
@@ -56,21 +77,6 @@ instance FindLatest Label where
       JOIN label_name sort_name ON (label_data.sort_name = sort_name.id)
       WHERE label_id IN ?
         AND revision_id = master_revision_id  |]
-
-
---------------------------------------------------------------------------------
-instance Create Label where
-  create = Generic.create "label"
-
-
---------------------------------------------------------------------------------
-instance NewEntityRevision Label where
-  newEntityRevision = Generic.newEntityRevision "label"
-
-
---------------------------------------------------------------------------------
-instance MasterRevision Label where
-  setMasterRevision = Generic.setMasterRevision "label"
 
 
 --------------------------------------------------------------------------------
@@ -128,51 +134,8 @@ instance ViewTree Label where
 
 --------------------------------------------------------------------------------
 instance Editable Label where
-  linkRevisionToEdit = Generic.linkRevisionToEdit "edit_label"
-
   change = prism LabelChange extract
     where extract a = case a of LabelChange c -> Right c
                                 _ -> Left a
 
 
---------------------------------------------------------------------------------
-instance ViewAliases Label where
-  viewAliases = Generic.viewAliases "label"
-
-
---------------------------------------------------------------------------------
-instance ViewAnnotation Label where
-  viewAnnotation = Generic.viewAnnotation "label"
-
-
---------------------------------------------------------------------------------
-instance ViewIPICodes Label where
-  viewIpiCodes = Generic.viewIpiCodes "label"
-
-
---------------------------------------------------------------------------------
-instance ViewISNICodes Label where
-  viewIsniCodes = Generic.viewIsniCodes "label"
-
-
---------------------------------------------------------------------------------
-instance CloneRevision Label where
-  cloneRevision = Generic.cloneRevision "label"
-
-
---------------------------------------------------------------------------------
-instance Update Label
-
-
---------------------------------------------------------------------------------
-instance ResolveReference Label where
-  resolveReference = Generic.resolveMbid "label"
-
-
---------------------------------------------------------------------------------
-instance ResolveReference (Revision Label) where
-  resolveReference = Generic.resolveRevision "label"
-
-
---------------------------------------------------------------------------------
-instance Merge Label

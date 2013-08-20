@@ -1,5 +1,8 @@
+{-# LANGUAGE DefaultSignatures #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 module MusicBrainz.Data.Revision.Internal
     ( newUnlinkedRevision
     , addChild
@@ -12,8 +15,12 @@ import Control.Monad (void)
 import Control.Monad.IO.Class (MonadIO)
 import Database.PostgreSQL.Simple (Only(..))
 import Database.PostgreSQL.Simple.SqlQQ (sql)
+import Database.PostgreSQL.Simple.ToField (ToField)
+import Data.Tagged (Tagged, untag)
+import Data.String (fromString)
 
 import MusicBrainz
+import MusicBrainz.Data.CoreEntity
 import MusicBrainz.Edit
 
 --------------------------------------------------------------------------------
@@ -38,6 +45,23 @@ addChild childRevision parentRevision =
 class CloneRevision a where
   cloneRevision :: (Functor m, MonadIO m)
     => CoreEntity a -> Ref Editor -> MusicBrainzT m (Ref (Revision a))
+
+  default cloneRevision
+    :: (Functor m, MonadIO m, ToField (Ref a), CoreEntityTable a)
+    => CoreEntity a -> Ref Editor -> MusicBrainzT m (Ref (Revision a))
+  cloneRevision a editor = do
+    revId <- newUnlinkedRevision editor
+    selectValue $ query q (coreRef a, revId, coreRevision a)
+
+   where
+
+      entityName = untag (rootTable :: Tagged a String)
+      q = fromString $ unlines
+          [ "INSERT INTO " ++ entityName ++ "_revision (" ++ entityName ++ "_id, revision_id, " ++ entityName ++ "_tree_id) "
+          , "VALUES (?, ?, (SELECT " ++ entityName ++ "_tree_id FROM " ++ entityName ++ "_revision WHERE revision_id = ?)) "
+          , "RETURNING revision_id"
+          ]
+
 
 
 --------------------------------------------------------------------------------

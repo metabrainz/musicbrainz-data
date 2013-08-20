@@ -13,3 +13,7 @@ cabal-dev
 /*.html
 /test.cfg
 /test/suite/Tests
+*.un~
+tags
+*.swp
+TAGS

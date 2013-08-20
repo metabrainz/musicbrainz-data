@@ -8,8 +8,10 @@ import Control.Lens (prism)
 import Control.Monad.IO.Class (MonadIO)
 import Database.PostgreSQL.Simple (Only(..))
 import Database.PostgreSQL.Simple.SqlQQ (sql)
+import Data.Tagged (Tagged(..))
 
 import MusicBrainz
+import MusicBrainz.Data.CoreEntity
 import MusicBrainz.Data.Create
 import MusicBrainz.Data.FindLatest
 import MusicBrainz.Data.Merge
@@ -22,29 +24,30 @@ import MusicBrainz.Edit
 
 import qualified MusicBrainz.Data.Generic as Generic
 
+instance Merge Url
+instance CloneRevision Url
+instance Create Url
+instance Update Url
+instance ResolveReference Url
+instance ResolveReference (Revision Url)
+instance MasterRevision Url
+instance NewEntityRevision Url
+
+--------------------------------------------------------------------------------
+instance CoreEntityTable Url where
+  rootTable = Tagged "url"
+
+
 --------------------------------------------------------------------------------
 instance HoldsRelationships Url where
-  fetchEndPoints = Generic.fetchEndPoints "url"
   reflectRelationshipChange = Generic.reflectRelationshipChange UrlRelationship
 
 
 --------------------------------------------------------------------------------
 instance Editable Url where
-  linkRevisionToEdit = Generic.linkRevisionToEdit "edit_url"
-
   change = prism UrlChange extract
     where extract a = case a of UrlChange c -> Right c
                                 _ -> Left a
-
-
---------------------------------------------------------------------------------
-instance MasterRevision Url where
-  setMasterRevision = Generic.setMasterRevision "url"
-
-
---------------------------------------------------------------------------------
-instance NewEntityRevision Url where
-  newEntityRevision = Generic.newEntityRevision "url"
 
 
 --------------------------------------------------------------------------------
@@ -98,29 +101,3 @@ instance FindLatest Url where
         AND revision_id = master_revision_id  |]
 
 
---------------------------------------------------------------------------------
-instance Merge Url
-
-
---------------------------------------------------------------------------------
-instance CloneRevision Url where
-  cloneRevision = Generic.cloneRevision "url"
-
-
---------------------------------------------------------------------------------
-instance Create Url where
-  create = Generic.create "url"
-
-
---------------------------------------------------------------------------------
-instance Update Url
-
-
---------------------------------------------------------------------------------
-instance ResolveReference Url where
-  resolveReference = Generic.resolveMbid "url"
-
-
---------------------------------------------------------------------------------
-instance ResolveReference (Revision Url) where
-  resolveReference = Generic.resolveRevision "url"

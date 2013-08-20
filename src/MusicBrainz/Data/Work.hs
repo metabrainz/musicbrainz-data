@@ -24,6 +24,7 @@ import Data.Function (on)
 import Data.List (groupBy)
 import Database.PostgreSQL.Simple (In(..), Only(..))
 import Database.PostgreSQL.Simple.SqlQQ
+import Data.Tagged
 
 import qualified Data.Map as Map
 import qualified Data.Set as Set
@@ -31,6 +32,7 @@ import qualified Data.Set as Set
 import MusicBrainz hiding (iswc)
 import MusicBrainz.Data.Alias
 import MusicBrainz.Data.Annotation
+import MusicBrainz.Data.CoreEntity
 import MusicBrainz.Data.Create
 import MusicBrainz.Data.FindLatest
 import MusicBrainz.Data.Merge
@@ -44,8 +46,25 @@ import MusicBrainz.Edit
 import qualified MusicBrainz.Data.Generic as Generic
 
 --------------------------------------------------------------------------------
+instance CloneRevision Work
+instance Create Work
+instance MasterRevision Work
+instance Merge Work
+instance NewEntityRevision Work
+instance ResolveReference (Revision Work)
+instance ResolveReference Work
+instance Update Work
+instance ViewAliases Work
+instance ViewAnnotation Work
+
+
+--------------------------------------------------------------------------------
+instance CoreEntityTable Work where
+  rootTable = Tagged "work"
+
+
+--------------------------------------------------------------------------------
 instance HoldsRelationships Work where
-  fetchEndPoints = Generic.fetchEndPoints "work"
   reflectRelationshipChange = Generic.reflectRelationshipChange WorkRelationship
 
 
@@ -62,21 +81,6 @@ instance FindLatest Work where
       JOIN work_name name ON (work_data.name = name.id)
       WHERE work_id IN ?
         AND revision_id = master_revision_id  |]
-
-
---------------------------------------------------------------------------------
-instance Create Work where
-  create = Generic.create "work"
-
-
---------------------------------------------------------------------------------
-instance NewEntityRevision Work where
-  newEntityRevision = Generic.newEntityRevision "work"
-
-
---------------------------------------------------------------------------------
-instance MasterRevision Work where
-  setMasterRevision = Generic.setMasterRevision "work"
 
 
 --------------------------------------------------------------------------------
@@ -105,7 +109,6 @@ instance RealiseTree Work where
         where q = [sql| INSERT INTO iswc (work_tree_id, iswc) VALUES (?, ?) |]
 
 
-
 --------------------------------------------------------------------------------
 instance ViewRevision Work where
   viewRevision revisionId = head <$> query q (Only revisionId)
@@ -131,44 +134,9 @@ instance ViewTree Work where
 
 --------------------------------------------------------------------------------
 instance Editable Work where
-  linkRevisionToEdit = Generic.linkRevisionToEdit "edit_work"
-
   change = prism WorkChange extract
     where extract a = case a of WorkChange c -> Right c
                                 _ -> Left a
-
-
---------------------------------------------------------------------------------
-instance ViewAliases Work where
-  viewAliases = Generic.viewAliases "work"
-
-
---------------------------------------------------------------------------------
-instance ViewAnnotation Work where
-  viewAnnotation = Generic.viewAnnotation "work"
-
-
---------------------------------------------------------------------------------
-instance CloneRevision Work where
-  cloneRevision = Generic.cloneRevision "work"
-
-
---------------------------------------------------------------------------------
-instance Update Work
-
-
---------------------------------------------------------------------------------
-instance ResolveReference Work where
-  resolveReference = Generic.resolveMbid "work"
-
-
---------------------------------------------------------------------------------
-instance ResolveReference (Revision Work) where
-  resolveReference = Generic.resolveRevision "work"
-
-
---------------------------------------------------------------------------------
-instance Merge Work
 
 
 --------------------------------------------------------------------------------

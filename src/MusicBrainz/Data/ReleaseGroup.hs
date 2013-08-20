@@ -13,6 +13,7 @@ import Control.Applicative
 import Control.Lens (prism)
 import Control.Monad ((<=<), void)
 import Control.Monad.IO.Class (MonadIO)
+import Data.Tagged (Tagged(..))
 import Data.Traversable (traverse)
 import Database.PostgreSQL.Simple (Only(..))
 import Database.PostgreSQL.Simple.SqlQQ (sql)
@@ -21,6 +22,7 @@ import qualified Data.Set as Set
 
 import MusicBrainz
 import MusicBrainz.Data.Annotation
+import MusicBrainz.Data.CoreEntity
 import MusicBrainz.Data.Create
 import MusicBrainz.Data.FindLatest
 import MusicBrainz.Data.Merge
@@ -34,8 +36,23 @@ import MusicBrainz.Edit
 import qualified MusicBrainz.Data.Generic as Generic
 
 --------------------------------------------------------------------------------
+instance CloneRevision ReleaseGroup
+instance Create ReleaseGroup
+instance MasterRevision ReleaseGroup
+instance Merge ReleaseGroup
+instance ResolveReference (Revision ReleaseGroup)
+instance ResolveReference ReleaseGroup
+instance Update ReleaseGroup
+instance ViewAnnotation ReleaseGroup
+
+
+--------------------------------------------------------------------------------
+instance CoreEntityTable ReleaseGroup where
+  rootTable = Tagged "release_group"
+
+
+--------------------------------------------------------------------------------
 instance HoldsRelationships ReleaseGroup where
-  fetchEndPoints = Generic.fetchEndPoints "release_group"
   reflectRelationshipChange = Generic.reflectRelationshipChange ReleaseGroupRelationship
 
 
@@ -49,6 +66,7 @@ addSecondaryTypes rg = augment <$> query q (Only $ coreRevision rg)
               FROM release_group_tree_secondary_type
               JOIN release_group_revision USING (release_group_tree_id)
               WHERE revision_id = ? |]
+
 
 --------------------------------------------------------------------------------
 instance FindLatest ReleaseGroup where
@@ -81,8 +99,6 @@ instance ViewRevision ReleaseGroup where
 
 --------------------------------------------------------------------------------
 instance Editable ReleaseGroup where
-  linkRevisionToEdit = Generic.linkRevisionToEdit "edit_release_group"
-
   change = prism ReleaseGroupChange extract
     where extract a = case a of ReleaseGroupChange c -> Right c
                                 _ -> Left a
@@ -93,20 +109,6 @@ instance ViewTree ReleaseGroup where
   viewTree r = ReleaseGroupTree <$> fmap coreData (viewRevision r)
                                 <*> viewRelationships r
                                 <*> viewAnnotation r
-
-
---------------------------------------------------------------------------------
-instance Merge ReleaseGroup
-
-
- --------------------------------------------------------------------------------
-instance Create ReleaseGroup where
-  create = Generic.create "release_group"
-
-
---------------------------------------------------------------------------------
-instance CloneRevision ReleaseGroup where
-  cloneRevision = Generic.cloneRevision "release_group"
 
 
 --------------------------------------------------------------------------------
@@ -143,30 +145,6 @@ instance NewEntityRevision ReleaseGroup where
                     (release_group_id, revision_id, release_group_tree_id)
                   VALUES (?, ?, ?) |]
       (rgId, revisionId, rgTreeId)
-
-
---------------------------------------------------------------------------------
-instance MasterRevision ReleaseGroup where
-  setMasterRevision = Generic.setMasterRevision "release_group"
-
-
---------------------------------------------------------------------------------
-instance ViewAnnotation ReleaseGroup where
-  viewAnnotation = Generic.viewAnnotation "release_group"
-
-
---------------------------------------------------------------------------------
-instance Update ReleaseGroup
-
-
---------------------------------------------------------------------------------
-instance ResolveReference ReleaseGroup where
-  resolveReference = Generic.resolveMbid "release_group"
-
-
---------------------------------------------------------------------------------
-instance ResolveReference (Revision ReleaseGroup) where
-  resolveReference = Generic.resolveRevision "release_group"
 
 
 --------------------------------------------------------------------------------

@@ -20,6 +20,7 @@ import Control.Lens (prism)
 import Control.Monad (void)
 import Control.Monad.IO.Class
 import Data.Foldable (forM_)
+import Data.Tagged (Tagged(..))
 import Database.PostgreSQL.Simple (Only(..), (:.)(..))
 import Database.PostgreSQL.Simple.SqlQQ (sql)
 
@@ -27,6 +28,7 @@ import qualified Data.Set as Set
 
 import MusicBrainz hiding (isrc)
 import MusicBrainz.Data.Annotation
+import MusicBrainz.Data.CoreEntity
 import MusicBrainz.Data.Create
 import MusicBrainz.Data.FindLatest
 import MusicBrainz.Data.Merge
@@ -40,8 +42,22 @@ import MusicBrainz.Edit
 import qualified MusicBrainz.Data.Generic as Generic
 
 --------------------------------------------------------------------------------
+instance CloneRevision Recording
+instance Create Recording
+instance MasterRevision Recording
+instance Merge Recording
+instance ResolveReference (Revision Recording)
+instance ResolveReference Recording
+instance Update Recording
+instance ViewAnnotation Recording
+
+--------------------------------------------------------------------------------
+instance CoreEntityTable Recording where
+  rootTable = Tagged "recording"
+
+
+--------------------------------------------------------------------------------
 instance HoldsRelationships Recording where
-  fetchEndPoints = Generic.fetchEndPoints "recording"
   reflectRelationshipChange = Generic.reflectRelationshipChange RecordingRelationship
 
 
@@ -61,21 +77,11 @@ instance FindLatest Recording where
 
 
 --------------------------------------------------------------------------------
-instance Create Recording where
-  create = Generic.create "recording"
-
-
---------------------------------------------------------------------------------
 instance NewEntityRevision Recording where
   newEntityRevision revisionId recordingId recordingTreeId = void $
     execute [sql| INSERT INTO recording_revision (recording_id, revision_id, recording_tree_id)
                   VALUES (?, ?, ?) |]
           (recordingId, revisionId, recordingTreeId)
-
-
---------------------------------------------------------------------------------
-instance MasterRevision Recording where
-  setMasterRevision = Generic.setMasterRevision "recording"
 
 
 --------------------------------------------------------------------------------
@@ -109,15 +115,6 @@ instance RealiseTree Recording where
 
 
 --------------------------------------------------------------------------------
-instance ViewAnnotation Recording where
-  viewAnnotation = Generic.viewAnnotation "recording"
-
-
---------------------------------------------------------------------------------
-instance Update Recording
-
-
---------------------------------------------------------------------------------
 instance ViewRevision Recording where
   viewRevision revisionId = head <$> query q (Only revisionId)
     where q = [sql|
@@ -133,8 +130,6 @@ instance ViewRevision Recording where
 
 --------------------------------------------------------------------------------
 instance Editable Recording where
-  linkRevisionToEdit = Generic.linkRevisionToEdit "edit_recording"
-
   change = prism RecordingChange extract
     where extract a = case a of RecordingChange c -> Right c
                                 _ -> Left a
@@ -169,25 +164,6 @@ viewPuids revisionId = Set.fromList . map fromOnly <$> query q (Only revisionId)
                   JOIN recording_revision USING (recording_tree_id)
                   WHERE revision_id = ?
             |]
-
-
---------------------------------------------------------------------------------
-instance ResolveReference Recording where
-  resolveReference = Generic.resolveMbid "recording"
-
-
---------------------------------------------------------------------------------
-instance ResolveReference (Revision Recording) where
-  resolveReference = Generic.resolveRevision "recording"
-
-
---------------------------------------------------------------------------------
-instance Merge Recording
-
-
---------------------------------------------------------------------------------
-instance CloneRevision Recording where
-  cloneRevision = Generic.cloneRevision "recording"
 
 
 --------------------------------------------------------------------------------
@@ -259,7 +235,6 @@ findByArtist artistId = query q (Only artistId)
             musicbrainz_collate(name.name),
             musicbrainz_collate(comment)
         |]
-
 
 
 --------------------------------------------------------------------------------

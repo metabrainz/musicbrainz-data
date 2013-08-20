@@ -26,6 +26,7 @@ Library
     network >= 2.3.0.10,
     parsec >= 3.1.2,
     postgresql-simple >= 0.3.1 && < 0.4,
+    tagged,
     text >= 0.11.1.13 && < 0.12,
     time >= 1.4,
     transformers >= 0.2.2.0 && < 0.4,
@@ -75,6 +76,7 @@ Library
     MusicBrainz.Schema
     MusicBrainz.Types
   other-modules:
+    MusicBrainz.Data.CoreEntity
     MusicBrainz.Data.Generic
     MusicBrainz.Data.Relationship.Internal
     MusicBrainz.Data.Revision.Internal

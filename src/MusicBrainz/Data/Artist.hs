@@ -13,10 +13,12 @@ import Control.Lens (prism)
 import Control.Monad.IO.Class (MonadIO)
 import Database.PostgreSQL.Simple (Only(..))
 import Database.PostgreSQL.Simple.SqlQQ
+import Data.Tagged (Tagged(..))
 
 import MusicBrainz
 import MusicBrainz.Data.Alias
 import MusicBrainz.Data.Annotation
+import MusicBrainz.Data.CoreEntity
 import MusicBrainz.Data.Create
 import MusicBrainz.Data.FindLatest
 import MusicBrainz.Data.IPI
@@ -33,8 +35,27 @@ import MusicBrainz.Edit
 import qualified MusicBrainz.Data.Generic as Generic
 
 --------------------------------------------------------------------------------
+instance CloneRevision Artist
+instance Create Artist
+instance MasterRevision Artist
+instance Merge Artist
+instance NewEntityRevision Artist
+instance ResolveReference (Revision Artist)
+instance ResolveReference Artist
+instance Update Artist
+instance ViewAliases Artist
+instance ViewAnnotation Artist
+instance ViewIPICodes Artist
+instance ViewISNICodes Artist
+
+
+--------------------------------------------------------------------------------
+instance CoreEntityTable Artist where
+  rootTable = Tagged "artist"
+
+
+--------------------------------------------------------------------------------
 instance HoldsRelationships Artist where
-  fetchEndPoints = Generic.fetchEndPoints "artist"
   reflectRelationshipChange = Generic.reflectRelationshipChange ArtistRelationship
 
 
@@ -49,38 +70,10 @@ instance ViewTree Artist where
 
 
 --------------------------------------------------------------------------------
-instance ViewAliases Artist where
-  viewAliases = Generic.viewAliases "artist"
-
-
---------------------------------------------------------------------------------
-instance ViewIPICodes Artist where
-  viewIpiCodes = Generic.viewIpiCodes "artist"
-
-
---------------------------------------------------------------------------------
-instance ViewISNICodes Artist where
-  viewIsniCodes = Generic.viewIsniCodes "artist"
-
-
---------------------------------------------------------------------------------
-{-| View the annotation for a specific revision of an 'Artist'. -}
-instance ViewAnnotation Artist where
-  viewAnnotation = Generic.viewAnnotation "artist"
-
-
---------------------------------------------------------------------------------
 instance Editable Artist where
-  linkRevisionToEdit = Generic.linkRevisionToEdit "edit_artist"
-
   change = prism ArtistChange extract
     where extract a = case a of ArtistChange c -> Right c
                                 _ -> Left a
-
-
---------------------------------------------------------------------------------
-instance MasterRevision Artist where
-  setMasterRevision = Generic.setMasterRevision "artist"
 
 
 --------------------------------------------------------------------------------
@@ -122,20 +115,6 @@ instance ViewRevision Artist where
 
 
 --------------------------------------------------------------------------------
-instance Create Artist where
-  create = Generic.create "artist"
-
-
---------------------------------------------------------------------------------
-instance Update Artist
-
-
---------------------------------------------------------------------------------
-instance NewEntityRevision Artist where
-  newEntityRevision = Generic.newEntityRevision "artist"
-
-
---------------------------------------------------------------------------------
 instance RealiseTree Artist where
   realiseTree artist = do
     dataId <- insertArtistData (artistData artist)
@@ -158,22 +137,3 @@ instance RealiseTree Artist where
                     VALUES (?, ?)
                     RETURNING artist_tree_id  |]
           (dataId, annotationBody)
-
-
---------------------------------------------------------------------------------
-instance ResolveReference Artist where
-  resolveReference = Generic.resolveMbid "artist"
-
-
---------------------------------------------------------------------------------
-instance ResolveReference (Revision Artist) where
-  resolveReference = Generic.resolveRevision "artist"
-
-
---------------------------------------------------------------------------------
-instance CloneRevision Artist where
-  cloneRevision = Generic.cloneRevision "artist"
-
-
---------------------------------------------------------------------------------
-instance Merge Artist

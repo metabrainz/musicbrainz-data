@@ -22,6 +22,7 @@ import Control.Monad.IO.Class
 import Data.Foldable (forM_)
 import Data.Maybe (fromMaybe)
 import Data.Monoid (mempty)
+import Data.Tagged (Tagged(..))
 import Database.PostgreSQL.Simple (Only(..), (:.)(..), In(..))
 import Database.PostgreSQL.Simple.SqlQQ (sql)
 
@@ -30,6 +31,7 @@ import qualified Data.Set as Set
 
 import MusicBrainz
 import MusicBrainz.Data.Annotation
+import MusicBrainz.Data.CoreEntity
 import MusicBrainz.Data.Create
 import MusicBrainz.Data.FindLatest
 import MusicBrainz.Data.Merge
@@ -44,8 +46,23 @@ import MusicBrainz.Edit
 import qualified MusicBrainz.Data.Generic as Generic
 
 --------------------------------------------------------------------------------
+instance CloneRevision Release
+instance Create Release
+instance MasterRevision Release
+instance Merge Release
+instance ResolveReference (Revision Release)
+instance ResolveReference Release
+instance Update Release
+instance ViewAnnotation Release
+
+
+--------------------------------------------------------------------------------
+instance CoreEntityTable Release where
+  rootTable = Tagged "release"
+
+
+--------------------------------------------------------------------------------
 instance HoldsRelationships Release where
-  fetchEndPoints = Generic.fetchEndPoints "release"
   reflectRelationshipChange = Generic.reflectRelationshipChange ReleaseRelationship
 
 
@@ -67,21 +84,11 @@ instance FindLatest Release where
 
 
 --------------------------------------------------------------------------------
-instance Create Release where
-  create = Generic.create "release"
-
-
---------------------------------------------------------------------------------
 instance NewEntityRevision Release where
   newEntityRevision revisionId releaseId releaseTreeId = void $
     execute [sql| INSERT INTO release_revision (release_id, revision_id, release_tree_id)
                   VALUES (?, ?, ?) |]
       (releaseId, revisionId, releaseTreeId)
-
-
---------------------------------------------------------------------------------
-instance MasterRevision Release where
-  setMasterRevision = Generic.setMasterRevision "release"
 
 
 --------------------------------------------------------------------------------
@@ -125,15 +132,6 @@ instance RealiseTree Release where
 
 
 --------------------------------------------------------------------------------
-instance ViewAnnotation Release where
-  viewAnnotation = Generic.viewAnnotation "release"
-
-
---------------------------------------------------------------------------------
-instance Update Release
-
-
---------------------------------------------------------------------------------
 instance ViewRevision Release where
   viewRevision revisionId = head <$> query q (Only revisionId)
     where q = [sql|
@@ -151,8 +149,6 @@ instance ViewRevision Release where
 
 --------------------------------------------------------------------------------
 instance Editable Release where
-  linkRevisionToEdit = Generic.linkRevisionToEdit "edit_release"
-
   change = prism ReleaseChange extract
     where extract a = case a of ReleaseChange c -> Right c
                                 _ -> Left a
@@ -249,26 +245,6 @@ viewMediums revisionIds = do
                (revision, [formMedium (releaseTreeId, tracklistId, name, format, position)]))
            ks
            mediums
-
-
---------------------------------------------------------------------------------
-instance ResolveReference Release where
-  resolveReference = Generic.resolveMbid "release"
-
-
---------------------------------------------------------------------------------
-instance ResolveReference (Revision Release) where
-  resolveReference = Generic.resolveRevision "release"
-
-
---------------------------------------------------------------------------------
-instance CloneRevision Release where
-  cloneRevision = Generic.cloneRevision "release"
-
-
---------------------------------------------------------------------------------
-instance Merge Release
-
 
 
 --------------------------------------------------------------------------------
