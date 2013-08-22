@@ -1,7 +1,8 @@
 {-# LANGUAGE DefaultSignatures #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE OverlappingInstances #-}
+{-# LANGUAGE FunctionalDependencies #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
@@ -14,7 +15,6 @@ import Data.String (fromString)
 import Data.Tagged (Tagged, untag)
 import Database.PostgreSQL.Simple (Only(..))
 import Database.PostgreSQL.Simple.FromField (FromField)
-import Database.PostgreSQL.Simple.ToField (ToField)
 import MusicBrainz.Monad
 import MusicBrainz.Class.RootTable
 import MusicBrainz.MBID (MBID)
@@ -26,20 +26,22 @@ class ResolveReference a where
   {-| Attempt to resolve a reference from its attributes. If the attributes
   don't actually correspond to an entity in the database, then 'Nothing' is
   returned. -}
-  resolveReference :: (Functor m, MonadIO m) => RefSpec a -> MusicBrainzT m (Maybe (Ref a))
+  resolveReference
+    :: (Functor m, MonadIO m) => RefSpec a -> MusicBrainzT m (Maybe (Ref a))
 
   default resolveReference
-    :: (Functor m, MonadIO m, GenericResolver a)
+    :: (Functor m, MonadIO m, GenericResolver a (RefSpec a))
     => RefSpec a -> MusicBrainzT m (Maybe (Ref a))
   resolveReference = genericResolveReference
 
+
 --------------------------------------------------------------------------------
-class GenericResolver a where
+class RefSpec a ~ r => GenericResolver a r | r -> a where
   genericResolveReference
     :: (Functor m, MonadIO m)
-    => RefSpec a -> MusicBrainzT m (Maybe (Ref a))
+    => r -> MusicBrainzT m (Maybe (Ref a))
 
-instance (RefSpec a ~ MBID a, RootTable a, FromField (Ref a), ToField (MBID a)) => GenericResolver a where
+instance (RootTable a, FromField (Ref a), RefSpec a ~ MBID a) => GenericResolver a (MBID a) where
   genericResolveReference entityMbid =
     listToMaybe . map fromOnly <$> query q (Only entityMbid)
    where
@@ -80,7 +82,7 @@ instance (RefSpec a ~ MBID a, RootTable a, FromField (Ref a), ToField (MBID a)) 
         , "LIMIT 1 "
         ]
 
-instance (RootTable a, FromField (Ref (Revision a))) => GenericResolver (Revision a) where
+instance RootTable a => GenericResolver (Revision a) Int where
   genericResolveReference revisionId =
     listToMaybe . map fromOnly <$> query q (Only revisionId)
    where
@@ -90,4 +92,3 @@ instance (RootTable a, FromField (Ref (Revision a))) => GenericResolver (Revisio
         , "FROM " ++ eName ++ "_revision "
         , "WHERE revision_id = ?"
         ]
-
