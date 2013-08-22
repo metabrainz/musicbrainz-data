@@ -6,9 +6,26 @@ import Data.Maybe (fromJust)
 import Data.Monoid
 import Network.URI (parseURI)
 
-import MusicBrainz
-import MusicBrainz.Data
-import MusicBrainz.Data.Relationship (addRelationshipAttributeType)
+import MusicBrainz.Monad
+import MusicBrainz.Artist
+import MusicBrainz.ArtistCredit
+import MusicBrainz.Class.Create
+import MusicBrainz.Class.ViewRevision
+import MusicBrainz.Country
+import MusicBrainz.Editor
+import MusicBrainz.Entity
+import MusicBrainz.Gender
+import MusicBrainz.Label
+import MusicBrainz.Language
+import MusicBrainz.PartialDate
+import MusicBrainz.Recording
+import MusicBrainz.Ref
+import MusicBrainz.Relationship
+import MusicBrainz.Release
+import MusicBrainz.ReleaseGroup
+import MusicBrainz.Script
+import MusicBrainz.URL
+import MusicBrainz.Work
 
 import Test.MusicBrainz
 import Test.MusicBrainz.Data
@@ -59,6 +76,23 @@ english = Language
     , languageIsoCode3 = "eng"
     }
 
+mysterons :: Ref Editor -> MusicBrainz (Tree Recording)
+mysterons editor = do
+  ac <- singleArtistAc editor portishead
+  return $ minimalTree $
+    Recording { recordingName = "Mysterons"
+              , recordingComment = ""
+              , recordingArtistCredit = ac
+              , recordingDuration = Just 64936
+              }
+
+wildRose :: Tree Work
+wildRose = minimalTree Work { workName = "To a Wild Rose"
+                            , workComment = ""
+                            , workLanguage = Nothing
+                            , workType = Nothing
+                            }
+
 compilation :: ReleaseGroupType Secondary
 compilation = ReleaseGroupType { releaseGroupTypeName = "Compilation" }
 
@@ -74,16 +108,6 @@ revolutionRecords = minimalTree $
         , labelCode = Nothing
         , labelCountry = Nothing
         }
-
-mysterons :: Ref Editor -> MusicBrainz (Tree Recording)
-mysterons editor = do
-  ac <- singleArtistAc editor portishead
-  return $ minimalTree $
-    Recording { recordingName = "Mysterons"
-              , recordingComment = ""
-              , recordingArtistCredit = ac
-              , recordingDuration = Just 64936
-              }
 
 freddie :: Tree Artist
 freddie = ArtistTree
@@ -104,7 +128,6 @@ freddie = ArtistTree
   , artistIsniCodes= mempty
   , artistAnnotation = ""
   }
-
 
 dummyReleaseTree :: Ref Editor -> MusicBrainz (Tree Release)
 dummyReleaseTree editor = do
@@ -133,18 +156,9 @@ dummyReleaseGroupTree editor = do
   ac <- singleArtistAc editor portishead
   return $ minimalTree (dummy ac)
 
-
-wildRose :: Tree Work
-wildRose = minimalTree Work { workName = "To a Wild Rose"
-                            , workComment = ""
-                            , workLanguage = Nothing
-                            , workType = Nothing
-                            }
-
-musicBrainz, google :: Tree Url
-musicBrainz = minimalTree Url { urlUrl = fromJust (parseURI "https://musicbrainz.org/") }
-google = minimalTree Url { urlUrl = fromJust (parseURI "https://google.com/musicbrainz/rocks") }
-
+musicBrainz, google :: Tree URL
+musicBrainz = minimalTree URL { urlUrl = fromJust (parseURI "https://musicbrainz.org/") }
+google = minimalTree URL { urlUrl = fromJust (parseURI "https://google.com/musicbrainz/rocks") }
 
 --------------------------------------------------------------------------------
 class MinimalTree a where
@@ -157,7 +171,7 @@ instance MinimalTree Label where
   minimalTree dat' = LabelTree dat' mempty mempty mempty mempty ""
 
 instance MinimalTree Recording where
-  minimalTree dat' = RecordingTree dat' mempty "" mempty mempty
+  minimalTree dat' = RecordingTree dat' mempty "" mempty
 
 instance MinimalTree Release where
   minimalTree dat' = ReleaseTree dat' mempty "" mempty mempty
@@ -165,8 +179,8 @@ instance MinimalTree Release where
 instance MinimalTree ReleaseGroup where
   minimalTree dat' = ReleaseGroupTree dat' mempty ""
 
-instance MinimalTree Url where
-  minimalTree dat' = UrlTree dat' mempty
+instance MinimalTree URL where
+  minimalTree dat' = URLTree dat' mempty
 
 instance MinimalTree Work where
   minimalTree dat' = WorkTree dat' mempty mempty "" mempty

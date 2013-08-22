@@ -8,7 +8,8 @@ import Test.MusicBrainz
 
 import qualified Data.UUID as UUID
 
-import MusicBrainz.Types
+import MusicBrainz.MBID
+import MusicBrainz.PartialDate
 
 instance Arbitrary UUID.UUID where
   arbitrary = UUID.fromWords <$> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary

@@ -44,8 +44,9 @@ import qualified Test.Framework.Providers.HUnit
 import qualified Test.Framework.Providers.QuickCheck2
 import qualified Test.QuickCheck
 
-import MusicBrainz
-import MusicBrainz.Data.Edit
+import MusicBrainz.Monad
+import MusicBrainz.Edit
+import MusicBrainz.EditApplication
 
 data TestEnvironment = TestEnvironment { testContexts :: Chan Context }
 
@@ -59,7 +60,7 @@ assertException isWanted action =
   tryJust isWanted action >>=
     either (const $ return ()) (const $ liftIO $ Test.HUnit.assertFailure "No exception thrown")
 
-autoEdit :: EditM a -> MusicBrainz a
+autoEdit :: EditT a -> MusicBrainz a
 autoEdit action = do
   editId <- openEdit
   withEdit editId action <* apply editId

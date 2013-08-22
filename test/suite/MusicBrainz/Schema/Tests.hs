@@ -9,7 +9,9 @@ import Database.PostgreSQL.Simple hiding (query_)
 import Database.PostgreSQL.Simple.FromField (ResultError(..))
 
 import Test.MusicBrainz
-import MusicBrainz
+import MusicBrainz.Monad
+import MusicBrainz.Artist
+import MusicBrainz.MBID
 
 tests :: [Test]
 tests = [ testGroup "MBID Parsing"

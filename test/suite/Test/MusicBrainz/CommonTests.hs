@@ -17,22 +17,40 @@ module Test.MusicBrainz.CommonTests
     , createAndUpdateSubtree
     ) where
 
-import           Control.Applicative
-import           Control.Lens hiding (children)
-import           Data.Monoid (mempty)
-import           Data.Time (getCurrentTime)
+import Control.Applicative
+import Control.Lens hiding (children)
+import Data.Monoid (mempty)
+import Data.Time (getCurrentTime)
 
 import qualified Data.Set as Set
 
-import           Test.MusicBrainz
-import           Test.MusicBrainz.Repository (acid2)
+import Test.MusicBrainz
+import Test.MusicBrainz.Repository (acid2)
 
-import           MusicBrainz
-import           MusicBrainz.Lens
-import           MusicBrainz.Data
-import           MusicBrainz.Data.Edit
-import           MusicBrainz.Data.Editor (register)
-import           MusicBrainz.Data.Util (viewOnce)
+import MusicBrainz.Util
+import MusicBrainz.Monad
+import MusicBrainz.Alias
+import MusicBrainz.Annotation
+import MusicBrainz.Class.Add
+import MusicBrainz.Class.Cleanup
+import MusicBrainz.Class.Create
+import MusicBrainz.Class.FindLatest
+import MusicBrainz.Class.GetEntity
+import MusicBrainz.Class.ResolveReference
+import MusicBrainz.Class.Update
+import MusicBrainz.Class.ViewRevision
+import MusicBrainz.Edit
+import MusicBrainz.EditApplication
+import MusicBrainz.Editor
+import MusicBrainz.Entity
+import MusicBrainz.IPI
+import MusicBrainz.ISNI
+import MusicBrainz.MBID
+import MusicBrainz.Ref
+import MusicBrainz.Relationship.Internal
+import MusicBrainz.Revision
+import MusicBrainz.Revision.Internal
+import MusicBrainz.Tree
 
 --------------------------------------------------------------------------------
 createAndUpdateSubtree ::
@@ -91,7 +109,7 @@ testResolveRevisionReference makeTree = do
 
 
 --------------------------------------------------------------------------------
-testUpdate :: (Create a, Update a, FindLatest a, ViewRevision a, ViewTree a)
+testUpdate :: (Create a, Update a, FindLatest a, ViewRevision a, ViewTree a, Show (Tree a), Eq (Tree a))
   => Tree a -> Tree a -> MusicBrainz ()
 testUpdate start end = do
   editor <- entityRef <$> register acid2
@@ -118,7 +136,7 @@ testUpdate start end = do
 
 
 --------------------------------------------------------------------------------
-testMerge :: (RefSpec a ~ MBID a, Merge a, Referenceable a, ResolveReference a, Create a, ViewRevision a)
+testMerge :: (RefSpec a ~ MBID a, Referenceable a, ResolveReference a, Create a, ViewRevision a, CloneRevision a, Editable a, FindLatest a)
   => (Ref Editor -> MusicBrainz (Tree a, Tree a)) -> MusicBrainz ()
 testMerge makeTrees = do
   editor <- entityRef <$> register acid2

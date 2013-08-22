@@ -3,11 +3,16 @@ module Test.MusicBrainz.Data where
 
 import Data.Monoid (mempty)
 
-import MusicBrainz
-import MusicBrainz.Data
-import MusicBrainz.Data.Edit
-
-import qualified MusicBrainz.Data.ArtistCredit as ArtistCredit
+import MusicBrainz.Monad
+import MusicBrainz.Artist
+import MusicBrainz.ArtistCredit (ArtistCredit, ArtistCreditName(..), getRef)
+import MusicBrainz.Class.Create (create)
+import MusicBrainz.Class.ViewRevision (viewRevision)
+import MusicBrainz.Editor (Editor)
+import MusicBrainz.Edit
+import MusicBrainz.EditApplication
+import MusicBrainz.Entity (coreRef, coreData)
+import MusicBrainz.Ref (Ref)
 
 --------------------------------------------------------------------------------
 singleArtistAc :: Ref Editor -> Artist -> MusicBrainz (Ref ArtistCredit)
@@ -15,7 +20,7 @@ singleArtistAc editor artist = do
   editId <- openEdit
   artistRev <- withEdit editId (create editor acTree)
   apply editId
-  viewRevision artistRev >>= ArtistCredit.getRef . liftAc
+  viewRevision artistRev >>= getRef . liftAc
   where
     liftAc a = [ ArtistCreditName
                         { acnArtist = coreRef a
