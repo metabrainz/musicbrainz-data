@@ -37,7 +37,6 @@ import MusicBrainz.Merge
 import MusicBrainz.Monad
 import MusicBrainz.Annotation
 import MusicBrainz.Alias
-import MusicBrainz.Class.Add
 import MusicBrainz.Class.Create
 import MusicBrainz.Class.FindLatest
 import MusicBrainz.Class.MasterRevision
@@ -48,7 +47,7 @@ import MusicBrainz.Class.RootTable
 import MusicBrainz.Class.Update
 import MusicBrainz.Class.ViewRevision
 import MusicBrainz.Country (Country)
-import MusicBrainz.Entity (coreData)
+import MusicBrainz.Entity (Add(..), coreData)
 import MusicBrainz.Gender (Gender)
 import MusicBrainz.IPI
 import MusicBrainz.ISNI

@@ -30,7 +30,6 @@ import MusicBrainz.Monad
 import MusicBrainz.Alias
 import MusicBrainz.Annotation
 import MusicBrainz.Artist
-import MusicBrainz.Class.Add
 import MusicBrainz.Class.Create
 import MusicBrainz.Class.FindLatest
 import MusicBrainz.Class.MasterRevision

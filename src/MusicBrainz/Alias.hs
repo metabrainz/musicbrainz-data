@@ -18,8 +18,9 @@ import Database.PostgreSQL.Simple.FromField (FromField(..))
 import Database.PostgreSQL.Simple.FromRow (FromRow(..), field)
 import Database.PostgreSQL.Simple.ToField (ToField(..))
 import Database.PostgreSQL.Simple.ToRow (ToRow(..))
+
+import MusicBrainz.Entity
 import MusicBrainz.Monad
-import MusicBrainz.Class.Add
 import MusicBrainz.Class.ResolveReference
 import MusicBrainz.Class.RootTable
 import MusicBrainz.PartialDate (PartialDate)

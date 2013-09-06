@@ -17,8 +17,8 @@ import Database.PostgreSQL.Simple.ToField (ToField(..))
 import Database.PostgreSQL.Simple.ToRow (ToRow(..))
 
 import MusicBrainz.Monad
-import MusicBrainz.Class.Add
 import MusicBrainz.Class.ResolveReference
+import MusicBrainz.Entity (Add(..))
 import MusicBrainz.Ref (Referenceable(..), Ref, reference, dereference)
 
 --------------------------------------------------------------------------------

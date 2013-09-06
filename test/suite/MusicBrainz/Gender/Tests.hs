@@ -6,7 +6,6 @@ import Test.MusicBrainz.Repository (male)
 
 import qualified Test.MusicBrainz.CommonTests as CommonTests
 
-import MusicBrainz.Class.Add
 import MusicBrainz.Entity
 
 --------------------------------------------------------------------------------

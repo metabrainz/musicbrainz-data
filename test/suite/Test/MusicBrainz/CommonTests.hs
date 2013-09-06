@@ -31,7 +31,6 @@ import MusicBrainz.Util
 import MusicBrainz.Monad
 import MusicBrainz.Alias
 import MusicBrainz.Annotation
-import MusicBrainz.Class.Add
 import MusicBrainz.Class.Cleanup
 import MusicBrainz.Class.Create
 import MusicBrainz.Class.FindLatest

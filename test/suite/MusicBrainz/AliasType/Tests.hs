@@ -7,7 +7,6 @@ import qualified Test.MusicBrainz.CommonTests as CommonTests
 
 import MusicBrainz.Alias
 import MusicBrainz.Artist
-import MusicBrainz.Class.Add
 import MusicBrainz.Entity
 import MusicBrainz.Label
 import MusicBrainz.Work
