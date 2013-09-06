@@ -6,6 +6,7 @@
 module MusicBrainz.Annotation where
 
 import Control.Applicative
+import Control.Lens
 import Control.Monad.IO.Class (MonadIO)
 import Data.String (fromString)
 import Data.Tagged (Tagged, untag)
@@ -14,8 +15,7 @@ import Database.PostgreSQL.Simple (Only(..))
 
 import MusicBrainz.Monad
 import MusicBrainz.Class.RootTable
-import MusicBrainz.Ref (Ref)
-import MusicBrainz.Revision (Revision)
+import MusicBrainz.Versioning
 
 --------------------------------------------------------------------------------
 {-| This type class provides functions for working with annotations for specific
@@ -37,3 +37,10 @@ class ViewAnnotation a where
         , "JOIN " ++ entityName ++ "_revision USING (" ++ entityName ++ "_tree_id) "
         , "WHERE revision_id = ?"
         ]
+
+
+--------------------------------------------------------------------------------
+{-| Provide a single lens to view the annotation inside a 'Tree'. -}
+class TreeAnnotation a where
+  {-| A 'Lens' into the annotation for any 'Tree'. -}
+  annotation :: Lens' (Tree a) Text

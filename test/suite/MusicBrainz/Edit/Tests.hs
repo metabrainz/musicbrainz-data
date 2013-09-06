@@ -9,9 +9,7 @@ import Test.MusicBrainz.Repository
 
 import qualified Test.MusicBrainz.CommonTests as CommonTests
 
-import MusicBrainz.Edit
-import MusicBrainz.Editor
-import MusicBrainz.Entity
+import MusicBrainz.Versioning
 
 --------------------------------------------------------------------------------
 tests :: [Test]

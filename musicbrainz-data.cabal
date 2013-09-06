@@ -39,17 +39,9 @@ Library
     MusicBrainz.Artist
     MusicBrainz.ArtistCredit
     MusicBrainz.Class.Cleanup
-    MusicBrainz.Class.Create
-    MusicBrainz.Class.FindLatest
-    MusicBrainz.Class.GetEntity
-    MusicBrainz.Class.ResolveReference
     MusicBrainz.Class.Update
-    MusicBrainz.Class.ViewRevision
     MusicBrainz.Country
-    MusicBrainz.Edit
     MusicBrainz.EditApplication
-    MusicBrainz.Editor
-    MusicBrainz.Entity
     MusicBrainz.Gender
     MusicBrainz.IPI
     MusicBrainz.ISNI
@@ -60,22 +52,18 @@ Library
     MusicBrainz.MBID
     MusicBrainz.PartialDate
     MusicBrainz.Recording
-    MusicBrainz.Ref
     MusicBrainz.Relationship
     MusicBrainz.Relationship.Internal
     MusicBrainz.Release
     MusicBrainz.ReleaseGroup
-    MusicBrainz.Revision
-    MusicBrainz.Revision.Internal
     MusicBrainz.Script
-    MusicBrainz.Tree
     MusicBrainz.URL
     MusicBrainz.Work
     MusicBrainz.Util
+    MusicBrainz.Versioning
   other-modules:
     MusicBrainz.Generic
     MusicBrainz.Merge
-    MusicBrainz.Class.RealiseTree
     MusicBrainz.Lens
   ghc-options: -Wall -fwarn-tabs -funbox-strict-fields -O2
                -fno-warn-unused-do-bind

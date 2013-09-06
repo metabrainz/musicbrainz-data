@@ -10,14 +10,12 @@ import Database.PostgreSQL.Simple.SqlQQ (sql)
 
 import MusicBrainz.Monad
 import MusicBrainz.Artist
-import MusicBrainz.Edit
 import MusicBrainz.Label
 import MusicBrainz.Recording
-import MusicBrainz.Ref
 import MusicBrainz.Release
 import MusicBrainz.ReleaseGroup
-import MusicBrainz.Revision
 import MusicBrainz.URL
+import MusicBrainz.Versioning
 import MusicBrainz.Work
 
 --------------------------------------------------------------------------------

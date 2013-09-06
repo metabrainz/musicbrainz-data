@@ -32,24 +32,13 @@ import MusicBrainz.Monad
 import MusicBrainz.Alias
 import MusicBrainz.Annotation
 import MusicBrainz.Class.Cleanup
-import MusicBrainz.Class.Create
-import MusicBrainz.Class.FindLatest
-import MusicBrainz.Class.GetEntity
-import MusicBrainz.Class.ResolveReference
 import MusicBrainz.Class.Update
-import MusicBrainz.Class.ViewRevision
-import MusicBrainz.Edit
 import MusicBrainz.EditApplication
-import MusicBrainz.Editor
-import MusicBrainz.Entity
 import MusicBrainz.IPI
 import MusicBrainz.ISNI
 import MusicBrainz.MBID
-import MusicBrainz.Ref
 import MusicBrainz.Relationship.Internal
-import MusicBrainz.Revision
-import MusicBrainz.Revision.Internal
-import MusicBrainz.Tree
+import MusicBrainz.Versioning
 
 --------------------------------------------------------------------------------
 createAndUpdateSubtree ::

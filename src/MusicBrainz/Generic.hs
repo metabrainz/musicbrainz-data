@@ -30,12 +30,12 @@ import qualified Data.Set as Set
 
 import MusicBrainz.Util (viewOnce)
 import MusicBrainz.Monad
-import MusicBrainz.Edit
-import MusicBrainz.Editor
-import MusicBrainz.Entity
-import MusicBrainz.Ref
 import MusicBrainz.Relationship
-import MusicBrainz.Tree
+import MusicBrainz.Versioning hiding (findLatest)
+import MusicBrainz.Alias
+import MusicBrainz.IPI
+import MusicBrainz.ISNI
+import MusicBrainz.Relationship.Internal hiding (reflectRelationshipChange)
 
 import MusicBrainz.Artist ()
 import MusicBrainz.Label ()
@@ -45,7 +45,7 @@ import MusicBrainz.ReleaseGroup ()
 import MusicBrainz.URL ()
 import MusicBrainz.Work ()
 
-import qualified MusicBrainz.Class.FindLatest as MB
+import qualified MusicBrainz.Versioning as MB
 
 --------------------------------------------------------------------------------
 realiseAliases :: (Functor m, MonadIO m, TreeAliases a) => String -> Ref (Tree a) -> Tree a -> MusicBrainzT m ()

@@ -6,8 +6,8 @@ import Test.MusicBrainz.Repository (latin)
 
 import qualified Test.MusicBrainz.CommonTests as CommonTests
 
-import MusicBrainz.Entity
 import MusicBrainz.Script ()
+import MusicBrainz.Versioning
 
 --------------------------------------------------------------------------------
 tests :: [Test]

@@ -2,15 +2,8 @@ module MusicBrainz.Class.Update
     ( Update(update)
     ) where
 
-import MusicBrainz.Class.NewEntityRevision
-import MusicBrainz.Class.RealiseTree
-import MusicBrainz.Class.ViewRevision
-import MusicBrainz.Edit
-import MusicBrainz.Editor
-import MusicBrainz.Ref
 import MusicBrainz.Relationship.Internal
-import MusicBrainz.Revision
-import MusicBrainz.Tree
+import MusicBrainz.Versioning
 
 --------------------------------------------------------------------------------
 {-| This type class allows one version of an entity to be replaced

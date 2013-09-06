@@ -8,14 +8,8 @@ import Test.MusicBrainz.Repository
 
 import qualified Test.MusicBrainz.CommonTests as CommonTests
 
-import MusicBrainz.Class.Create
-import MusicBrainz.Class.ViewRevision
-import MusicBrainz.Edit
 import MusicBrainz.EditApplication
-import MusicBrainz.Editor
-import MusicBrainz.Entity
-import MusicBrainz.Ref
-import MusicBrainz.Class.ResolveReference
+import MusicBrainz.Versioning
 
 --------------------------------------------------------------------------------
 tests :: [Test]

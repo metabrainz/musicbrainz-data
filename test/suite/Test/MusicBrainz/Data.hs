@@ -6,13 +6,8 @@ import Data.Monoid (mempty)
 import MusicBrainz.Monad
 import MusicBrainz.Artist
 import MusicBrainz.ArtistCredit (ArtistCredit, ArtistCreditName(..), getRef)
-import MusicBrainz.Class.Create (create)
-import MusicBrainz.Class.ViewRevision (viewRevision)
-import MusicBrainz.Editor (Editor)
-import MusicBrainz.Edit
 import MusicBrainz.EditApplication
-import MusicBrainz.Entity (coreRef, coreData)
-import MusicBrainz.Ref (Ref)
+import MusicBrainz.Versioning
 
 --------------------------------------------------------------------------------
 singleArtistAc :: Ref Editor -> Artist -> MusicBrainz (Ref ArtistCredit)

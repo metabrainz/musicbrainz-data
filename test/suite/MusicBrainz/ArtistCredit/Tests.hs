@@ -12,10 +12,7 @@ import Test.MusicBrainz.Repository
 
 import MusicBrainz.Artist
 import MusicBrainz.ArtistCredit
-import MusicBrainz.Class.Create
-import MusicBrainz.Class.ViewRevision
-import MusicBrainz.Editor
-import MusicBrainz.Entity
+import MusicBrainz.Versioning
 
 --------------------------------------------------------------------------------
 tests :: [Test]

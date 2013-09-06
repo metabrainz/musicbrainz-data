@@ -8,6 +8,7 @@ import Control.Applicative
 import Control.Lens
 import Control.Monad.IO.Class (MonadIO)
 import Data.Monoid (mconcat)
+import Data.Set (Set)
 import Data.String (fromString)
 import Data.Tagged (Tagged, untag)
 import Data.Text (Text)
@@ -19,16 +20,15 @@ import Database.PostgreSQL.Simple.ToRow (ToRow(..))
 import Text.Parsec hiding ((<|>))
 import Text.Parsec.Text ()
 
-import MusicBrainz.Monad
-import MusicBrainz.Class.RootTable
-import MusicBrainz.Lens (fieldFromPrism, parsecPrism)
-import MusicBrainz.Ref (Ref)
-import MusicBrainz.Revision (Revision)
-import MusicBrainz.Util (groupMap)
-
 import qualified Data.Map as Map
 import qualified Data.Set as Set
 import qualified Data.Text as T
+
+import MusicBrainz.Monad
+import MusicBrainz.Class.RootTable
+import MusicBrainz.Lens (fieldFromPrism, parsecPrism)
+import MusicBrainz.Util (groupMap)
+import MusicBrainz.Versioning
 
 --------------------------------------------------------------------------------
 {-| An \'International Standard Name Identifier\' that can be attached to various
@@ -77,3 +77,10 @@ class ViewISNICodes a where
           , "JOIN " ++ entityName ++ "_revision USING (" ++ entityName ++ "_tree_id) "
           , "WHERE revision_id = ?"
           ]
+
+
+--------------------------------------------------------------------------------
+{-| Provide a single lens to view the ISNI codes inside a 'Tree'. -}
+class TreeISNICodes a where
+  {-| A 'Lens' into the annotation for any 'Tree'. -}
+  isniCodes :: Lens' (Tree a) (Set ISNI)

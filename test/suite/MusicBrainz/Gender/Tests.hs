@@ -6,7 +6,7 @@ import Test.MusicBrainz.Repository (male)
 
 import qualified Test.MusicBrainz.CommonTests as CommonTests
 
-import MusicBrainz.Entity
+import MusicBrainz.Versioning
 
 --------------------------------------------------------------------------------
 tests :: [Test]

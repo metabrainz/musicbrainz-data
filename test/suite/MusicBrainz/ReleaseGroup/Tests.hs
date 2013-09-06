@@ -12,16 +12,11 @@ import Test.MusicBrainz.Repository
 
 import qualified Test.MusicBrainz.CommonTests as CommonTests
 
-import MusicBrainz.Util (viewOnce)
 import MusicBrainz.ArtistCredit
-import MusicBrainz.Class.Create
-import MusicBrainz.Class.ViewRevision
-import MusicBrainz.Edit
 import MusicBrainz.EditApplication
-import MusicBrainz.Editor
-import MusicBrainz.Entity
 import MusicBrainz.ReleaseGroup
-import MusicBrainz.Tree
+import MusicBrainz.Util (viewOnce)
+import MusicBrainz.Versioning
 
 --------------------------------------------------------------------------------
 tests :: [Test]

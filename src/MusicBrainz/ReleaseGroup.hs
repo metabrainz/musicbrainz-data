@@ -28,24 +28,12 @@ import MusicBrainz.Monad
 import MusicBrainz.Annotation
 import MusicBrainz.Artist
 import MusicBrainz.ArtistCredit (ArtistCredit)
-import MusicBrainz.Class.Create
-import MusicBrainz.Class.FindLatest
-import MusicBrainz.Class.MasterRevision
-import MusicBrainz.Class.NewEntityRevision
-import MusicBrainz.Class.RealiseTree
-import MusicBrainz.Class.ResolveReference
 import MusicBrainz.Class.RootTable
 import MusicBrainz.Class.Update
-import MusicBrainz.Class.ViewRevision
-import MusicBrainz.Edit (Editable(..))
-import MusicBrainz.Entity
 import MusicBrainz.MBID (MBID)
-import MusicBrainz.Ref (Ref, Referenceable(..), reference, dereference)
 import MusicBrainz.Relationship
-import MusicBrainz.Relationship.Internal (HoldsRelationships(..), viewRelationships)
-import MusicBrainz.Revision (Revision)
-import MusicBrainz.Revision.Internal (CloneRevision(..))
-import MusicBrainz.Tree
+import MusicBrainz.Relationship.Internal
+import MusicBrainz.Versioning hiding (merge)
 
 import qualified Data.Set as Set
 

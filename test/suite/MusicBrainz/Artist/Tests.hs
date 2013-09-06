@@ -13,8 +13,8 @@ import qualified Test.MusicBrainz.CommonTests as CommonTests
 
 import MusicBrainz.Alias
 import MusicBrainz.Artist
-import MusicBrainz.Entity
 import MusicBrainz.PartialDate
+import MusicBrainz.Versioning
 
 {-
 import qualified Data.Set as Set

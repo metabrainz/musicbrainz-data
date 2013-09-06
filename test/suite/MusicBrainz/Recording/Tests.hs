@@ -13,18 +13,13 @@ import Test.MusicBrainz.Repository
 
 import qualified Test.MusicBrainz.CommonTests as CommonTests
 
-import MusicBrainz.Monad
-import MusicBrainz.Util (viewOnce)
 import MusicBrainz.ArtistCredit
-import MusicBrainz.Class.Create
-import MusicBrainz.Class.ViewRevision
-import MusicBrainz.Editor
-import MusicBrainz.Entity
-import MusicBrainz.Ref
+import MusicBrainz.ISRC
+import MusicBrainz.Monad
 import MusicBrainz.Recording
 import MusicBrainz.Release hiding (findByArtist)
-import MusicBrainz.ISRC
-import MusicBrainz.Tree
+import MusicBrainz.Util (viewOnce)
+import MusicBrainz.Versioning
 
 --------------------------------------------------------------------------------
 tests :: [Test]

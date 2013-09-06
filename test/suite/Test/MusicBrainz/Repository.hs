@@ -9,22 +9,18 @@ import Network.URI (parseURI)
 import MusicBrainz.Monad
 import MusicBrainz.Artist
 import MusicBrainz.ArtistCredit
-import MusicBrainz.Class.Create
-import MusicBrainz.Class.ViewRevision
 import MusicBrainz.Country
-import MusicBrainz.Editor
-import MusicBrainz.Entity
 import MusicBrainz.Gender
 import MusicBrainz.Label
 import MusicBrainz.Language
 import MusicBrainz.PartialDate
 import MusicBrainz.Recording
-import MusicBrainz.Ref
 import MusicBrainz.Relationship
 import MusicBrainz.Release
 import MusicBrainz.ReleaseGroup
 import MusicBrainz.Script
 import MusicBrainz.URL
+import MusicBrainz.Versioning
 import MusicBrainz.Work
 
 import Test.MusicBrainz

@@ -4,8 +4,8 @@ module MusicBrainz.Tree (Tree, TreeRelationships(..)) where
 import Control.Lens
 import Data.Set (Set)
 import Database.PostgreSQL.Simple.ToField (ToField)
-import MusicBrainz.Ref (Ref)
 import MusicBrainz.Relationship (LinkedRelationship)
+import MusicBrainz.Versioning
 
 data Tree a
 

@@ -12,27 +12,21 @@ import Test.MusicBrainz.Repository
 
 import qualified Test.MusicBrainz.CommonTests as CommonTests
 
-import MusicBrainz.Util (viewOnce)
-import MusicBrainz.Monad
-import MusicBrainz.Class.Create
-import MusicBrainz.Class.FindLatest
+import MusicBrainz.Artist hiding (ArtistTree)
 import MusicBrainz.Class.Update
-import MusicBrainz.Class.ViewRevision
-import MusicBrainz.Edit
 import MusicBrainz.EditApplication
-import MusicBrainz.Editor
-import MusicBrainz.Entity
+import MusicBrainz.Label hiding (LabelTree)
+import MusicBrainz.Monad
 import MusicBrainz.PartialDate
-import MusicBrainz.Relationship
-import MusicBrainz.Tree
 import MusicBrainz.Recording hiding (RecordingTree)
+import MusicBrainz.Relationship
+import MusicBrainz.Relationship.Internal (relationships)
 import MusicBrainz.Release hiding (ReleaseTree)
 import MusicBrainz.ReleaseGroup hiding (ReleaseGroupTree)
-import MusicBrainz.Artist hiding (ArtistTree)
 import MusicBrainz.URL hiding (URLTree)
+import MusicBrainz.Util (viewOnce)
+import MusicBrainz.Versioning
 import MusicBrainz.Work hiding (WorkTree)
-import MusicBrainz.Label hiding (LabelTree)
-import MusicBrainz.Ref
 
 import qualified MusicBrainz.Relationship.Internal as Relationship
 

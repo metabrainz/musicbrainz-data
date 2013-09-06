@@ -6,6 +6,7 @@ module MusicBrainz.IPI where
 import Control.Applicative
 import Control.Lens
 import Control.Monad.IO.Class (MonadIO)
+import Data.Set (Set)
 import Data.String (fromString)
 import Data.Tagged (Tagged, untag)
 import Data.Text (Text)
@@ -15,19 +16,19 @@ import Database.PostgreSQL.Simple.FromField (FromField(..))
 import Database.PostgreSQL.Simple.FromRow (FromRow(..), field)
 import Database.PostgreSQL.Simple.ToField (toField)
 import Database.PostgreSQL.Simple.ToRow (ToRow(..))
-
-import MusicBrainz.Monad
-import MusicBrainz.Class.RootTable
-import MusicBrainz.Lens (fieldFromPrism, parsecPrism)
-import MusicBrainz.Ref (Ref)
-import MusicBrainz.Revision (Revision)
-import MusicBrainz.Util (groupMap)
 import Text.Parsec hiding ((<|>))
 import Text.Parsec.Text ()
 
 import qualified Data.Map as Map
 import qualified Data.Set as Set
 import qualified Data.Text as T
+
+import MusicBrainz.Monad
+import MusicBrainz.Class.RootTable
+import MusicBrainz.Lens (fieldFromPrism, parsecPrism)
+import MusicBrainz.Util (groupMap)
+import MusicBrainz.Versioning
+
 
 --------------------------------------------------------------------------------
 {-| An \'Interested Parties Information Code\' that can be attached to various
@@ -80,3 +81,10 @@ class ViewIPICodes a where
           , "JOIN " ++ entityName ++ "_revision USING (" ++ entityName ++ "_tree_id) "
           , "WHERE revision_id = ?"
           ]
+
+
+--------------------------------------------------------------------------------
+{-| Provide a single lens to view the IPI codes inside a 'Tree'. -}
+class TreeIPICodes a where
+  {-| A 'Lens' into the annotation for any 'Tree'. -}
+  ipiCodes :: Lens' (Tree a) (Set IPI)

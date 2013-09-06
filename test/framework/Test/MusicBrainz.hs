@@ -45,8 +45,8 @@ import qualified Test.Framework.Providers.QuickCheck2
 import qualified Test.QuickCheck
 
 import MusicBrainz.Monad
-import MusicBrainz.Edit
 import MusicBrainz.EditApplication
+import MusicBrainz.Versioning
 
 data TestEnvironment = TestEnvironment { testContexts :: Chan Context }
 

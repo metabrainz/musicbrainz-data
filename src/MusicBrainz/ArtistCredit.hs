@@ -21,8 +21,7 @@ import Database.PostgreSQL.Simple.ToRow (ToRow(..))
 import MusicBrainz.Util (groupMapTotal)
 import MusicBrainz.Monad
 import MusicBrainz.Artist (Artist)
-import MusicBrainz.Class.ResolveReference
-import MusicBrainz.Ref (Ref, Referenceable(..), reference, dereference)
+import MusicBrainz.Versioning
 
 import qualified Data.Map as Map
 import qualified Data.Set as Set

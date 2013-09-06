@@ -15,16 +15,12 @@ import Test.MusicBrainz.Repository (dummyReleaseTree, acid2, revolutionRecords, 
 
 import qualified Test.MusicBrainz.CommonTests as CommonTests
 
-import MusicBrainz.Monad
-import MusicBrainz.Util (viewOnce)
 import MusicBrainz.ArtistCredit
-import MusicBrainz.Class.Create
-import MusicBrainz.Class.ViewRevision
-import MusicBrainz.Editor
-import MusicBrainz.Entity
-import MusicBrainz.Ref
+import MusicBrainz.Monad
 import MusicBrainz.Recording (recordingArtistCredit)
 import MusicBrainz.Release
+import MusicBrainz.Util (viewOnce)
+import MusicBrainz.Versioning
 
 --------------------------------------------------------------------------------
 tests :: [Test]

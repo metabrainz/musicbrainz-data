@@ -33,32 +33,20 @@ import MusicBrainz.Monad
 import MusicBrainz.Annotation
 import MusicBrainz.Artist
 import MusicBrainz.ArtistCredit (ArtistCredit)
-import MusicBrainz.Class.Create
-import MusicBrainz.Class.FindLatest
-import MusicBrainz.Class.MasterRevision
-import MusicBrainz.Class.NewEntityRevision
-import MusicBrainz.Class.RealiseTree
-import MusicBrainz.Class.ResolveReference
 import MusicBrainz.Class.RootTable
 import MusicBrainz.Class.Update
-import MusicBrainz.Class.ViewRevision
 import MusicBrainz.Country (Country)
-import MusicBrainz.Edit (Editable(..))
-import MusicBrainz.Entity
 import MusicBrainz.Label (Label)
 import MusicBrainz.Language (Language)
 import MusicBrainz.Lens (fieldFromPrism)
 import MusicBrainz.MBID (MBID)
 import MusicBrainz.PartialDate (PartialDate)
 import MusicBrainz.Recording (Recording)
-import MusicBrainz.Ref (Ref, Referenceable(..), reference, dereference)
 import MusicBrainz.Relationship
-import MusicBrainz.Relationship.Internal (HoldsRelationships(..), viewRelationships)
+import MusicBrainz.Relationship.Internal
 import MusicBrainz.ReleaseGroup (ReleaseGroup)
-import MusicBrainz.Revision (Revision)
-import MusicBrainz.Revision.Internal (CloneRevision(..))
 import MusicBrainz.Script (Script)
-import MusicBrainz.Tree
+import MusicBrainz.Versioning hiding (merge)
 
 import {-# SOURCE #-} qualified MusicBrainz.Generic as Generic
 

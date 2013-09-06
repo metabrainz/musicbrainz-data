@@ -21,10 +21,8 @@ import Database.PostgreSQL.Simple.ToField (ToField(..))
 import Database.PostgreSQL.Simple.ToRow (ToRow(..))
 
 import MusicBrainz.Monad
-import MusicBrainz.Class.ResolveReference
-import MusicBrainz.Entity
 import MusicBrainz.PartialDate (PartialDate)
-import MusicBrainz.Ref (Ref, Referenceable(..), reference, dereference)
+import MusicBrainz.Versioning
 
 import {-# SOURCE #-} MusicBrainz.Artist (Artist)
 import {-# SOURCE #-} MusicBrainz.Label (Label)
@@ -264,4 +262,3 @@ data LinkedRelationship
   | URLRelationship !(Ref URL) !Relationship
   | WorkRelationship !(Ref Work) !Relationship
   deriving (Eq, Ord, Show)
-

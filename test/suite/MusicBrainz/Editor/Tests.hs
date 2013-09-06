@@ -3,10 +3,7 @@ module MusicBrainz.Editor.Tests where
 
 import Test.MusicBrainz
 
-import MusicBrainz.Class.ResolveReference
-import MusicBrainz.Entity
-import MusicBrainz.Editor
-import MusicBrainz.Ref
+import MusicBrainz.Versioning
 
 tests :: [Test]
 tests = [ testRegister

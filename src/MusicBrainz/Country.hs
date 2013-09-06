@@ -17,9 +17,7 @@ import Database.PostgreSQL.Simple.ToField (ToField(..))
 import Database.PostgreSQL.Simple.ToRow (ToRow(..))
 
 import MusicBrainz.Monad
-import MusicBrainz.Class.ResolveReference
-import MusicBrainz.Entity
-import MusicBrainz.Ref (Referenceable(..), Ref, dereference, reference)
+import MusicBrainz.Versioning
 
 --------------------------------------------------------------------------------
 {-| A country where artists resides, labels are founded, releases are released

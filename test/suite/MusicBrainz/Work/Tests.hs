@@ -14,23 +14,16 @@ import Test.MusicBrainz.Repository
 
 import qualified Test.MusicBrainz.CommonTests as CommonTests
 
-import MusicBrainz.Util (viewOnce)
 import MusicBrainz.Alias
 import MusicBrainz.ArtistCredit
-import MusicBrainz.Class.Create
-import MusicBrainz.Class.ViewRevision
-import MusicBrainz.ISWC
-import MusicBrainz.Edit
 import MusicBrainz.EditApplication
-import MusicBrainz.Editor
-import MusicBrainz.Entity
+import MusicBrainz.ISWC
 import MusicBrainz.PartialDate
-import MusicBrainz.Relationship
-import MusicBrainz.Ref
-import MusicBrainz.Work
-import MusicBrainz.Class.ResolveReference
-import MusicBrainz.Tree
 import MusicBrainz.Recording (recordingArtistCredit)
+import MusicBrainz.Relationship
+import MusicBrainz.Util (viewOnce)
+import MusicBrainz.Work
+import MusicBrainz.Versioning
 
 --------------------------------------------------------------------------------
 tests :: [Test]

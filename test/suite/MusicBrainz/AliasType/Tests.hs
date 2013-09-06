@@ -7,8 +7,8 @@ import qualified Test.MusicBrainz.CommonTests as CommonTests
 
 import MusicBrainz.Alias
 import MusicBrainz.Artist
-import MusicBrainz.Entity
 import MusicBrainz.Label
+import MusicBrainz.Versioning
 import MusicBrainz.Work
 
 --------------------------------------------------------------------------------

@@ -2,11 +2,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-module MusicBrainz.Relationship.Internal
-    ( HoldsRelationships(..)
-    , reflectRelationshipChanges
-    , viewRelationships
-    ) where
+module MusicBrainz.Relationship.Internal where
 
 import Control.Applicative
 import Control.Lens hiding (cons)
@@ -25,15 +21,9 @@ import qualified Data.Set as Set
 
 import MusicBrainz.Monad
 import MusicBrainz.Class.RootTable
-import MusicBrainz.Class.ViewRevision
-import MusicBrainz.Edit
-import MusicBrainz.Editor
-import MusicBrainz.Entity
 import MusicBrainz.PartialDate
-import MusicBrainz.Ref (Ref)
-import MusicBrainz.Revision (Revision)
-import {-# SOURCE #-} MusicBrainz.Tree (Tree, TreeRelationships, relationships)
 import MusicBrainz.Relationship
+import MusicBrainz.Versioning
 
 import {-# SOURCE #-} MusicBrainz.Artist ()
 
@@ -148,3 +138,9 @@ inflateRelationships relationshipIds = do
               }
         in (relId, relationship)
 
+
+--------------------------------------------------------------------------------
+{-| Provide a single lens to view all relationships inside a 'Tree'. -}
+class TreeRelationships a where
+  {-| A 'Lens' into all relationships for any 'Tree'. -}
+  relationships :: Lens' (Tree a) (Set LinkedRelationship)

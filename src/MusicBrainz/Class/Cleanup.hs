@@ -8,9 +8,8 @@ import Control.Monad.Loops (orM)
 import qualified Data.Set as Set
 
 import MusicBrainz.Monad
-import MusicBrainz.Ref
-import MusicBrainz.Revision
 import MusicBrainz.Relationship.Internal
+import MusicBrainz.Versioning
 
 eligibleForCleanup :: (Functor m, MonadIO m, HoldsRelationships a) =>
   Ref (Revision a) -> MusicBrainzT m Bool

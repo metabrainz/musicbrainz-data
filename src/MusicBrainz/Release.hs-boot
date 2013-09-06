@@ -3,7 +3,7 @@ module MusicBrainz.Release where
 
 import Database.PostgreSQL.Simple.FromField (FromField)
 import Database.PostgreSQL.Simple.FromRow (FromRow)
-import MusicBrainz.Ref (Ref)
+import MusicBrainz.Versioning
 
 data Release
 instance Eq Release

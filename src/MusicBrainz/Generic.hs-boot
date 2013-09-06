@@ -22,14 +22,14 @@ import qualified Data.Map as Map
 import qualified Data.Set as Set
 
 import MusicBrainz.Monad
-import MusicBrainz.Edit
-import MusicBrainz.Editor
-import MusicBrainz.Entity
-import MusicBrainz.Ref
-import MusicBrainz.Relationship
-import MusicBrainz.Tree
+import MusicBrainz.Alias
+import MusicBrainz.IPI
+import MusicBrainz.ISNI
+import MusicBrainz.Versioning hiding (findLatest)
+import MusicBrainz.Relationship 
+import MusicBrainz.Relationship.Internal hiding (reflectRelationshipChange)
 
-import qualified MusicBrainz.Class.FindLatest as MB
+import qualified MusicBrainz.Versioning as MB
 
 realiseAliases :: (Functor m, MonadIO m, TreeAliases a) => String -> Ref (Tree a) -> Tree a -> MusicBrainzT m ()
 

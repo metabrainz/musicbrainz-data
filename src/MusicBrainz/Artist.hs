@@ -33,37 +33,24 @@ import Database.PostgreSQL.Simple.ToRow (ToRow(..))
 
 import qualified Data.Set as Set
 
-import MusicBrainz.Merge
-import MusicBrainz.Monad
-import MusicBrainz.Annotation
 import MusicBrainz.Alias
-import MusicBrainz.Class.Create
-import MusicBrainz.Class.FindLatest
-import MusicBrainz.Class.MasterRevision
-import MusicBrainz.Class.NewEntityRevision
-import MusicBrainz.Class.RealiseTree
-import MusicBrainz.Class.ResolveReference
+import MusicBrainz.Annotation
 import MusicBrainz.Class.RootTable
 import MusicBrainz.Class.Update
-import MusicBrainz.Class.ViewRevision
 import MusicBrainz.Country (Country)
-import MusicBrainz.Entity (Add(..), coreData)
 import MusicBrainz.Gender (Gender)
 import MusicBrainz.IPI
 import MusicBrainz.ISNI
 import MusicBrainz.MBID
+import MusicBrainz.Merge
+import MusicBrainz.Monad
 import MusicBrainz.PartialDate (PartialDate)
-import MusicBrainz.Ref (Ref, Referenceable(..), reference, dereference)
 import MusicBrainz.Relationship
-import MusicBrainz.Relationship.Internal (HoldsRelationships(..), viewRelationships)
-import MusicBrainz.Revision (Revision)
-import MusicBrainz.Revision.Internal (CloneRevision(..))
-import MusicBrainz.Tree
+import MusicBrainz.Relationship.Internal
 import MusicBrainz.Util (viewOnce)
+import MusicBrainz.Versioning hiding (merge)
 
 import {-# SOURCE #-} qualified MusicBrainz.Generic as Generic
-
-import MusicBrainz.Edit (Editable(..))
 
 --------------------------------------------------------------------------------
 {-| The data about an artist in MusicBrainz. -}

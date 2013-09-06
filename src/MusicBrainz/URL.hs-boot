@@ -2,7 +2,7 @@
 module MusicBrainz.URL where
 
 import Database.PostgreSQL.Simple.FromField (FromField)
-import MusicBrainz.Ref (Ref)
+import MusicBrainz.Versioning
 
 data URL
 

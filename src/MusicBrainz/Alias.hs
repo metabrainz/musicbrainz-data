@@ -19,13 +19,10 @@ import Database.PostgreSQL.Simple.FromRow (FromRow(..), field)
 import Database.PostgreSQL.Simple.ToField (ToField(..))
 import Database.PostgreSQL.Simple.ToRow (ToRow(..))
 
-import MusicBrainz.Entity
-import MusicBrainz.Monad
-import MusicBrainz.Class.ResolveReference
 import MusicBrainz.Class.RootTable
+import MusicBrainz.Monad
 import MusicBrainz.PartialDate (PartialDate)
-import MusicBrainz.Ref (Ref, Referenceable(..), reference, dereference)
-import MusicBrainz.Revision (Revision)
+import MusicBrainz.Versioning
 
 import qualified Data.Set as Set
 
@@ -135,3 +132,10 @@ class ViewAliases a where
            , "JOIN " ++ entityName ++ "_revision USING (" ++ entityName ++ "_tree_id) "
            , "WHERE revision_id = ?"
            ]
+
+
+--------------------------------------------------------------------------------
+{-| Provide a single lens to view all aliases inside a 'Tree'. -}
+class TreeAliases a where
+  {-| A 'Lens' into all aliases for any 'Tree'. -}
+  aliases :: Lens' (Tree a) (Set (Alias a))

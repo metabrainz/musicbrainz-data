@@ -2,7 +2,7 @@
 module MusicBrainz.ReleaseGroup where
 
 import Database.PostgreSQL.Simple.FromField (FromField)
-import MusicBrainz.Ref (Ref)
+import MusicBrainz.Versioning
 
 data ReleaseGroup
 
